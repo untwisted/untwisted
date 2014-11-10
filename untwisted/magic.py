@@ -5,22 +5,19 @@ class hold(object):
     """
     def __init__(self, target, *event_list):
         # Where we wait the event from.
-        self.target = target
-
-        # The list of events.
+        self.target     = target
         self.event_list = event_list
 
     def __call__(self, mod, seq):
         # Where it is being processed.
         self.mod = mod
-
-        # The actual iterator being processed.
         self.seq = seq
         
         # It links all events to self.chain when
         # one of them is issued self.chain is called.
         for ind in self.event_list:
             xmap(self.target, ind, self.chain, ind)
+
         # It is used to stop the chain of events.
         raise StopIteration
 
@@ -42,4 +39,5 @@ class hold(object):
                 zmap(self.target, ind, self.chain, ind)
         # It raises up the exception to debug.
             raise excpt
+
 

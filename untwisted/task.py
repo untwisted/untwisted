@@ -4,9 +4,8 @@ from untwisted.network import spawn, imap, smap
 from untwisted.mode import *
 import core
 
-slc = lambda x: x[0]
-minimal = lambda x, y: x if x < y and x != core.gear.default_timeout else y
-
+slc      = lambda x: x[0]
+minimal  = lambda x, y: x if x < y and x != core.gear.default_timeout else y
 COMPLETE = core.get_event()
 
 class Task(Mode):
@@ -23,7 +22,7 @@ class Task(Mode):
 
     def __init__(self, data):
         Mode.__init__(self)
-        self.data = data
+        self.data  = data
         self.count = 0
 
     def gather(self, con, *jobs):
@@ -53,10 +52,16 @@ class Task(Mode):
 
         val = cond(self.data, event, args)
 
-        if val: 
-            for ind in base: ind()
-            self.count = self.count - 1
-            if not self.count: spawn(self, COMPLETE, self.data)
+        if not val: 
+            return
+
+        for ind in base: 
+            ind()
+
+        self.count = self.count - 1
+
+        if not self.count: 
+            spawn(self, COMPLETE, self.data)
 
 
 
@@ -75,8 +80,7 @@ class Schedule(object):
         """
 
         self.base[inc, cbck] = [time(), args, opt]
-
-        core.gear.timeout = minimal(core.gear.timeout, inc)
+        core.gear.timeout    = minimal(core.gear.timeout, inc)
 
     def unmark(self, inc, cbck):
         """ 
@@ -84,8 +88,9 @@ class Schedule(object):
         """
 
         del self.base[inc, cbck]
-        data = map(slc, self.base.keys())
-        value = reduce(minimal, data, core.gear.default_timeout)
+
+        data              = map(slc, self.base.keys())
+        value             = reduce(minimal, data, core.gear.default_timeout)
         core.gear.timeout = value
 
 
@@ -110,3 +115,4 @@ class Schedule(object):
 sched = Schedule()
 
 __all__ = ['sched', 'Schedule']
+

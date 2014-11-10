@@ -6,26 +6,20 @@ import socket
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, EINVAL, \
 ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN 
 
-CLOSE_ERR_CODE = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF)
+CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF)
 ACCEPT_ERR_CODE  = (EWOULDBLOCK, ECONNABORTED, EAGAIN)
-
-
-CLOSE  = get_event()
-ACCEPT = get_event()
-
-CONNECT = get_event()
-CONNECT_ERR = get_event()
-
-LOAD   = get_event()
-DUMPED = get_event()
-
-RECV_ERR = get_event()
-SEND_ERR = get_event()
-ACCEPT_ERR = get_event()
-
-READ_ERR = get_event()
-DUMPED_FILE = get_event()
-CLOSE_ERR = get_event()
+CLOSE            = get_event()
+ACCEPT           = get_event()
+CONNECT          = get_event()
+CONNECT_ERR      = get_event()
+LOAD             = get_event()
+DUMPED           = get_event()
+RECV_ERR         = get_event()
+SEND_ERR         = get_event()
+ACCEPT_ERR       = get_event()
+READ_ERR         = get_event()
+DUMPED_FILE      = get_event()
+CLOSE_ERR        = get_event()
 
 
 class Stdin:
@@ -411,7 +405,7 @@ class Write(object):
         xmap(device, WRITE, self.update)
         device.dump = self.dump
         self.device = device
-        self.queue = deque()
+        self.queue  = deque()
 
     def update(self, device):
         try:
@@ -467,10 +461,9 @@ class DumpFile(object):
     """
 
     def __init__(self, spin, fd):
-        self.fd = fd
-        self.data = ''
+        self.fd    = fd
+        self.data  = ''
         
-        # We are going to send blocks of 8192 bytes.
         self.BLOCK = 1024 * 124
 
         # It maps WRITE to self.update.
@@ -541,6 +534,7 @@ __all__ = ['Stdin', 'Stdout', 'Client', 'Server', 'lose', 'put', 'Read', 'Write'
             'DUMPED',
             'CLOSE_ERR'
           ]
+
 
 
 

@@ -10,10 +10,8 @@ from socket import *
 # Whenever we use get_event it increases
 # So we don't get events messed.
 event_count = 0
-
-# These are filters to scale sockets for I/O.
-rmap = lambda obj: obj.base.get(READ)
-wmap = lambda obj: obj.base.get(WRITE)
+rmap        = lambda obj: obj.base.get(READ)
+wmap        = lambda obj: obj.base.get(WRITE)
 
 
 
@@ -42,11 +40,11 @@ def get_event():
 
 # When a socket is ready for reading 
 # the chosen reactor will spawn READ.
-READ   = get_event()
+READ  = get_event()
 
 # When a socket is ready for writting
 # it will spawn WRITE.
-WRITE  = get_event()
+WRITE = get_event()
 
 
 
@@ -186,11 +184,9 @@ class Select(Gear):
         """
         
         # I dont need to define it here.
-        r, w, x = [], [], []
-       
-        r = filter(rmap, self.atom)
-        w = filter(wmap, self.atom)
-
+        r, w, x  = [], [], []
+        r        = filter(rmap, self.atom)
+        w        = filter(wmap, self.atom)
         resource = select(r , w , x, self.timeout)
 
         self.rsock, self.wsock, self.xsock = resource
@@ -273,12 +269,11 @@ class Epoll(Gear):
         Gear.__init__(self)
         
         # epoll uses -1 as default for timeout.
-        self.timeout = -1
+        self.timeout         = -1
         self.default_timeout = -1
 
         # It maps file descriptors to their Spin instances.
-        self.atom = dict()
-        
+        self.atom  = dict()
         self.epoll = epoll()
 
 
@@ -394,7 +389,7 @@ class Epoll(Gear):
         # If i called spin.fileno from unregister
         # and the socket had been closed it would
         # throw an exception.
-        spin.fd = spin.fileno()
+        spin.fd            = spin.fileno()
         self.atom[spin.fd] = spin
         self.epoll.register(spin.fd)
 
@@ -413,8 +408,7 @@ class Epoll(Gear):
 class Poll(object):
     def __init__(self, timeout=None):
         self.timeout = timeout
-
-        self.atom = []
+        self.atom    = []
        
 
 def install_reactor(reactor, *args, **kwargs):
@@ -434,4 +428,5 @@ def default():
 default()
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 

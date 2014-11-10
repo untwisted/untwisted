@@ -9,9 +9,9 @@ class Machine(Thread):
     def __init__(self, job, func, *args, **kwargs):
         Thread.__init__(self)
 
-        self.job = job
-        self.func = func
-        self.args = args
+        self.job    = job
+        self.func   = func
+        self.args   = args
         self.kwargs = kwargs
         self.start()
 
@@ -46,16 +46,14 @@ class Job(Spin):
         self.connect_ex(server.getsockname())
 
         sock, addr = server.accept()
-
-        self.sock = sock
+        self.sock  = sock
         server.close()
 
         xmap(self, READ, self.dispatch)
         
-        self.lock = Lock()
-
+        self.lock  = Lock()
         self.ident = None
-        self.data = None
+        self.data  = None
 
     def register(self, callback, *args, **kwargs):
         thread = Machine(self, callback, *args, **kwargs)
@@ -92,7 +90,7 @@ class Job(Spin):
         self.lock.acquire()
 
         self.ident = ident
-        self.data = data
+        self.data  = data
 
         while True:
             try:
@@ -104,3 +102,4 @@ class Job(Spin):
                     raise
 
 job = Job()
+
