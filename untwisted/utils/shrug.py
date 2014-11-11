@@ -5,7 +5,7 @@ FOUND = get_event()
 class Shrug:
     def __init__(self, spin, delim='\r\n'):
         self.delim = delim
-        self.msg = bytearray()
+        self.msg   = bytearray()
 
         xmap(spin, LOAD, self.update)
 
@@ -23,6 +23,7 @@ class Shrug:
             spawn(spin, FOUND, str(ind))
 
                 
+
 
 
 
