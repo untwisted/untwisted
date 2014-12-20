@@ -417,16 +417,14 @@ def install_reactor(reactor, *args, **kwargs):
     #print 'Using %s reactor' % reactor
 
 def default():
-    import os
-
-    if os.name == 'posix':
+    try:
         install_reactor(Epoll)
-    else:
+    except NameError:
         install_reactor(Select)
-
 
 default()
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
