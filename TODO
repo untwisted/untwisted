@@ -1,0 +1,4 @@
+Change the way of how job.py works.
+there should exist a wakeup_reactor method that is thread safe.
+for such, i will register a socket to the reactor initially on port 0.
+try to find the correct port in case it fails.

@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<title>
+imup
+</title>
+
+</head>
+
+<body>
+<b> Max Image Size 1024 * 5024 bytes </b>
+<br>
+
+<br> <h1> Upload image </h1>
+<form action="/add_image" method="post" enctype="multipart/form-data">
+<input name="file" type="file"> <br> <br>
+<input type="submit" value="Send">
+</form>
+
+<br>
+
+<br>
+
+<h1> Images </h1>
+ {% for index in posts %}
+     <h3> {{index}} </h3>
+    <img src="/load_index?index={{index}}"/>
+  {% endfor %}
+
+
+</body>
+</html>
+
+
+
+
+

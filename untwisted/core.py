@@ -2,11 +2,12 @@
 Name: core.py
 Description: It implements the select and epoll based reactors and the most basic events.
 """
-
+from threading import Lock
 from select import *
 from usual import Root, Kill
 from socket import *
-
+from untwisted.mode import Mode
+from untwisted.usual import xmap
 # Whenever we use get_event it increases
 # So we don't get events messed.
 event_count = 0
@@ -46,6 +47,15 @@ READ  = get_event()
 # it will spawn WRITE.
 WRITE = get_event()
 
+class Dead(socket, Mode):
+    def __init__(self, sock=None):
+        socket.__init__(self, _sock = sock._sock if sock else None)
+        Mode.__init__(self)
+        self.setblocking(0) 
+
+    def destroy(self):
+        gear.unregister(self)
+        self.base.clear()
 
 
 class Gear(object):
@@ -62,13 +72,26 @@ class Gear(object):
 
     """
 
+    MAX_SIZE = 6028
     def __init__(self):
         """ Class constructor """
-
-
-        # This list contains methods that are
-        # updated when the reactor unblocks.
         self.pool = []
+
+        server = socket(AF_INET, SOCK_STREAM)
+        server.bind(('127.0.0.1', 0))
+        server.listen(1)
+
+        client = Dead()
+        client.connect_ex(server.getsockname())
+
+        def consume(spin):
+            spin.recv(self.MAX_SIZE)
+
+        xmap(client, READ, consume)
+
+        self.register(client)
+        self.bell, addr = server.accept()
+        self.lock       = Lock()
         
     def mainloop(self):
         """ 
@@ -125,6 +148,11 @@ class Gear(object):
 
         pass
 
+    def wake(self):
+        self.lock.acquire()
+        self.bell.send(' ')
+        self.lock.release()
+
 class Select(Gear):
     """
     This reactor is select based. It is default on non posix platforms.
@@ -154,8 +182,6 @@ class Select(Gear):
         that compose the reactor public and internal interface.
         """
 
-        Gear.__init__(self)
-
         # This variable holds the timeout passed
         # to select.
         self.timeout = None
@@ -171,7 +197,8 @@ class Select(Gear):
         # These are the sockets in R/W status.
         self.rsock = []
         self.wsock = []
-        
+        Gear.__init__(self)
+
 
     def update(self):
         """ 
@@ -266,8 +293,7 @@ class Epoll(Gear):
 
     def __init__(self):
         """ It defines basic structures. """
-        Gear.__init__(self)
-        
+
         # epoll uses -1 as default for timeout.
         self.timeout         = -1
         self.default_timeout = -1
@@ -275,6 +301,7 @@ class Epoll(Gear):
         # It maps file descriptors to their Spin instances.
         self.atom  = dict()
         self.epoll = epoll()
+        Gear.__init__(self)
 
 
     def update(self):
@@ -425,6 +452,9 @@ def default():
 default()
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
+
+
 
 
 

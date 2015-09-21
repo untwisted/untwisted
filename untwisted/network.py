@@ -24,23 +24,16 @@ from untwisted.usual import *
 from untwisted.magic import *
 from socket import *
 from untwisted.core import *
+from untwisted.core import Dead
 from untwisted import core
 from os import O_NONBLOCK
 from fcntl import fcntl, F_GETFL, F_SETFL
 
-class Spin(socket, Mode):
+
+class Spin(Dead):
     def __init__(self, sock=None):
-        socket.__init__(self, _sock = sock._sock if sock else None)
-        Mode.__init__(self)
-
-        #Registering itself.
+        Dead.__init__(self, sock)
         core.gear.register(self)
-
-        self.setblocking(0) 
-
-    def destroy(self):
-        core.gear.unregister(self)
-        self.base.clear()
 
 class Device(Mode):
     def __init__(self, device):
@@ -88,6 +81,7 @@ _all__ = [
             'zmap',
             'install_reactor'
           ]
+
 
 
 

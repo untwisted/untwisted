@@ -1,0 +1,20 @@
+<html>
+
+<head>
+
+
+</head>
+
+</body>
+<h1> List of quotes. </h1>
+
+ {% for index, (name, quote) in posts %}
+    <h3><a href="/load_index?index={{index}}"> {{name}} {{quote}}... </a></h3>
+  {% endfor %}
+
+<h1><a href="comment.html"> Add quote </a></h1>
+</body>
+
+</html>
+
+
