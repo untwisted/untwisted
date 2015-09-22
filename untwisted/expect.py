@@ -75,6 +75,7 @@ class Expect(Thread, Mode):
         """
         self.stop = True
         self.child.kill()
+        core.gear.pool.remove(self)    
 
 
 
