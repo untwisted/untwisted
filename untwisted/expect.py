@@ -1,7 +1,7 @@
 from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
 from Queue import Queue, Empty
-from os import environ, setsid, killpg
+from os import environ 
 from untwisted.mode import Mode
 from untwisted.core import get_event
 from untwisted import core
@@ -14,15 +14,14 @@ class Expect(Thread, Mode):
         """
         """
 
-        self.child = Popen(args, shell=0, stdout=PIPE, stdin=PIPE,  
+        self.child     = Popen(args, shell=0, stdout=PIPE, stdin=PIPE,  
                                             stderr=STDOUT,  env=environ)
-        self.stdin  = self.child.stdin
-        self.stdout = self.child.stdout
-        self.stderr = self.child.stderr
-        self.args  = args
-        self.queue = Queue()
-        self.stop  = False
-
+        self.stdin     = self.child.stdin
+        self.stdout    = self.child.stdout
+        self.stderr    = self.child.stderr
+        self.args      = args
+        self.queue     = Queue()
+        self.terminate = self.child.terminate
         core.gear.pool.append(self)
 
         Mode.__init__(self)
@@ -41,8 +40,7 @@ class Expect(Thread, Mode):
         """
         """
 
-        while not self.stop:
-            if not self.feed(): break
+        while self.feed():
             core.gear.wake()
         self.child.wait()
 
@@ -50,10 +48,9 @@ class Expect(Thread, Mode):
         try:
             data = self.stdout.readline()
         except Exception as e:
-            self.queue.put_nowait('')
-        else:
-            self.queue.put_nowait(data)
+            data = ''
         finally:
+            self.queue.put_nowait(data)
             return data
 
     def update(self):
@@ -69,16 +66,10 @@ class Expect(Thread, Mode):
         else: 
             self.drive(LOAD, data)
 
-
     def destroy(self):
         """
         """
-        self.stop = True
-        self.child.kill()
         core.gear.pool.remove(self)    
-
-
-
-
+        self.base.clear()
 
 
