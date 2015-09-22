@@ -119,13 +119,6 @@ class Gear(object):
 
                 break
 
-        # The objects processed by process_pool
-        # should interface with the reactor
-        # through this module instance.
-        # They should directly change
-        # data inside the reactor instance
-        # if so needed.
-            self.process_pool()
 
     def process_pool(self):
         """ 
@@ -136,7 +129,6 @@ class Gear(object):
         user of the class except he knows what he is
         doing.
         """
-
         for ind in self.pool:
             ind.update()
 
@@ -209,7 +201,8 @@ class Select(Gear):
         reactor it might be called from other mainloop.
 
         """
-        
+        self.process_pool()
+
         # I dont need to define it here.
         r, w, x  = [], [], []
         r        = filter(rmap, self.atom)
@@ -313,6 +306,7 @@ class Epoll(Gear):
         reactor it might be called from other mainloop.
 
         """
+        self.process_pool()
         
         # We need first scale which sockets have handles
         # linked to READ or WRITE events.
@@ -452,6 +446,8 @@ def default():
 default()
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
+
 
 
 

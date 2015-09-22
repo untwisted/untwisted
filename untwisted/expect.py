@@ -48,7 +48,7 @@ class Expect(Thread, Mode):
 
     def feed(self):
         try:
-            data = self.stdout.read(self.SIZE)
+            data = self.stdout.readline()
         except Exception as e:
             self.queue.put_nowait('')
         else:
@@ -59,13 +59,11 @@ class Expect(Thread, Mode):
     def update(self):
         """
         """
-
         while not self.queue.empty():
             self.dispatch()
 
     def dispatch(self):
         data = self.queue.get_nowait()
-
         if not data: 
             self.drive(CLOSE)
         else: 
@@ -77,6 +75,8 @@ class Expect(Thread, Mode):
         """
         self.stop = True
         self.child.kill()
+
+
 
 
 

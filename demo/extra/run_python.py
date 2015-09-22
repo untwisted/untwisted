@@ -11,3 +11,5 @@ xmap(expect, CLOSE, lambda expect: die())
 expect.send('print "hello world"\nquit()\n')
 core.gear.mainloop()
 
+
+
