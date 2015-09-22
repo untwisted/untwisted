@@ -190,24 +190,16 @@ class Irc(object):
         """ 
         It extracts irc msg arguments. 
         """
-    
         args = []
-        try:
-            lhs, rhs = self.fmt_args(data)
-        except ValueError:
-            args.extend(data.split(' '))
-        else:
-            if lhs: 
-                args.extend(lhs.split(' '))
+        data = data.strip(' ')
+        if ':' in data:
+            lhs, rhs = data.split(':', 1)
+            if lhs: args.extend(lhs.rstrip(' ').split(' '))
             args.append(rhs)
-        return tuple(args)
+        else:
+           args.extend(data.split(' '))
+        return tuple(args)    
     
-    def fmt_args(self, data):
-        data     = data.strip(' ')
-        lhs, rhs = data.split(':', 1)
-        lhs      = lhs.rstrip(' ')
-        return lhs, rhs
-
 class CTCP(object):
     def __init__(self, spin):
         """ 
@@ -249,6 +241,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
