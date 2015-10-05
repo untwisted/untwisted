@@ -2,12 +2,15 @@
 
 from distutils.core import setup
 setup(name="untwisted",
-      version="0.0.1",
+      version="0.2",
       packages=["untwisted", 
                 "untwisted.utils",
                 "untwisted.plugins"],
       author="Iury O. G. Figueiredo",
       author_email="ioliveira@id.uff.br")
+
+
+
 
 
 

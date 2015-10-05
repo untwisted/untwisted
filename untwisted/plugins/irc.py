@@ -233,6 +233,53 @@ class CTCP(object):
         spawn(spin, 'DCC %s' % args[0], header, *args[1:])
     
 
+class Misc(object):
+    def __init__(self, spin):
+        xmap(spin, '001', self.on_001)
+        xmap(spin, 'PRIVMSG', self.on_privmsg)
+        xmap(spin, 'JOIN', self.on_join)
+        xmap(spin, 'PART', self.on_part)
+        xmap(spin, '353', self.on_353)
+        xmap(spin, '332', self.on_332)
+        xmap(spin, 'NICK', self.on_nick)
+        self.nick = ''
+
+    def on_privmsg(self, spin, nick, user, host, target, msg):
+        spawn(spin, 'PRIVMSG->%s' % target.lower(), nick, user, host, msg)
+        spawn(spin, 'PRIVMSG->%s' % nick.lower(), target, user, host, msg)
+    
+    def on_join(self, spin, nick, user, host, chan):
+        if self.nick == nick: 
+            spawn(spin, 'MEJOIN', chan)
+        else:
+            spawn(spin, 'JOIN->%s' % chan, nick, 
+                  user, host)
+    
+    def on_353(self, spin, prefix, nick, mode, chan, peers):
+        spawn(spin, '353->%s' % chan, prefix, 
+              nick, mode, peers)
+    
+    def on_332(self, spin, addr, nick, channel, msg):
+        spawn(spin, '332->%s' % channel, addr, nick, msg)
+    
+    def on_part(self, spin, nick, user, host, chan):
+        spawn(spin, 'PART->%s' % chan, nick, 
+              user, host)
+    
+        if self.nick == nick: 
+            spawn(spin, 'PART->%s->MEPART' % chan, chan)
+    
+    def on_001(self, spin, address, nick, *args):
+        self.nick = nick
+    
+    def on_nick(self, spin, nicka, user, host, nickb):
+        if not self.nick == nicka: 
+            return
+    
+        self.nick = nickb;
+        spawn(spin, 'MENICK', nicka, user, host, nickb)
+    
+
 def send_msg(server, target, msg):
     list_chunk = wrap(msg, width=512)
 
@@ -241,6 +288,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
