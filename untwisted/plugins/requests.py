@@ -13,11 +13,13 @@ class HttpClient(object):
         """
 
         xmap(spin, LOAD, self.get_header)
+        xmap(spin, CLOSE,  self.spawn_response)
+
         self.spin     = spin
         self.header   = ''
         self.data     = ''
         self.response = ''
-        self.size     = 0
+        self.size     = None
 
     def get_header(self, spin, data):
         """
@@ -33,7 +35,7 @@ class HttpClient(object):
         self.header, self.data     = self.header.split(DELIM, 1)
         self.response, self.header = self.split_header(self.header)
         zmap(spin, LOAD, self.get_header)
-        self.check_data_existence()
+        xmap(spin, LOAD, self.get_data)
 
     def split_header(self, data):
         """
@@ -58,31 +60,13 @@ class HttpClient(object):
 
         return response, header
 
-    def check_data_existence(self):
+    def spawn_response(self, *args):
         """
 
         """
-
-        try:
-            self.size = int(self.header['Content-Length'])
-        except KeyError:
-            pass
-
-        # Assume there is a body size larger than 0.
-        # Since we will call check_data_size anyway.
-        xmap(self.spin, LOAD, self.get_data)
-        self.check_data_size()
-
-
-    def spawn_response(self):
-        """
-
-        """
-
-        
         spawn(self.spin, HTTP_RESPONSE, self.response[0], self.response[1], 
                                     self.response[2], self.header, self.data)
-        self.__init__(self.spin)
+
 
     def get_data(self, spin, data):
         """
@@ -90,17 +74,6 @@ class HttpClient(object):
         """
 
         self.data = self.data + data
-        self.check_data_size()
-
-    def check_data_size(self):
-        """
-
-        """
-        if not len(self.data) >= self.size:
-            return
-
-        zmap(self.spin, LOAD, self.get_data)
-        self.spawn_response()
 
 class HttpCode(object):
     def __init__(self, spin):
@@ -139,6 +112,8 @@ def auth(username, password):
 
 def post_file():
     pass
+
+
 
 
 
