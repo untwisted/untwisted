@@ -247,7 +247,10 @@ class Misc(object):
     def on_privmsg(self, spin, nick, user, host, target, msg):
         spawn(spin, 'PRIVMSG->%s' % target.lower(), nick, user, host, msg)
         spawn(spin, 'PRIVMSG->%s' % nick.lower(), target, user, host, msg)
-    
+
+        if self.nick.lower() == target.lower():
+            spawn(spin, 'PMSG', nick, target, user, host, msg)
+                
     def on_join(self, spin, nick, user, host, chan):
         if self.nick == nick: 
             spawn(spin, 'MEJOIN', chan)
@@ -288,6 +291,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
