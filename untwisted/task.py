@@ -101,18 +101,24 @@ class Schedule(object):
         # It checks whether the difference
         # between the initial time and the final
         # time against the increment.
+        # Note: the correct order is.
+        # self.base[inc, cbck][0] = time()
+        # cbck(*args)
+        # because if sched.unmark is called from cbck
+        # it will throw an exception due to the key not existing
+        # anymore
             if time() - init >= inc: 
-                cbck(*args)
                 self.base[inc, cbck][0] = time()
+                cbck(*args)
         # If opt flag is set as True
         # we don't want to execute it
         # anymore.
-                if opt:
-                    self.unmark(inc, cbck)
+                if opt: self.unmark(inc, cbck)
 
 
 #################
 sched = Schedule()
 
 __all__ = ['sched', 'Schedule']
+
 
