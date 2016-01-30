@@ -242,6 +242,8 @@ class Misc(object):
         xmap(spin, '353', self.on_353)
         xmap(spin, '332', self.on_332)
         xmap(spin, 'NICK', self.on_nick)
+        xmap(spin, 'KICK', self.on_kick)
+
         self.nick = ''
 
     def on_privmsg(self, spin, nick, user, host, target, msg):
@@ -283,7 +285,13 @@ class Misc(object):
     
         self.nick = nickb;
         spawn(spin, 'MENICK', nicka, user, host, nickb)
-    
+
+    def on_kick(self, spin, nick, user, host, chan, target, msg=''):
+        spawn(spin, 'KICK->%s' % chan, nick, user, host, target, msg)
+
+        if self.nick == target:
+            spawn(spin, 'KICK->%s->ME' % chan, nick, user, host, target, msg)
+
 
 def send_msg(server, target, msg):
     list_chunk = wrap(msg, width=512)
@@ -293,15 +301,5 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
-
-
-
-
-
-
-
-
-
-
 
 
