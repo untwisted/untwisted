@@ -243,6 +243,7 @@ class Misc(object):
         xmap(spin, '332', self.on_332)
         xmap(spin, 'NICK', self.on_nick)
         xmap(spin, 'KICK', self.on_kick)
+        xmap(spin, 'MODE', self.on_mode)
 
         self.nick = ''
 
@@ -257,7 +258,7 @@ class Misc(object):
         
     def on_join(self, spin, nick, user, host, chan):
         if self.nick == nick: 
-            spawn(spin, 'MEJOIN', chan)
+            spawn(spin, '*JOIN', chan)
         else:
             spawn(spin, 'JOIN->%s' % chan, nick, 
                   user, host)
@@ -274,7 +275,7 @@ class Misc(object):
               user, host)
     
         if self.nick == nick: 
-            spawn(spin, 'PART->%s->MEPART' % chan, chan)
+            spawn(spin, '*PART->%s' % chan, chan)
     
     def on_001(self, spin, address, nick, *args):
         self.nick = nick
@@ -284,14 +285,16 @@ class Misc(object):
             return
     
         self.nick = nickb;
-        spawn(spin, 'MENICK', nicka, user, host, nickb)
+        spawn(spin, '*NICK', nicka, user, host, nickb)
 
     def on_kick(self, spin, nick, user, host, chan, target, msg=''):
         spawn(spin, 'KICK->%s' % chan, nick, user, host, target, msg)
 
         if self.nick == target:
-            spawn(spin, 'KICK->%s->ME' % chan, nick, user, host, target, msg)
+            spawn(spin, '*KICK->%s' % chan, nick, user, host, target, msg)
 
+    def on_mode(self, spin, nick, user, host, chan='', mode='', target=''):
+        spawn(spin, 'MODE->%s' % chan, nick, user, host, mode, target)
 
 def send_msg(server, target, msg):
     list_chunk = wrap(msg, width=512)
@@ -301,5 +304,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
+
 
 
