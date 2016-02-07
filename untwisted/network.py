@@ -13,18 +13,25 @@ class Spin(socket, Mode):
         socket.__init__(self, _sock = sock._sock if sock else None)
         Mode.__init__(self)
         self.setblocking(0) 
+        gear.register(self)
 
     def bind(self, event, handle, *args):
         Mode.bind(self, event, handle, *args)
-        gear.register(self)
+        gear.scale(self)
 
     def unbind(self, event, handle, *args):
         Mode.unbind(self, event, handle, *args)
-        gear.unregister(self)
+        gear.scale(self)
 
     def destroy(self):
         self.base.clear()
         gear.unregister(self)
+
+    def is_writable(self):
+        return self.base.get(WRITE)
+
+    def is_readable(self):
+        return self.base.get(READ)
 
 class Device(Mode):
     def __init__(self, device):
@@ -34,22 +41,28 @@ class Device(Mode):
         Mode.__init__(self)
         self.device = device
 
-        # I must make it a non blocking device.
-
+        # A non blocking device.
         fd = self.device.fileno()
         fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK)
+        gear.register(self)
 
     def bind(self, event, handle, *args):
         Mode.bind(self, event, handle, *args)
-        core.gear.register(self)
+        core.gear.scale(self)
 
     def unbind(self, event, handle, *args):
         Mode.unbind(self, event, handle, *args)
-        core.gear.unregister(self)
+        core.gear.scale(self)
 
     def destroy(self):
         self.base.clear()
-        core.gear.unregister(self)
+        gear.unregister(self)
+
+    def is_writable(self):
+        return self.base.get(WRITE)
+
+    def is_readable(self):
+        return self.base.get(READ)
 
     def __getattr__(self, name):
         return getattr(self.device, name)
@@ -57,6 +70,7 @@ class Device(Mode):
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
+
 
 
 
