@@ -23,13 +23,33 @@ def cmap(mode, event, handle, *args):
     
     xmap(mode, event, cave, *args)
 
+def imap(mode, event, handle, *args):
+    """
+
+    """
+
+    xmap(mode, event, handle, *args)
+
+    def cave():
+        zmap(mode, event, handle, *args)
+    return cave
+
+def smap(mode, event, handle, *extra):
+    """
+
+    """
+
+    def cave(*args):
+        handle(args, *extra)
+
+    ident = imap(mode, event, cave)
+    return ident
+
 def die():
     """
     It is used to stop the reactor.
     """
     raise Kill
-
-
 
 
 
