@@ -101,10 +101,10 @@ class Gear(object):
         reactor classes.
         """
 
-    def add(self, spin):
+    def register(self, spin):
         pass
 
-    def remove(self, spin):
+    def unregister(self, spin):
         pass
 
         pass
@@ -138,14 +138,11 @@ class Select(Gear):
         """
 
         self.process_pool()
-        rsock, wsock, xsock = select(self.rsock , self.wsock , self.xsock, self.timeout)
+        self.process_reactor()
 
-        # This has to be in this order.
-        # If a socket is in the list of WRITE event
-        # it is expecting either to write or if it has connected.
-        # If process_rsock is called first and the socket has connected
-        # and the client has sent bytes you will not have your handle_connect
-        # called first.
+    def process_reactor(self):
+        rsock, wsock, xsock = select(self.rsock , self.wsock , 
+                                            self.xsock, self.timeout)
 
         for ind in wsock:
             try:
@@ -164,29 +161,63 @@ class Select(Gear):
 
     def unregister(self, spin):
         self.base.remove(spin)
-
-    def scale(self, spin):
-        try:
-            self.update_wsock(spin)
-        except KeyError:
-            pass
-
-        try:
-            self.update_rsock(spin)
-        except KeyError:
-            pass
+        self.del_rsock(spin)
+        self.del_wsock(spin)
 
     def update_rsock(self, spin):
+        """
+        """
+
         if spin.is_readable():
-            self.rsock.add(spin)
+            self.add_rsock(spin)
         else:
-            self.rsock.remove(spin)
+            self.del_rsock(spin)
+
+    def scale(self, spin):
+        """
+        """
+
+        self.update_wsock(spin)
+        self.update_rsock(spin)
 
     def update_wsock(self, spin):
+        """
+        """
+
         if spin.is_writable():
-            self.wsock.add(spin)
+            self.add_wsock(spin)
         else:
+            self.del_wsock(spin)
+
+    def add_rsock(self, spin):
+        """
+        """
+
+        self.rsock.add(spin)
+
+    def add_wsock(self, spin):
+        """
+        """
+
+        self.wsock.add(spin)
+
+    def del_wsock(self, spin):
+        """
+        """
+
+        try:
             self.wsock.remove(spin)
+        except KeyError:
+            pass
+
+    def del_rsock(self, spin):
+        """
+        """
+
+        try:
+            self.rsock.remove(spin)
+        except KeyError:
+            pass
 
 
 class Epoll(Gear):
@@ -195,14 +226,12 @@ class Epoll(Gear):
     """
 
     def __init__(self):
+        Gear.__init__(self)
         # epoll uses -1 as default for timeout.
         self.timeout         = -1
         self.default_timeout = -1
-
-        # It maps file descriptors to their Spin instances.
-        self.base  = dict()
-        self.epoll = epoll()
-        Gear.__init__(self)
+        self.base            = dict()
+        self.pollster        = epoll()
 
 
     def update(self):
@@ -211,51 +240,66 @@ class Epoll(Gear):
         """
 
         self.process_pool()
+        self.process_reactor()
 
-        # The epoll.poll method returns a list of (fd, event)
-        # pairs.
-        resource = self.epoll.poll(self.timeout) 
+    def process_reactor(self):
+        """
+        """
 
-        for fd, event in resource:
+        events = self.pollster.poll(self.timeout) 
+        for fd, event in events:
             try:
                 spin = self.base[fd]
             except KeyError:
                 pass
             else:
-                if event & EPOLLOUT:
-                    try:
-                        spin.drive(WRITE)
-                    except Root:
-                        pass
-     
-                if event & EPOLLIN:
-                    try:
-                        spin.drive(READ)
-                    except Root:
-                        pass
-
+                self.dispatch(spin, event)
+        
     def register(self, spin):
-        self.base[fd] = spin
-        self.epoll.register(fd)
+        """
+        """
+
+        spin.fd = spin.fileno()
+        self.base[spin.fd] = spin
+        self.pollster.register(spin.fd)
 
     def unregister(self, spin):
+        """
+        """
+
         del self.base[spin.fd]
-        self.epoll.unregister(spin.fd)
+        self.pollster.unregister(spin.fd)
 
     def scale(self, spin):
-        r  = EPOLLIN if spin.is_readable() else 0 
-        w  = EPOLLOUT if spin.is_writable() else 0
-        fd = spin.fileno()
+        """
+        """
 
-        self.epoll.modify(fd, r | w)
+        r    = EPOLLIN if spin.is_readable() else 0 
+        w    = EPOLLOUT if spin.is_writable() else 0
+        mask = r | w
+        self.pollster.modify(spin.fd, mask)
 
+    def dispatch(self, spin, event):
+        """
+        """
+
+        if event & EPOLLOUT:
+            try:
+                spin.drive(WRITE)
+            except Root:
+                pass
+
+        if event & EPOLLIN:
+            try:
+                spin.drive(READ)
+            except Root:
+                pass
 
 class Poll(object):
     def __init__(self, timeout=None):
         self.timeout = timeout
         self.atom    = []
        
-
 def install_reactor(reactor, *args, **kwargs):
     global gear
     gear = reactor(*args, **kwargs)
@@ -268,9 +312,11 @@ def default():
         install_reactor(Select)
 
 # default()
-install_reactor(Select)
+# install_reactor(Select)
+install_reactor(Epoll)
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 
