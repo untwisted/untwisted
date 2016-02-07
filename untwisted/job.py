@@ -1,7 +1,8 @@
-from threading import *
+from threading import Thread, Lock
 from untwisted.mode import Mode
 from untwisted import core
 from untwisted.core import get_event
+from untwisted.waker import waker
 
 DONE = get_event()
 class Job(Thread, Mode):
@@ -23,12 +24,13 @@ class Job(Thread, Mode):
         # it has to be set here otherwise we get in trouble
         # because the reactor will call update that will access self.is_done.
         self.is_done = True
-        core.gear.wake()
+        waker.wake_up()
 
     def update(self):
         if not self.is_done: return
         self.drive(DONE, self.data)
         core.gear.pool.remove(self)
+
 
 
 

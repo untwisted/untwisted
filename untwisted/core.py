@@ -1,20 +1,13 @@
 """
-Name: core.py
-Description: It implements the select and epoll based reactors and the most basic events.
 """
-from threading import Lock
+
 from select import *
-from usual import Root, Kill
 from socket import *
-from untwisted.mode import Mode
-from untwisted.usual import xmap
+from untwisted.mode import *
+
 # Whenever we use get_event it increases
 # So we don't get events messed.
 event_count = 0
-rmap        = lambda obj: obj.base.get(READ)
-wmap        = lambda obj: obj.base.get(WRITE)
-
-
 
 def get_event():
     """ 
@@ -37,8 +30,6 @@ def get_event():
     event_count = event_count + 1
     return event_count
 
-
-
 # When a socket is ready for reading 
 # the chosen reactor will spawn READ.
 READ  = get_event()
@@ -46,17 +37,6 @@ READ  = get_event()
 # When a socket is ready for writting
 # it will spawn WRITE.
 WRITE = get_event()
-
-class Dead(socket, Mode):
-    def __init__(self, sock=None):
-        socket.__init__(self, _sock = sock._sock if sock else None)
-        Mode.__init__(self)
-        self.setblocking(0) 
-
-    def destroy(self):
-        gear.unregister(self)
-        self.base.clear()
-
 
 class Gear(object):
     """ 
@@ -77,22 +57,6 @@ class Gear(object):
         """ Class constructor """
         self.pool = []
 
-        server = socket(AF_INET, SOCK_STREAM)
-        server.bind(('127.0.0.1', 0))
-        server.listen(1)
-
-        client = Dead()
-        client.connect_ex(server.getsockname())
-
-        def consume(spin):
-            spin.recv(self.MAX_SIZE)
-
-        xmap(client, READ, consume)
-
-        self.register(client)
-        self.bell, addr = server.accept()
-        self.lock       = Lock()
-        
     def mainloop(self):
         """ 
         This is the reactor mainloop.
@@ -119,7 +83,6 @@ class Gear(object):
 
                 break
 
-
     def process_pool(self):
         """ 
         This method processes the pool of objects
@@ -140,10 +103,6 @@ class Gear(object):
 
         pass
 
-    def wake(self):
-        self.lock.acquire()
-        self.bell.send(' ')
-        self.lock.release()
 
 class Select(Gear):
     """
@@ -182,13 +141,10 @@ class Select(Gear):
         # by objects being processed in pool.
         self.default_timeout = None
 
-        # This list holds all the socket instances
-        # that are created.
-        self.atom = []
-
         # These are the sockets in R/W status.
         self.rsock = []
         self.wsock = []
+        self.xsock = []
         Gear.__init__(self)
 
 
@@ -199,17 +155,10 @@ class Select(Gear):
 
         If one intents to use this reactor with some other
         reactor it might be called from other mainloop.
-
         """
+
         self.process_pool()
-
-        # I dont need to define it here.
-        r, w, x  = [], [], []
-        r        = filter(rmap, self.atom)
-        w        = filter(wmap, self.atom)
-        resource = select(r , w , x, self.timeout)
-
-        self.rsock, self.wsock, self.xsock = resource
+        rsock, wsock, xsock = select(self.rsock , self.wsock , self.xsock, self.timeout)
 
         # This has to be in this order.
         # If a socket is in the list of WRITE event
@@ -217,51 +166,38 @@ class Select(Gear):
         # If process_rsock is called first and the socket has connected
         # and the client has sent bytes you will not have your handle_connect
         # called first.
-        self.process_wsock()
-        self.process_rsock()
 
-    def process_rsock(self):
-        """
-        It processes the list of sockets that are
-        ready for reading.
-        """
-
-        for ind in self.rsock:
-            try:
-                ind.drive(READ)
-            except Root:
-                pass
-
-    def process_wsock(self):
-        """
-        It processes the list of sockets that are
-        ready for writing.
-        """
-
-        for ind in self.wsock:
+        for ind in wsock:
             try:
                 ind.drive(WRITE)
             except Root:
                 pass
 
+        for ind in rsock:
+            try:
+                ind.drive(READ)
+            except Root:
+                pass
+
     def register(self, spin):
-        """
-        It is used to add a spin/socket to be processed.
+        if spin.base.get(READ) and not spin in self.rsock:
+            self.rsock.append(spin)
 
-        It shouldn't be used outside untwisted library.
-        """
-
-        self.atom.append(spin)
+        if spin.base.get(WRITE) and not spin in self.wsock:
+            self.wsock.append(spin)
 
     def unregister(self, spin):
-        """
-        It removes a spin/socket from the list of sockets
-        that are processed. 
-        
-        It shouldn't be called outside untwisted library.
-        """
+        if not spin.base.get(READ):
+            try:
+                self.wsock.remove(spin)
+            except ValueError:
+                pass
 
-        self.atom.remove(spin)
+        if not spin.base.get(WRITE):
+            try:
+                self.wsock.remove(spin)
+            except ValueError:
+                pass
 
 
 class Epoll(Gear):
@@ -337,7 +273,7 @@ class Epoll(Gear):
         # Once we have that list we can process.
         self.process_atom()
 
-    def scale(self):
+    def scale(self, spin):
         """
         It scales sockets for writting/reading events.
 
@@ -443,15 +379,9 @@ def default():
     except NameError:
         install_reactor(Select)
 
-default()
+# default()
+install_reactor(Select)
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
-
-
-
-
-
-
-
 
 

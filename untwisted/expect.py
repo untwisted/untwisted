@@ -6,6 +6,7 @@ from untwisted.mode import Mode
 from untwisted.core import get_event
 from untwisted import core
 from untwisted.utils.stdio import LOAD, CLOSE
+from untwisted.waker import waker
 
 class Expect(Thread, Mode):
     SIZE = 1024 * 124
@@ -41,7 +42,7 @@ class Expect(Thread, Mode):
         """
 
         while self.feed():
-            core.gear.wake()
+            waker.wake_up()
         self.child.wait()
 
     def feed(self):
@@ -71,5 +72,6 @@ class Expect(Thread, Mode):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
