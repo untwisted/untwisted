@@ -15,7 +15,7 @@ class Mode(object):
     # I MUST IMPLEMENT A 
     # xmap(spin, ALL, handle)
     # that works with iters.
-
+    base = dict()
     def __init__(self):
         self.base  = dict()
         self.iters = dict()
@@ -70,6 +70,9 @@ class Mode(object):
     def unbind(self, event, handle, *args):
         self.base[event].remove((handle, args))
 
+    @classmethod
+    def bind_static(event, handle, *args):
+        pass
 
 
 

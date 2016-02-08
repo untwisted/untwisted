@@ -23,6 +23,18 @@ class Spin(socket, Mode):
         Mode.unbind(self, event, handle, *args)
         core.gear.scale(self)
 
+    def handle_read(self):
+        pass
+
+    def handle_write(self):
+        pass
+
+    def handle_expt(self):
+        pass
+
+    def handle_error(self):
+        pass
+
     def destroy(self):
         self.base.clear()
         core.gear.unregister(self)
@@ -54,6 +66,18 @@ class Device(Mode):
         Mode.unbind(self, event, handle, *args)
         core.gear.scale(self)
 
+    def handle_read(self):
+        pass
+
+    def handle_write(self):
+        pass
+
+    def handle_expt(self):
+        pass
+
+    def handle_error(self):
+        pass
+
     def destroy(self):
         self.base.clear()
         gear.unregister(self)
@@ -67,12 +91,35 @@ class Device(Mode):
     def __getattr__(self, name):
         return getattr(self.device, name)
 
+class dispatcher(object):
+    def handle_read(self):
+        pass
+
+    def handle_write(self):
+        pass
+
+    def handle_expt(self):
+        pass
+
+    def handle_error(self):
+        pass
+
+
+class dispatcher_with_send(object):
+    def handle_read(self):
+        pass
+
+    def handle_write(self):
+        pass
+
+    def handle_expt(self):
+        pass
+
+    def handle_error(self):
+        pass
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
-
-
-
 
 
 
