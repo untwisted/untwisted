@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.network import Spin, xmap, READ
+from untwisted.network import Spin, xmap
+from untwisted.event import READ
 from threading import Lock
 
 class Waker(object):
@@ -26,4 +27,5 @@ class Waker(object):
         self.lock.release()
     
 waker = Waker()
+
 

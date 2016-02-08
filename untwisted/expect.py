@@ -3,9 +3,8 @@ from threading import Thread
 from Queue import Queue, Empty
 from os import environ 
 from untwisted.mode import Mode
-from untwisted.core import get_event
 from untwisted import core
-from untwisted.utils.stdio import LOAD, CLOSE
+from untwisted.event import LOAD, CLOSE
 from untwisted.waker import waker
 
 class Expect(Thread, Mode):
@@ -72,6 +71,7 @@ class Expect(Thread, Mode):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
 

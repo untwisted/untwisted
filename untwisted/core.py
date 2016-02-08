@@ -4,39 +4,7 @@
 from select import *
 from socket import *
 from untwisted.mode import *
-
-# Whenever we use get_event it increases
-# So we don't get events messed.
-event_count = 0
-
-def get_event():
-    """ 
-    It returns a new event signal.
-
-    from untwisted.network import *
-    X = get_event()
-    Y = get_event()
-    print X
-    print Y
-
-
-    Whenever we call get_event it increases the integer
-    corresponding to the signal. That avoids events getting
-    messed through modules.
-    """
-
-    global event_count
-
-    event_count = event_count + 1
-    return event_count
-
-# When a socket is ready for reading 
-# the chosen reactor will spawn READ.
-READ  = get_event()
-
-# When a socket is ready for writting
-# it will spawn WRITE.
-WRITE = get_event()
+from untwisted.event import READ, WRITE, ERROR, EXPT
 
 class Gear(object):
     """ 
@@ -316,6 +284,7 @@ def default():
 install_reactor(Epoll)
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

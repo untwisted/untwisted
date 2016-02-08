@@ -2,11 +2,11 @@ from time import time
 from UserDict import UserDict
 from untwisted.network import spawn, imap, smap
 from untwisted.mode import *
-import core
+from untwisted import core
+from untwisted.event import COMPLETE
 
 slc      = lambda x: x[0]
 minimal  = lambda x, y: x if x < y and x != core.gear.default_timeout else y
-COMPLETE = core.get_event()
 
 class Task(Mode):
     """
@@ -120,5 +120,6 @@ class Schedule(object):
 sched = Schedule()
 
 __all__ = ['sched', 'Schedule']
+
 
 

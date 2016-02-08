@@ -1,4 +1,5 @@
 from untwisted.network import Spin, spawn, xmap, zmap, get_event, READ, WRITE
+from untwisted.event import *
 from untwisted.usual import debug
 from collections import deque
 import socket
@@ -8,19 +9,6 @@ ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN
 
 CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF)
 ACCEPT_ERR_CODE  = (EWOULDBLOCK, ECONNABORTED, EAGAIN)
-CLOSE            = get_event()
-ACCEPT           = get_event()
-CONNECT          = get_event()
-CONNECT_ERR      = get_event()
-LOAD             = get_event()
-DUMPED           = get_event()
-RECV_ERR         = get_event()
-SEND_ERR         = get_event()
-ACCEPT_ERR       = get_event()
-READ_ERR         = get_event()
-DUMPED_FILE      = get_event()
-CLOSE_ERR        = get_event()
-
 
 class Stdin:
     """ 
@@ -534,6 +522,7 @@ __all__ = ['Stdin', 'Stdout', 'Client', 'Server', 'lose', 'put', 'Read', 'Write'
             'DUMPED',
             'CLOSE_ERR'
           ]
+
 
 
 
