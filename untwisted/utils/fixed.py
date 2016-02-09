@@ -1,7 +1,6 @@
-from untwisted.network import xmap, spawn, get_event
+from untwisted.network import xmap, spawn
 from untwisted.utils.stdio import LOAD
-
-BOX = get_event()
+from untwisted.event import BOX
 
 class Fixed(object):
     """
@@ -24,4 +23,5 @@ class Fixed(object):
             chunk    = buffer(self.box, 0, 4)
             self.box = buffer(self.box, 4)
             spawn(spin, BOX, chunk)
+
 

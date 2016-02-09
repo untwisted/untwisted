@@ -41,5 +41,9 @@ DUMPED_FILE      = get_event()
 CLOSE_ERR        = get_event()
 COMPLETE         = get_event()
 DONE             = get_event()
+FOUND            = get_event()
+BOX              = get_event()
+TIMEOUT          = get_event()
+
 
 

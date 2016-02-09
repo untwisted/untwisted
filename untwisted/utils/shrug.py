@@ -1,8 +1,8 @@
 from untwisted.network import *
 from untwisted.utils.stdio import LOAD
+from untwisted.event import FOUND
 import sys
 
-FOUND = get_event()
 
 class Shrug:
     def __init__(self, spin, delim='\r\n'):
@@ -28,6 +28,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 

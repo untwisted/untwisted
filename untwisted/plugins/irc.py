@@ -7,14 +7,13 @@ from untwisted.network import *
 from untwisted.utils.stdio import *
 from untwisted.utils.fixed import *
 from untwisted.task import sched
+from untwisted.event import TIMEOUT, DONE
 from struct import pack, unpack
 from textwrap import wrap
 from socket import *
 import re
 import sys
 
-TIMEOUT        = get_event()
-DONE           = get_event()
 RFC_STR        = "^(:(?P<prefix>[^ ]+) +)?(?P<command>[^ ]+)( *(?P<arguments> .+))?"
 RFC_REG        = re.compile(RFC_STR)
 PREFIX_STR     = "(?P<nick>.+)!(?P<user>.+)@(?P<host>.+)"
@@ -304,6 +303,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 

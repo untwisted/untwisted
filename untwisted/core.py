@@ -1,6 +1,3 @@
-"""
-"""
-
 from select import *
 from socket import *
 from untwisted.mode import *
@@ -136,7 +133,7 @@ class Select(Gear):
         """
         """
 
-        if spin.is_readable():
+        if spin.base.get(READ):
             self.add_rsock(spin)
         else:
             self.del_rsock(spin)
@@ -152,7 +149,7 @@ class Select(Gear):
         """
         """
 
-        if spin.is_writable():
+        if spin.base.get(WRITE):
             self.add_wsock(spin)
         else:
             self.del_wsock(spin)
@@ -225,7 +222,6 @@ class Epoll(Gear):
         """
         """
 
-        spin.fd = spin.fileno()
         self.base[spin.fd] = spin
         self.pollster.register(spin.fd)
 
@@ -240,9 +236,9 @@ class Epoll(Gear):
         """
         """
 
-        r    = EPOLLIN if spin.is_readable() else 0 
-        w    = EPOLLOUT if spin.is_writable() else 0
-        mask = r | w
+        is_readable = EPOLLIN  if spin.base.get(READ) else 0 
+        is_writable = EPOLLOUT if spin.base.get(WRITE) else 0
+        mask        = is_readable | is_writable
         self.pollster.modify(spin.fd, mask)
 
     def dispatch(self, fd, event):
@@ -283,7 +279,7 @@ def default():
 # install_reactor(Select)
 install_reactor(Epoll)
 
-__all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+# __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
 
 
 

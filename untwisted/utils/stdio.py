@@ -1,4 +1,4 @@
-from untwisted.network import Spin, spawn, xmap, zmap, get_event, READ, WRITE
+from untwisted.network import Spin, spawn, xmap, zmap
 from untwisted.event import *
 from untwisted.usual import debug
 from collections import deque
@@ -522,6 +522,7 @@ __all__ = ['Stdin', 'Stdout', 'Client', 'Server', 'lose', 'put', 'Read', 'Write'
             'DUMPED',
             'CLOSE_ERR'
           ]
+
 
 
 
