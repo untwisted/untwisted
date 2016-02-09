@@ -3,10 +3,16 @@
 """
 
 from socket import socket
-from untwisted.event import READ, WRITE, get_event
+from untwisted.event import READ, WRITE, EXPT, ERROR
 from untwisted.mode import *
 from untwisted.usual import *
 from untwisted import core
+
+class Channel(object):
+    pass
+
+class Socket(object):
+    pass
 
 class Spin(socket, Mode):
     def __init__(self, sock=None):
@@ -24,16 +30,16 @@ class Spin(socket, Mode):
         core.gear.scale(self)
 
     def handle_read(self):
-        pass
+        self.drive(READ)
 
     def handle_write(self):
-        pass
+        self.drive(WRITE)
 
     def handle_expt(self):
-        pass
+        self.drive(EXPT)
 
     def handle_error(self):
-        pass
+        self.drive(ERROR)
 
     def destroy(self):
         self.base.clear()
@@ -66,27 +72,9 @@ class Device(Mode):
         Mode.unbind(self, event, handle, *args)
         core.gear.scale(self)
 
-    def handle_read(self):
-        pass
-
-    def handle_write(self):
-        pass
-
-    def handle_expt(self):
-        pass
-
-    def handle_error(self):
-        pass
-
     def destroy(self):
         self.base.clear()
         gear.unregister(self)
-
-    def is_writable(self):
-        return self.base.get(WRITE)
-
-    def is_readable(self):
-        return self.base.get(READ)
 
     def __getattr__(self, name):
         return getattr(self.device, name)
@@ -120,6 +108,7 @@ class dispatcher_with_send(object):
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
+
 
 
 

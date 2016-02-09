@@ -217,12 +217,10 @@ class Epoll(Gear):
         events = self.pollster.poll(self.timeout) 
         for fd, event in events:
             try:
-                spin = self.base[fd]
+                self.dispatch(fd, event)
             except KeyError:
                 pass
-            else:
-                self.dispatch(spin, event)
-        
+
     def register(self, spin):
         """
         """
@@ -247,9 +245,11 @@ class Epoll(Gear):
         mask = r | w
         self.pollster.modify(spin.fd, mask)
 
-    def dispatch(self, spin, event):
+    def dispatch(self, fd, event):
         """
         """
+
+        spin = self.base[fd]
 
         if event & EPOLLOUT:
             try:
@@ -284,6 +284,7 @@ def default():
 install_reactor(Epoll)
 
 __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 
