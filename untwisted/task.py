@@ -5,9 +5,6 @@ from untwisted.mode import *
 from untwisted import core
 from untwisted.event import COMPLETE
 
-slc      = lambda x: x[0]
-minimal  = lambda x, y: x if x < y and x != core.gear.default_timeout else y
-
 class Task(Mode):
     """
     This class abstracts the concept of *finished task*. 
@@ -62,64 +59,5 @@ class Task(Mode):
 
         if not self.count: 
             spawn(self, COMPLETE, self.data)
-
-
-
-
-class Schedule(object):
-    """ Used to have callbacks called in a given period of time """
-    def __init__(self):
-        core.gear.pool.append(self)
-        self.base = dict()
-
-    def after(self, inc, cbck, opt, *args):
-        """ 
-        Executes a callback after inc.
-        If opt is set as True then it executes
-        just once.
-        """
-
-        self.base[inc, cbck] = [time(), args, opt]
-        core.gear.timeout    = minimal(core.gear.timeout, inc)
-
-    def unmark(self, inc, cbck):
-        """ 
-        Unmark a callback 
-        """
-
-        del self.base[inc, cbck]
-
-        data              = map(slc, self.base.keys())
-        value             = reduce(minimal, data, core.gear.default_timeout)
-        core.gear.timeout = value
-
-
-    def update(self):
-        for inc, cbck in self.base.keys():
-            init, args, opt = self.base[inc, cbck]
-            
-        # It checks whether the difference
-        # between the initial time and the final
-        # time against the increment.
-        # Note: the correct order is.
-        # self.base[inc, cbck][0] = time()
-        # cbck(*args)
-        # because if sched.unmark is called from cbck
-        # it will throw an exception due to the key not existing
-        # anymore
-            if time() - init >= inc: 
-                self.base[inc, cbck][0] = time()
-                cbck(*args)
-        # If opt flag is set as True
-        # we don't want to execute it
-        # anymore.
-                if opt: self.unmark(inc, cbck)
-
-
-#################
-sched = Schedule()
-
-__all__ = ['sched', 'Schedule']
-
 
 
