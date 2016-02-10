@@ -262,7 +262,7 @@ class Epoll(Gear):
 class Poll(object):
     def __init__(self, timeout=None):
         self.timeout = timeout
-        self.atom    = []
+        self.base    = []
        
 def install_reactor(reactor, *args, **kwargs):
     global gear
@@ -280,6 +280,7 @@ def default():
 install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

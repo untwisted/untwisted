@@ -25,21 +25,14 @@ class Stdin(object):
     def update(self, device):
         try:
             data = self.queue.popleft()
-        # As device.write returns None
-        # we don't need to worry whether it has sent all the bytes
-        # unlike with sockets.
-            device.write(data)
         except IndexError:
-        # When the queue is empty then we don't need
-        # the WRITE event.
             zmap(device, WRITE, self.update)
             spawn(device, DUMPED)
         except IOError as excpt:
-        # If something went wrong it spawns CLOSE with err.
-        # The err parameter gives a clue of what happened.
             err = excpt.args[0]
             spawn(device, CLOSE, err)
-
+        else:
+            device.write(data)
 
 class Stdout(object):
     """
@@ -52,11 +45,11 @@ class Stdout(object):
     def update(self, device):
         try:
             data = device.read()
-            spawn(device, LOAD, data)
         except IOError as excpt:
-        # If something went wrong it spawns CLOSE with err.
             err = excpt.args[0]
             spawn(device, CLOSE, err)
+        else:
+            spawn(device, LOAD, data)
 
 def lose(device):
     """
@@ -64,6 +57,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 

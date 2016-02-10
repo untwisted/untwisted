@@ -3,6 +3,7 @@ from untwisted.event import *
 from untwisted.usual import debug
 from collections import deque
 import socket
+import sys
 
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, EINVAL, \
 ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN 
@@ -147,9 +148,6 @@ class Stdin:
         # Addes it to be sent.
         self.queue.append(buffer(data))
 
-
-
-
 class Stdout(object):
     """
 
@@ -250,9 +248,6 @@ class Stdout(object):
                 spawn(spin, RECV_ERR, err)
                 debug()
 
-
-
-
 class Client(object):
     """
         The order in which protocols are installed is sometimes important
@@ -352,78 +347,6 @@ class Server(object):
                 else:
                     break
 
-
-
-class Read(object):
-    """
-    This class is used to read data from a Device.     
-    """
-
-    # The amount of data that is gonna be read.
-    SIZE = 1024 * 124
-
-    def __init__(self, device):
-        xmap(device, READ, self.update)
-
-    def update(self, device):
-        try:
-        # It might happen of data having length lower than SIZE.
-            data = device.read(self.SIZE)
-        except IOError as excpt:
-        # When an exception occurs it deliveries the exception err.
-        # It as well spawns CLOSE.
-            err = excpt.args[0]
-            spawn(device, CLOSE, err)
-        # This is interesting so we can know what is going on.
-            debug()
-        else:
-            if not data: spawn(device, CLOSE, '')
-        # The event carrying the data.
-        # This is interesting sharing the LOAD event
-        # since we can use sub protocols for Stdout.
-            spawn(device, LOAD, data)
-
-
-class Write(object):
-    """
-    This class is used to write data through a Device.
-    """
-
-    def __init__(self, device):
-        xmap(device, WRITE, self.update)
-        device.dump = self.dump
-        self.device = device
-        self.queue  = deque()
-
-    def update(self, device):
-        try:
-            data = self.queue.popleft()
-            device.write(data)  
-        except IOError as excpt:
-            err = excpt.args[0]
-            spawn(device, CLOSE, err)
-            debug()
-
-        except IndexError: 
-        # If the queue is empty we no more need
-        # the WRITE event.
-            zmap(device, WRITE, self.update)
-        # It is important to know when all data was
-        # fully sent. It spawns DUMPED when the queue
-        # is empty.
-            spawn(device, DUMPED)
-
-    def dump(self, data):
-        # If the queue is empty we map it to WRITE
-        # otherwise it is already mapped.
-        if not self.queue:
-           xmap(self.device, WRITE, self.update)
-        # Addes it to be sent.
-        self.queue.append(data)
-
-
-
-
 class DumpFile(object):
     """
     Event: SEND_ERR 
@@ -502,38 +425,12 @@ def lose(spin):
         spawn(spin, CLOSE_ERR, err)
         debug()
 
-import sys
-# Useful to print out chunks with events
-# accepting this function header.
 put = lambda spin, data: sys.stdout.write(data)
 
-__all__ = ['Stdin', 'Stdout', 'Client', 'Server', 'lose', 'put', 'Read', 'Write',
-            'CLOSE',
-            'CONNECT',
-            'LOAD', 
-            'CLOSE',
-            'RECV_ERR',
-            'SEND_ERR',
-            'ACCEPT_ERR',
-            'CONNECT_ERR',
-            'READ_ERR',
-            'DUMPED_FILE',
-            'ACCEPT',
-            'DUMPED',
-            'CLOSE_ERR'
-          ]
+def create_server():
+    pass
 
-
-
-
-
-
-
-
-
-
-
-
-
+def create_client():
+    pass
 
 
