@@ -63,7 +63,7 @@ class Accumulator(object):
     """
     def __init__(self, spin):
         xmap(spin, LOAD, self.update)
-        spin.acc  = self
+        spin.accumulator  = self
         self.data = ''
 
     def update(self, spin, data):
@@ -73,6 +73,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 
