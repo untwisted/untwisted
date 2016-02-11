@@ -47,21 +47,24 @@ class Mode(object):
             except Exception:
                 debug()
 
-    def process_iters(self, chain, args):
+    def process_iters(self, event, chain, args):
         for seq in chain[:]:
             try:
-                del self.iters_base[event]
-                event = next(seq)
-                self.iters_base[event] = seq
-                seq.send(args)
+                mode, e = next(seq)
             except Stop:
                 break
             except Kill, Root:
                 raise
             except StopIteration:
-                pass
+                self.iters_base[event].remove(seq)
             except Exception:
                 debug()
+            else:
+                if e != event or not mode is self:
+                    self.iters_base[event].remove(seq)
+                if e != event:
+                    mode.iters_base[event].add(seq)
+                seq.send(args)
 
     def bind(self, event, handle, *args):
         item = self.base.setdefault(event, list())
@@ -74,6 +77,7 @@ class Mode(object):
     def bind_static(event, handle, *args):
         pass
 
-
-
+    @classmethod
+    def bind_iter(seq):
+        pass
 
