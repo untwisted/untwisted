@@ -1,9 +1,8 @@
 from traceback import print_exc as debug
-from mode import *
+from untwisted.dispatcher import Kill
 
-
-xmap  = lambda obj, *args: obj.bind(*args)
-zmap  = lambda obj, *args: obj.unbind(*args)
+xmap  = lambda obj, *args: obj.add_map(*args)
+zmap  = lambda obj, *args: obj.del_map(*args)
 spawn = lambda obj, *args: obj.drive(*args)
 
 def cmap(mode, event, handle, *args):
@@ -50,6 +49,7 @@ def die():
     It is used to stop the reactor.
     """
     raise Kill
+
 
 
 

@@ -1,7 +1,13 @@
 from select import *
 from socket import *
-from untwisted.mode import *
 from untwisted.event import READ, WRITE, ERROR, EXPT
+
+class Root(Exception):
+    pass
+
+class Kill(Exception):
+    pass
+
 
 class Gear(object):
     """ 
@@ -280,6 +286,8 @@ def default():
 install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
+
 
 
 

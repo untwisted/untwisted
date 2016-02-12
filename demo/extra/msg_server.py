@@ -3,8 +3,8 @@
 # the clients send to the server.
 
 from untwisted.network import xmap, Spin, core
-from untwisted.utils.stdio import Server, Stdout, lose, ACCEPT, LOAD, CLOSE
-from socket import *
+from untwisted.iostd import Server, Stdout, lose, ACCEPT, LOAD, CLOSE
+from socket import socket, AF_INET, SOCK_STREAM
 import sys
 
 def set_up_con(server, con):
@@ -21,3 +21,6 @@ Server(server)
 xmap(server, ACCEPT, set_up_con)
 
 core.gear.mainloop()
+
+
+
