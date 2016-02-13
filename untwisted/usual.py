@@ -51,5 +51,12 @@ def die():
     raise Kill
 
 
+def hook(mode_x, mode_y, *args):
+    """
+    """
+
+    for ind in args:
+        smap(mode_y, ind, 
+             lambda event_args, event=ind: mode_x.drive(event, *event_args))
 
 

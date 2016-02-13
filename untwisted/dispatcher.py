@@ -41,10 +41,8 @@ class Dispatcher(object):
             except Erase:
                 base[event].remove(handle, handle)
             except Exception as e:
-                self.drive(e.__class__, e)
                 debug()
-            else:
-                return seq
+                self.drive(e.__class__, e)
     
     def add_map(self, event, handle, *args):
         item = self.base.setdefault(event, list())
@@ -91,6 +89,7 @@ def coroutine(handle):
             mode = m
         mode.add_handle(exec_iter)
     return start_iter
+
 
 
 

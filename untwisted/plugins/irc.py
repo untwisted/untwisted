@@ -1,12 +1,11 @@
 """ 
 """
 
-from untwisted.utils.shrug import FOUND
+from untwisted.splits import FOUND
 from untwisted.tools import ip_to_long, long_to_ip
 from untwisted.network import *
-from untwisted.utils.stdio import *
-from untwisted.utils.fixed import *
-from untwisted.task import sched
+from untwisted.iostd import *
+from untwisted.timer import Timer
 from untwisted.event import TIMEOUT, DONE
 from struct import pack, unpack
 from textwrap import wrap
@@ -20,7 +19,6 @@ PREFIX_STR     = "(?P<nick>.+)!(?P<user>.+)@(?P<host>.+)"
 PREFIX_REG     = re.compile(PREFIX_STR)
 PRIVMSG_HEADER = 'PRIVMSG %s :%s\r\n'
 CMD_HEADER = '%s\r\n'
-
 
 class DccServer(Spin):
     """ 
@@ -50,7 +48,7 @@ class DccServer(Spin):
         self.is_on = False
         xmap(self, ACCEPT, self.start_transfer) 
 
-        sched.after(self.timeout, self.run_timeout, True)
+        Timer(self.timeout, self.run_timeout)
         
     def run_timeout(self):
         """
@@ -157,9 +155,8 @@ class Irc(object):
         """ 
         Install the protocol inside a Spin instance. 
         """
-
         xmap(spin, FOUND, self.main)
-    
+
     def main(self, spin, data):
         """ 
         The function which uses irc rfc regex to extract
@@ -303,6 +300,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 

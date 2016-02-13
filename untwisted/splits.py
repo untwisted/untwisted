@@ -1,6 +1,5 @@
 from untwisted.network import core, xmap, cmap, READ, WRITE, spawn
 from untwisted.event import LOAD, BOX, FOUND
-from untwisted.event import BOX
 import sys
 
 class Breaker(object):
@@ -56,7 +55,7 @@ class Shrug:
 
         for ind in chain:
             spawn(spin, FOUND, str(ind))
-
+            
 class Accumulator(object):
     """
     Just an accumulator on LOAD.
@@ -73,6 +72,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 

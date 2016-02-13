@@ -1,5 +1,5 @@
 from untwisted.network import core, xmap, cmap, READ, WRITE, spawn, zmap
-from untwisted.utils.stdio import DUMPED, CLOSE, LOAD
+from untwisted.event import DUMPED, CLOSE, LOAD
 from collections import deque
 
 class Stdin(object):
@@ -57,6 +57,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 
