@@ -2,12 +2,12 @@ from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
 from Queue import Queue, Empty
 from os import environ 
-from untwisted.mode import Mode
+from untwisted.dispatcher import Dispatcher
 from untwisted import core
 from untwisted.event import LOAD, CLOSE
 from untwisted.waker import waker
 
-class Expect(Thread, Mode):
+class Expect(Thread, Dispatcher):
     SIZE = 1024 * 124
 
     def __init__(self, *args):
@@ -24,7 +24,7 @@ class Expect(Thread, Mode):
         self.terminate = self.child.terminate
         core.gear.pool.append(self)
 
-        Mode.__init__(self)
+        Dispatcher.__init__(self)
         Thread.__init__(self)
 
         self.start()
@@ -71,6 +71,7 @@ class Expect(Thread, Mode):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
 

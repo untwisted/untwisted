@@ -1,13 +1,13 @@
 from threading import Thread, Lock
-from untwisted.mode import Mode
+from untwisted.dispatcher import Dispatcher
 from untwisted import core
 from untwisted.event import DONE
 from untwisted.waker import waker
 
-class Job(Thread, Mode):
+class Job(Thread, Dispatcher):
     def __init__(self, func, *args, **kwargs):
         Thread.__init__(self)
-        Mode.__init__(self)
+        Dispatcher.__init__(self)
 
         self.func    = func
         self.args    = args
@@ -30,6 +30,7 @@ class Job(Thread, Mode):
         if not self.is_done: return
         self.drive(DONE, self.data)
         core.gear.pool.remove(self)
+
 
 
 

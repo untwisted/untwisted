@@ -1,6 +1,5 @@
 from untwisted.job import Job, DONE
-from untwisted import core
-from untwisted.usual import xmap
+from untwisted.network import core, xmap
 import time
 
 def sum(x, y):
@@ -15,6 +14,7 @@ for ind in xrange(100):
     xmap(job, DONE, show)
 
 core.gear.mainloop()
+
 
 
 
