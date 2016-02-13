@@ -31,7 +31,7 @@ class Dispatcher(object):
     def process_base(self, base, event, args):
         for handle, data in base[event]:
             try:
-                seq = handle(self, *args)
+                seq = handle(self, *(data + args))
             except Stop:
                 break
             except StopIteration:
