@@ -2,7 +2,7 @@
 """
 
 from untwisted.splits import FOUND
-from untwisted.tools import ip_to_long, long_to_ip
+from untwisted.iputils import ip_to_long, long_to_ip
 from untwisted.network import *
 from untwisted.iostd import *
 from untwisted.timer import Timer
