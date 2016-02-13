@@ -40,7 +40,8 @@ class Dispatcher(object):
                 raise
             except Erase:
                 base[event].remove(handle, handle)
-            except Exception:
+            except Exception as e:
+                self.drive(e.__class__, e)
                 debug()
             else:
                 return seq
@@ -90,5 +91,6 @@ def coroutine(handle):
             mode = m
         mode.add_handle(exec_iter)
     return start_iter
+
 
 
