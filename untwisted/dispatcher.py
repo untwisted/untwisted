@@ -11,8 +11,8 @@ class Erase(Exception):
 class Dispatcher(object):
     base = dict()
     def __init__(self):
-        self.base  = dict()
-        self.pool = dict()
+        self.base = dict()
+        self.pool = list()
 
     def drive(self, event, *args):
         try:
@@ -61,8 +61,9 @@ class Dispatcher(object):
         pass
 
     def add_handle(self, handle):
-        pass
+        self.pool.append(handle)
 
     def del_handle(self, handle):
-        pass
+        self.pool.remove(handle)
+
 
