@@ -29,7 +29,7 @@ class Dispatcher(object):
             handle(self, event, args)
 
     def process_base(self, base, event, args):
-        for handle, data in base[event]:
+        for handle, data in base[event][:]:
             try:
                 seq = handle(self, *(args + data))
             except Stop:
@@ -65,6 +65,7 @@ class Dispatcher(object):
 
     def del_handle(self, handle):
         self.pool.remove(handle)
+
 
 
 

@@ -1,34 +1,33 @@
+from untwisted.dispatcher import Erase
+
 class Hold(object):
     def __init__(self, seq):
-        self.seq              = seq
-        self.mode, self.event = next(seq)
-        self.mode.add_handle(self)
+        self.seq                    = seq
+        self.dispatcher, self.event = next(seq)
+        self.dispatcher.add_map(self.event, self)
 
-    def __call__(self, mode, event, args):
-        if not self.event == event:
-            return
-
+    def __call__(self, dispatcher, *args):
         self.seq.send(args)
+
         try:
-            mode, event = next(self.seq)
+            dispacher, event = next(self.seq)
         except StopIteration:
-            self.mode.del_handle(self)
+            self.dispatcher.del_map(self, self.event)
         else:
-            self.swap_dispatcher(event, self.mode, mode)
+            if self.dispatcher != dispatcher or event != self.event:
+                self.swap_dispatcher(event, dispatcher)
 
-    def swap_dispatcher(self, event, mode_m, mode_n):
-        self.event = event
-        if mode_m == mode_n: return
-
-        self.mode  = mode_n
-        mode_m.del_handle(exec_iter)
-        mode_n.add_handle(exec_iter)
+    def swap_dispatcher(self, event, dispatcher):
+        self.dispatcher.del_map(self.event, self.dispatcher)
+        dispatcher.add_map(event, self)
+        self.dispatcher  = dispatcher
+        self.event       = event
 
 def coroutine(handle):
-    def start_iter(*args, **kwargs):
-        seq  = handle(*args, **kwargs)
-        hold = Hold(seq)
-    return start_iter
+    def start(*args, **kwargs):
+        hold = Hold(handle(*args, **kwargs))
+    return start
+
 
 
 
