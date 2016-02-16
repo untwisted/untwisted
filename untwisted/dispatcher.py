@@ -49,10 +49,7 @@ class Dispatcher(object):
         item.append((handle, args))
 
     def del_map(self, event, handle, *args):
-        try:
-            self.base[event].remove((handle, args))
-        except KeyError:
-            pass
+        self.base[event].remove((handle, args))
 
     @classmethod
     def add_static_map(event, handle, *args):
@@ -68,6 +65,7 @@ class Dispatcher(object):
 
     def del_handle(self, handle):
         self.pool.remove(handle)
+
 
 
 

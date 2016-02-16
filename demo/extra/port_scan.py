@@ -15,8 +15,6 @@ def create_connection(addr, port):
     spin = Spin(sock)
     Client(spin)
     xmap(spin, CONNECT, is_open, port)
-    xmap(spin, CONNECT_ERR, lambda con, err: lose(con))
-    xmap(spin, CONNECT, lose)
     spin.connect_ex((addr, port))
     return spin
 
@@ -38,6 +36,7 @@ if __name__ == '__main__':
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
+
 
 
 

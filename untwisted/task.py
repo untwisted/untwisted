@@ -24,10 +24,14 @@ class Task(Dispatcher):
         self.count = self.count - 1
 
         for ind in events:
-            dispatcher.del_map(ind, self.checker)
+            try:
+                dispatcher.del_map(ind, self.checker)
+            except (ValueError, KeyError):
+                pass
 
         if self.count:
             self.drive(COMPLETE)
+
 
 
 
