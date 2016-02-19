@@ -1,11 +1,11 @@
 """ 
-This file implements an abstraction for the http protocol over the server side perspective. 
 """
 
 from tempfile import TemporaryFile as tmpfile
 from untwisted.network import *
-from untwisted.utils.stdio import Stdin, Stdout, Server, DumpFile, DUMPED, DUMPED_FILE, lose, LOAD, ACCEPT, CLOSE
-from untwisted.task import sched
+from untwisted.iostd import Stdin, Stdout, Server, DumpFile, DUMPED, DUMPED_FILE, lose, LOAD, ACCEPT, CLOSE
+from untwisted.timer import Timer
+from untwisted.event import get_event
 from urlparse import parse_qs
 from cgi import FieldStorage
 
@@ -14,6 +14,7 @@ from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename
 from traceback import print_exc as debug
+import sys
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
@@ -78,10 +79,10 @@ class RapidServ(object):
     def handle_accept(self, local, client):
         Stdin(client)
         Stdout(client)
-
         HttpServer(client)
         Get(client)
         Post(client)
+        InvalidRequest(client)
 
         client.ACTIVE = False
 
@@ -131,8 +132,7 @@ class HttpServer:
         self.data     = ''
         self.spin     = spin
         self.fd       = None
-
-        sched.after(self.TIMEOUT, self.spawn_idle_timeout, True)
+        self.timer    = Timer(self.TIMEOUT, self.spawn_idle_timeout)
         xmap(spin, LOAD, self.get_header)
 
     def spawn_idle_timeout(self):
@@ -204,8 +204,7 @@ class HttpServer:
         xmap(self.spin, LOAD, self.get_data)
 
     def spawn_request(self):
-        sched.unmark(self.TIMEOUT, self.spawn_idle_timeout)
-
+        self.timer.cancel()
         spawn(self.spin, self.request[0], self.header, self.fd,
                                     self.request[1], self.request[2])
 
@@ -470,5 +469,6 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 

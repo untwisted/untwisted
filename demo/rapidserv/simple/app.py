@@ -30,11 +30,14 @@ class Simple(object):
     
 
 if __name__ == '__main__':
-    app = RapidServ('0.0.0.0', 5000, 60)
+    app = RapidServ('0.0.0.0', 1234, 60)
 
     app.add_handle(Simple)
+    app.add_handle(Simple)
+
     core.gear.mainloop()
     
+
 
 
 

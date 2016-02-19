@@ -9,14 +9,15 @@ class Timer(object):
         self.kwargs       = kwargs
         self.inc          = inc
         self.time         = time.time()
+        self.callback     = callback
         core.gear.pool.append(self)
-        bisect.bisect(Timer.base, inc)
+        bisect.insort(Timer.base, inc)
         self.set_reactor_timeout()
 
     def update(self):
         if not time.time() - self.time > self.inc:
             return
-
+        print 'calling callback'
         self.callback(*self.args, **self.kwargs)
         self.cancel()
 
@@ -35,4 +36,5 @@ class Sched(Timer):
             return
 
         self.callback(*self.args, **self.kwargs)
+
 

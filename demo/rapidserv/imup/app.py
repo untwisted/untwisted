@@ -43,12 +43,14 @@ class ImageUpload(object):
 
 if __name__ == '__main__':
     import sys
-    app = RapidServ('0.0.0.0', 5000, 50)
+    app = RapidServ('0.0.0.0', 1234, 50)
     app.add_handle(ImageUpload)
     app.add_handle(InvalidRequest)
 
     core.gear.mainloop()
     
+
+
 
 
 
