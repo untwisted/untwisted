@@ -76,11 +76,6 @@ class RapidServ(object):
         self.setup.append(lambda spin: handle(spin, *args, **kwargs))
     
     def handle_accept(self, local, client):
-        """
-        This method is not supposed to be called by functions outside
-        this class.
-        """
-
         Stdin(client)
         Stdout(client)
 
@@ -88,9 +83,6 @@ class RapidServ(object):
         Get(client)
         Post(client)
 
-        # It serves to determine whether the client made
-        # a request whose resource exists.
-        # In case it didnt the connection is dropped.
         client.ACTIVE = False
 
         for ind in self.setup:
@@ -99,15 +91,10 @@ class RapidServ(object):
         xmap(client, CLOSE, lambda con, err: lose(con))
 
 class Get(object):
-    """ 
-    This class shouldn't be used outside this module.
-    """
-
     def __init__(self, spin):
         xmap(spin, 'GET', self.tokenizer)
 
     def tokenizer(self, spin, header, fd, resource, version):
-        """ Used to extract encoded data with get. """
         data = ''
 
         try:
@@ -119,10 +106,6 @@ class Get(object):
                                      parse_qs(data), version)
 
 class Post(object):
-    """ 
-    This class shouldn't be used outside this module.
-    """
-
     def __init__(self, spin):
         xmap(spin, 'POST', self.tokenizer)
 
@@ -139,10 +122,6 @@ class Post(object):
                                          parse_qs(data), version)
 
 class HttpServer:
-    """ 
-    This class shouldn't be used outside this module.
-    """
-
     MAX_SIZE = 124 * 1024
     TIMEOUT  = 16
 
@@ -487,15 +466,9 @@ def make(searchpath, folder):
     """
     Used to build a path search for Locate plugin.
     """
+
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
-
-
-
-
-
-
-
 
 

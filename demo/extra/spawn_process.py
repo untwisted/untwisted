@@ -1,6 +1,5 @@
 from untwisted.expect import Expect, LOAD, CLOSE
-from untwisted import core
-from untwisted.usual import xmap, die
+from untwisted.network import core, xmap, die
 
 def handle(expect, data):
     print data
@@ -10,6 +9,7 @@ xmap(expect, LOAD, handle)
 xmap(expect, CLOSE, lambda expect: die())
 expect.send('print "hello world"\nquit()\n')
 core.gear.mainloop()
+
 
 
 
