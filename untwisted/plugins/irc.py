@@ -10,6 +10,7 @@ from untwisted.event import TIMEOUT, DONE
 from struct import pack, unpack
 from textwrap import wrap
 from socket import *
+
 import re
 import sys
 
@@ -293,13 +294,12 @@ class Misc(object):
         spawn(spin, 'MODE->%s' % chan, nick, user, host, mode, target)
 
 def send_msg(server, target, msg):
-    list_chunk = wrap(msg, width=512)
-
-    for ind in list_chunk:
+    for ind in wrap(msg, width=512):
         server.dump(PRIVMSG_HEADER % (target, ind))
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 

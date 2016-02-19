@@ -2,6 +2,9 @@ from untwisted import core
 import bisect
 import time
 
+class CancelCall(Exception):
+    pass
+
 class Timer(object):
     base = []
     def __init__(self, inc, callback, *args, **kwargs):
@@ -35,6 +38,9 @@ class Sched(Timer):
         if not time.time() - self.time > self.inc:
             return
 
-        self.callback(*self.args, **self.kwargs)
+        try:
+            self.callback(*self.args, **self.kwargs)
+        except CancelCall:
+            self.cancel()
 
 
