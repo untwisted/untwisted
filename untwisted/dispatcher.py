@@ -39,7 +39,7 @@ class Dispatcher(object):
             except Kill, Root:
                 raise
             except Erase:
-                base[event].remove(handle, handle)
+                base[event].remove((handle, data))
             except Exception as e:
                 debug()
                 self.drive(e.__class__, e)
@@ -65,6 +65,7 @@ class Dispatcher(object):
 
     def del_handle(self, handle):
         self.pool.remove(handle)
+
 
 
 

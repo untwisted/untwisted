@@ -8,6 +8,28 @@ from untwisted.dispatcher import *
 from untwisted.usual import *
 from untwisted import core
 
+class SSL(Dispatcher):
+    def __init__(self, sock):
+        Dispatcher.__init__(self)
+        self.sock = sock
+        self.fd = self.sock.fileno()
+        core.gear.register(self)
+
+    def add_map(self, event, handle, *args):
+        Dispatcher.add_map(self, event, handle, *args)
+        core.gear.scale(self)
+
+    def del_map(self, event, handle, *args):
+        Dispatcher.del_map(self, event, handle, *args)
+        core.gear.scale(self)
+
+    def __getattr__(self, name):
+        return getattr(self.sock, name)
+
+    def destroy(self):
+        self.base.clear()
+        core.gear.unregister(self)
+
 class Spin(socket, Dispatcher):
     def __init__(self, sock=None):
         socket.__init__(self, _sock = sock._sock if sock else None)
@@ -59,8 +81,6 @@ class Device(Dispatcher):
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
-
-
 
 
 
