@@ -267,12 +267,12 @@ class Misc(object):
     def on_332(self, spin, addr, nick, channel, msg):
         spawn(spin, '332->%s' % channel, addr, nick, msg)
     
-    def on_part(self, spin, nick, user, host, chan):
+    def on_part(self, spin, nick, user, host, chan, msg=''):
         spawn(spin, 'PART->%s' % chan, nick, 
-              user, host)
+              user, host, msg)
     
         if self.nick == nick: 
-            spawn(spin, '*PART->%s' % chan, chan)
+            spawn(spin, '*PART->%s' % chan, user, host, msg)
     
     def on_001(self, spin, address, nick, *args):
         self.nick = nick
@@ -299,6 +299,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
