@@ -29,32 +29,32 @@ class Stdin:
         """
         """
 
+        if not self.data: 
+            self.process_queue(spin)
+
         try:
-            self.send_data(spin)
+            size = spin.send(self.data)  
         except socket.error as excpt:
-            self.handle_socket_error(excpt.args[0])
-
-    def send_data(self, spin):
-        if not self.data:
-            try:
-                self.data = self.queue.popleft()
-            except IndexError: 
-                zmap(spin, WRITE, self.update)
-                spawn(spin, DUMPED)
-    
-        size      = spin.send(self.data)  
-        self.data = buffer(self.data, size)
-
-    def handle_socket_error(self, spin, err):
-        if err in CLOSE_ERR_CODE:
-            spawn(spin, CLOSE, err)
+            self.process_error(spin, excpt.args[0])
         else:
+            self.data = buffer(self.data, size)
+
+    def process_queue(self, spin):
+        try:
+            self.data = self.queue.popleft()
+        except IndexError: 
+            zmap(spin, WRITE, self.update)
+            spawn(spin, DUMPED)
+
+    def process_error(self, spin, err):
+        if err in CLOSE_ERR_CODE: 
+            spawn(spin, CLOSE, err)
+        else: 
             spawn(spin, SEND_ERR, err)
 
     def dump(self, data):
-        if not self.queue:
-           xmap(self.spin, WRITE, self.update)
-
+        if not self.queue: 
+            xmap(self.spin, WRITE, self.update)
         self.queue.append(buffer(data))
 
 class Stdout(object):
@@ -72,19 +72,23 @@ class Stdout(object):
         """
 
         try:
-            self.recv_data(spin)
+            self.process_data(spin)
         except socket.error as excpt:
-            self.handle_socket_error(spin, excpt.args[0])
+            self.process_error(spin, excpt.args[0])
 
-    def recv_data(self, spin):
+    def process_data(self, spin):
         data = spin.recv(self.SIZE)
 
-        if not data: spawn(spin, CLOSE, '') 
-        else: spawn(spin, LOAD, data)
+        if not data: 
+            spawn(spin, CLOSE, '') 
+        else: 
+            spawn(spin, LOAD, data)
 
-    def handle_socket_error(self, spin, err):
-        if err in CLOSE_ERR_CODE: spawn(spin, CLOSE, err)
-        else: spawn(spin, RECV_ERR, err)
+    def process_error(self, spin, err):
+        if err in CLOSE_ERR_CODE: 
+            spawn(spin, CLOSE, err)
+        else: 
+            spawn(spin, RECV_ERR, err)
 
 class Client(object):
     """
@@ -99,8 +103,8 @@ class Client(object):
         if err != 0:
             spawn(spin, CONNECT_ERR, err)
         else:
+            zmap(spin, WRITE, self.update)
             spawn(spin, CONNECT)
-            raise Erase
 
 class Server(object):
     """
@@ -121,9 +125,6 @@ class Server(object):
                     spawn(spin, ACCEPT_ERR, err)
                 else:
                     break
-
-    def handle_socket_error(self, spin, excpt):
-        pass
 
 class DumpFile(object):
     """
@@ -175,7 +176,6 @@ def create_server():
 
 def create_client():
     pass
-
 
 
 

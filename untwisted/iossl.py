@@ -1,44 +1,35 @@
 from untwisted.network import xmap, zmap, spawn, Erase
 from untwisted import iostd
-from untwisted.event import WRITE, READ, CONNECT, CONNECT_ERR, CLOSE, SEND_ERR, RECV_ERR, LOAD
+from untwisted.event import get_event
+from untwisted.event import WRITE, READ, CONNECT, CONNECT_ERR, CLOSE,      \
+SEND_ERR, RECV_ERR, LOAD, SSL_SEND_ERR, SSL_RECV_ERR, SSL_CERTIFICATE_ERR, \
+SSL_CONNECT_ERR, SSL_CONNECT
 import socket
 import ssl
 
 class Stdin(iostd.Stdin):
     def update(self, spin):
+        if not self.data: 
+            self.process_queue(spin)
+
         try:
-            self.send_data(spin)
-        except ssl.SSLWantWriteError:
-            pass
+            size = spin.send(self.data)  
         except ssl.SSLError as excpt:
-            spawn(spin, SEND_ERR, excpt.errno)
+            spawn(spin, SSL_SEND_ERR, excpt.errno)
         except socket.error as excpt:
-            self.handle_socket_error(excpt.args[0])
+            self.process_error(spin, excpt.args[0])
+        else:
+            self.data = buffer(self.data, size)
 
 class Stdout(iostd.Stdout):
     def update(self, spin):
         try:
-            self.recv_data(spin)
-        except ssl.SSLWantReadError:
-            pass
+            while True:
+                self.process_data(spin)
         except ssl.SSLError:
-            spawn(spin, RECV_ERR, excpt.errno)
-        except socket.error:
-            self.handle_socket_error(excpt.args[0])
-
-    def recv_data(self, spin):
-        while True:
-            iostd.Stdout.recv_data(self, spin)
-            
-class Client(iostd.Client):
-    def update(self, spin):
-        err = spin.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-
-        if err != 0:
-            spawn(spin, CONNECT_ERR, err)
-        else:
-            Handshake(spin)
-            raise Erase
+            spawn(spin, SSL_RECV_ERR, spin, excpt.errno)
+        except socket.error as excpt:
+            self.process_error(spin, excpt.args[0])
 
 class Handshake(object):
     """ 
@@ -54,16 +45,22 @@ class Handshake(object):
         try:
             spin.do_handshake()
         except ssl.CertificateError:
-            spawn(spin, CONNECT_ERR, excpt.errno)
+            spawn(spin, SSL_CERTIFICATE_ERR, excpt.errno)
         except ssl.SSLWantReadError:
             pass
         except ssl.SSLWantWriteError:
             pass
         except ssl.SSLError:
-            spawn(spin, CONNECT_ERR, excpt.errno)
+            spawn(spin, SSL_CONNECT_ERR, excpt.errno)
         else:
-            spawn(spin, CONNECT)
+            spawn(spin, SSL_CONNECT)
             raise Erase
+
+class Client(iostd.Client):
+    def update(self, spin):
+        iostd.Client.update(self, spin)
+        Handshake(spin)
+
 
 class Server(iostd.Server):
     def __init__(self, spin):
@@ -72,6 +69,5 @@ class Server(iostd.Server):
     def update(self, spin):
         pass
 
-    def handle_ssl_error(self, spin, excpt):
-        pass
+
 
