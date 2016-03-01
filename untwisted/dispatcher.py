@@ -66,9 +66,7 @@ class Dispatcher(object):
     def del_handle(self, handle):
         self.pool.remove(handle)
 
-
-
-
-
-
+xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
+zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
+spawn = lambda dispatcher, *args: dispatcher.drive(*args)
 

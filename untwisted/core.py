@@ -1,6 +1,6 @@
+from untwisted.event import READ, WRITE, ERROR, EXPT
 from select import *
 from socket import *
-from untwisted.event import READ, WRITE, ERROR, EXPT
 
 class Root(Exception):
     pass
@@ -8,6 +8,13 @@ class Root(Exception):
 class Kill(Exception):
     pass
 
+def die(msg):
+    """
+    It is used to stop the reactor.
+    """
+
+    print msg
+    raise Kill
 
 class Gear(object):
     """ 
@@ -286,6 +293,8 @@ def default():
 install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
+
 
 
 

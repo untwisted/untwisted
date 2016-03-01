@@ -5,7 +5,7 @@
 from socket import socket
 from untwisted.event import READ, WRITE, EXPT, ERROR
 from untwisted.dispatcher import *
-from untwisted.usual import *
+from untwisted.core import die
 from untwisted import core
 
 class SSL(Dispatcher):
@@ -81,6 +81,7 @@ class Device(Dispatcher):
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
+
 
 
 

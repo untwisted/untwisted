@@ -1,4 +1,4 @@
-from untwisted.network import core, xmap, cmap, READ, WRITE, spawn
+from untwisted.network import core, xmap, READ, WRITE, spawn
 from untwisted.event import LOAD, BOX, FOUND
 import sys
 
@@ -72,6 +72,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 

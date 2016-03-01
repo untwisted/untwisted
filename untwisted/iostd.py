@@ -1,6 +1,6 @@
 from untwisted.network import Spin, spawn, xmap, zmap, Erase
+from traceback import print_exc as debug
 from untwisted.event import *
-from untwisted.usual import debug
 from collections import deque
 import socket
 import ssl
@@ -176,6 +176,7 @@ def create_server():
 
 def create_client():
     pass
+
 
 
 

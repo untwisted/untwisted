@@ -1,4 +1,4 @@
-from untwisted.network import core, xmap, cmap, READ, WRITE, spawn, zmap
+from untwisted.network import core, xmap, READ, WRITE, spawn, zmap
 from untwisted.event import DUMPED, CLOSE, LOAD
 from collections import deque
 
@@ -57,6 +57,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 

@@ -15,7 +15,7 @@ class Stdin(iostd.Stdin):
         try:
             size = spin.send(self.data)  
         except ssl.SSLError as excpt:
-            spawn(spin, SSL_SEND_ERR, excpt.errno)
+            spawn(spin, SSL_SEND_ERR, excpt)
         except socket.error as excpt:
             self.process_error(spin, excpt.args[0])
         else:
@@ -26,8 +26,8 @@ class Stdout(iostd.Stdout):
         try:
             while True:
                 self.process_data(spin)
-        except ssl.SSLError:
-            spawn(spin, SSL_RECV_ERR, spin, excpt.errno)
+        except ssl.SSLError as excpt:
+            spawn(spin, SSL_RECV_ERR, spin, excpt)
         except socket.error as excpt:
             self.process_error(spin, excpt.args[0])
 
@@ -44,14 +44,14 @@ class Handshake(object):
 
         try:
             spin.do_handshake()
-        except ssl.CertificateError:
-            spawn(spin, SSL_CERTIFICATE_ERR, excpt.errno)
+        except ssl.CertificateError as excpt:
+            spawn(spin, SSL_CERTIFICATE_ERR, excpt)
         except ssl.SSLWantReadError:
             pass
         except ssl.SSLWantWriteError:
             pass
-        except ssl.SSLError:
-            spawn(spin, SSL_CONNECT_ERR, excpt.errno)
+        except ssl.SSLError as excpt:
+            spawn(spin, SSL_CONNECT_ERR, excpt)
         else:
             spawn(spin, SSL_CONNECT)
             raise Erase
@@ -68,6 +68,8 @@ class Server(iostd.Server):
 
     def update(self, spin):
         pass
+
+
 
 
 
