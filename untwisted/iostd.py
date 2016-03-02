@@ -4,7 +4,6 @@ from untwisted.event import *
 from collections import deque
 import socket
 import ssl
-import sys
 
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, EINVAL, \
 ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN 
@@ -61,7 +60,6 @@ class Stdout(object):
     """
     """
     
-    # The max amount of data that is read.
     SIZE = 1024 * 124
 
     def __init__(self, spin):
@@ -126,38 +124,36 @@ class Server(object):
                 else:
                     break
 
-class DumpFile(object):
+class DumpFile(Stdin):
     """
     """
+
+    BLOCK = 1024 * 124
 
     def __init__(self, spin, fd):
         self.fd    = fd
-        self.data  = ''
-        
-        self.BLOCK = 1024 * 124
-
+        self.count = 0
         xmap(spin, WRITE, self.update)
 
     def update(self, spin):
         try:
-            if not self.data:
-                self.data = self.fd.read(self.BLOCK)
-                if not self.data:
-                    zmap(spin, WRITE, self.update)
-                    spawn(spin, DUMPED_FILE)
-                    return
-
-            size      = spin.send(self.data)
-            self.data = buffer(self.data, size)
+            data       = self.process_file(spin)
+            self.count = self.count + spin.send(data)
         except socket.error as excpt:
-            err = excpt.args[0]
-            if err in CLOSE_ERR_CODE:
-                spawn(spin, CLOSE)
-            else:
-                spawn(spin, SEND_ERR, excpt)
+            self.process_error(spin, excpt.args[0])
         except IOError as excpt:
-            err = excpt.args[0]
-            spawn(spin, READ_ERR, err)
+            spawn(spin, READ_ERR, excpt)
+        else:
+            self.fd.seek(self.count)
+
+    def process_file(self, spin):
+        data = self.fd.read(self.BLOCK)
+
+        if data: 
+            return data
+
+        zmap(spin, WRITE, self.update)
+        spawn(spin, DUMPED_FILE)
 
 def lose(spin):
     spin.destroy()
@@ -169,14 +165,28 @@ def lose(spin):
         spawn(spin, CLOSE_ERR, err)
         debug()
 
-put = lambda spin, data: sys.stdout.write(data)
+def put(spin, data):
+    print data
 
 def create_server():
     pass
 
-def create_client():
-    pass
+def install_basic_handles(spin):
+    """
+    """
 
+    Stdin(spin)
+    Stdout(spin)
+    xmap(spin, CLOSE, lambda spin, err: lose(spin))
 
+def create_client(addr, port):
+    """
+    """
+
+    spin = Spin()
+    Client(spin)
+    spin.connect_ex((addr, port))
+    xmap(spin, CONNECT, install_basic_handles)
+    return spin
 
 

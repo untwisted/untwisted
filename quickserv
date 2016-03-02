@@ -1,13 +1,32 @@
+#!/usr/bin/env python2
 
 if __name__ == '__main__':
-    from rapidserv import Locate, DebugPost, DebugGet
+    from untwisted.plugins.rapidserv import RapidServ, Locate, DebugPost, DebugGet
+    from untwisted.network import core
+    from optparse import OptionParser
+    import os
 
-    FOLDER = '.'
-    app = RapidServ(1234, 5)
-    app.add_handle(Locate, FOLDER)
+    parser   = OptionParser()
+    parser.add_option("-a", "--addr", dest="addr",
+                      metavar="string", default='0.0.0.0')
+                  
+    parser.add_option("-p", "--port", dest="port",
+                      metavar="integer", default=80)
+
+    parser.add_option("-b", "--backlog", dest="backlog",
+                      metavar="integer", default=50)
+
+    parser.add_option("-f", "--folder", dest="folder",
+                      metavar="string", default=os.getcwd())
+
+    (opt, args) = parser.parse_args()
+
+    app = RapidServ(opt.addr, opt.port, opt.backlog)
+    app.add_handle(Locate, opt.folder)
     app.add_handle(DebugPost)
     app.add_handle(DebugGet)
-    gear.mainloop()
+    core.gear.mainloop()
+
 
 
 

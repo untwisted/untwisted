@@ -70,6 +70,11 @@ class Server(iostd.Server):
         pass
 
 
+def create_ssl_server():
+    pass
+
+def create_ssl_client(addr, port):
+    pass
 
 
 
