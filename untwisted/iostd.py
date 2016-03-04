@@ -11,6 +11,49 @@ ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN
 CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF)
 ACCEPT_ERR_CODE  = (EWOULDBLOCK, ECONNABORTED, EAGAIN)
 
+class Dump(object):
+    def process_error(self, spin, err):
+        if err in CLOSE_ERR_CODE: 
+            spawn(spin, CLOSE, err)
+        else: 
+            spawn(spin, SEND_ERR, err)
+
+class DumpStr(Dump):
+    def __init__(self, data=''):
+        self.data = buffer(data)
+
+    def process(self, spin):
+        try:
+            size = spin.send(self.data)  
+        except socket.error as excpt:
+            self.process_error(spin, excpt.args[0])
+        else:
+            self.data = buffer(self.data, size)
+
+    def __nonzero__(self):
+        return bool(self.data)
+
+class DumpFile(DumpStr):
+    BLOCK = 1024 * 124
+
+    def __init__(self, fd):
+        self.fd   = fd
+        DumpStr.__init__(self)
+        self.process_file()
+
+    def process(self, spin):
+        DumpStr.process(self, spin)
+        if not self.data:
+            self.process_file()
+
+    def process_file(self):
+        try:
+            data = self.fd.read(DumpFile.BLOCK)
+        except IOError as excpt:
+            spawn(spin, READ_ERR, excpt)
+        else:
+            self.data = buffer(data)
+        
 class Stdin:
     """ 
     """
@@ -19,42 +62,44 @@ class Stdin:
         """ 
         """
 
-        self.queue = deque()
-        self.spin  = spin 
-        self.data  = ''
-        spin.dump  = self.dump
+        self.queue    = deque()
+        self.data     = None
+        spin.dump     = self.dump
+        spin.dumpfile = self.dumpfile
+        self.spin     = spin
 
     def update(self, spin):
         """
         """
-
+        
         if not self.data: 
             self.process_queue(spin)
 
-        try:
-            size = spin.send(self.data)  
-        except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
-        else:
-            self.data = buffer(self.data, size)
+        self.data.process(spin)
 
     def process_queue(self, spin):
         try:
             self.data = self.queue.popleft()
         except IndexError: 
-            zmap(spin, WRITE, self.update)
-            spawn(spin, DUMPED)
+            self.stop()
 
-    def process_error(self, spin, err):
-        if err in CLOSE_ERR_CODE: 
-            spawn(spin, CLOSE, err)
-        else: 
-            spawn(spin, SEND_ERR, err)
+    def stop(self):
+        zmap(self.spin, WRITE, self.update)
+        spawn(self.spin, DUMPED)
 
-    def dump(self, data):
+    def start(self):
         if not self.queue: 
             xmap(self.spin, WRITE, self.update)
-        self.queue.append(buffer(data))
+
+    def dump(self, data):
+        self.start()
+        dump = DumpStr(data)
+        self.queue.append(dump)
+
+    def dumpfile(self, fd):
+        self.start()
+        dump = DumpFile(fd)
+        self.queue.append(dump)
 
 class Stdout(object):
     """
@@ -124,37 +169,6 @@ class Server(object):
                 else:
                     break
 
-class DumpFile(Stdin):
-    """
-    """
-
-    BLOCK = 1024 * 124
-
-    def __init__(self, spin, fd):
-        self.fd    = fd
-        self.count = 0
-        xmap(spin, WRITE, self.update)
-
-    def update(self, spin):
-        try:
-            data       = self.process_file(spin)
-            self.count = self.count + spin.send(data)
-        except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
-        except IOError as excpt:
-            spawn(spin, READ_ERR, excpt)
-        else:
-            self.fd.seek(self.count)
-
-    def process_file(self, spin):
-        data = self.fd.read(self.BLOCK)
-
-        if data: 
-            return data
-
-        zmap(spin, WRITE, self.update)
-        spawn(spin, DUMPED_FILE)
-
 def lose(spin):
     spin.destroy()
 
@@ -188,5 +202,6 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 

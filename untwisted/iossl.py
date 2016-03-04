@@ -7,11 +7,8 @@ SSL_CONNECT_ERR, SSL_CONNECT
 import socket
 import ssl
 
-class Stdin(iostd.Stdin):
-    def update(self, spin):
-        if not self.data: 
-            self.process_queue(spin)
-
+class DumpStr(iostd.DumpStr):
+    def process(self, spin):
         try:
             size = spin.send(self.data)  
         except ssl.SSLError as excpt:
@@ -20,6 +17,20 @@ class Stdin(iostd.Stdin):
             self.process_error(spin, excpt.args[0])
         else:
             self.data = buffer(self.data, size)
+
+class DumpFile(DumpStr, iostd.DumpFile):
+    pass
+
+class Stdin(iostd.Stdin):
+    def dump(self, data):
+        self.start()
+        data = DumpStr(data)
+        self.queue.append(data)
+
+    def dumpfile(self, fd):
+        self.start()
+        fd = DumpFile(fd)
+        self.queue.append(fd)
 
 class Stdout(iostd.Stdout):
     def update(self, spin):
@@ -61,7 +72,6 @@ class Client(iostd.Client):
         iostd.Client.update(self, spin)
         Handshake(spin)
 
-
 class Server(iostd.Server):
     def __init__(self, spin):
         xmap(spin, READ, self.update)
@@ -69,12 +79,12 @@ class Server(iostd.Server):
     def update(self, spin):
         pass
 
-
 def create_ssl_server():
     pass
 
 def create_ssl_client(addr, port):
     pass
+
 
 
 

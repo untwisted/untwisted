@@ -3,7 +3,7 @@
 
 from tempfile import TemporaryFile as tmpfile
 from untwisted.network import *
-from untwisted.iostd import Stdin, Stdout, Server, DumpFile, DUMPED, DUMPED_FILE, lose, LOAD, ACCEPT, CLOSE
+from untwisted.iostd import Stdin, Stdout, Server, DUMPED, lose, LOAD, ACCEPT, CLOSE
 from untwisted.timer import Timer
 from untwisted.event import get_event
 from urlparse import parse_qs
@@ -303,12 +303,10 @@ class Locate(object):
         # Start sending the header.
         spin.dump(str(header))
 
-        # Wait to dump the header.
-        xmap(spin, DUMPED, lambda con: drop(con, path))
+        drop(spin, path)
 
         # Wait to dump the file.
-
-        xmap(spin, DUMPED_FILE, lose)
+        xmap(spin, DUMPED, lose)
         xmap(spin, OPEN_FILE_ERR, lambda con, err: lose(con))
 
 
@@ -431,8 +429,7 @@ def drop(spin, filename):
         err = excpt.args[0]
         spawn(spin, OPEN_FILE_ERR, err)
     else:
-        DumpFile(spin, fd)
-
+        spin.dumpfile(fd)
 
 
 def build(searchpath, folder, *args):
@@ -469,6 +466,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
