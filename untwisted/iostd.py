@@ -19,6 +19,8 @@ class Dump(object):
             spawn(spin, SEND_ERR, err)
 
 class DumpStr(Dump):
+    __slots__ = 'data'
+
     def __init__(self, data=''):
         self.data = buffer(data)
 
@@ -34,7 +36,8 @@ class DumpStr(Dump):
         return bool(self.data)
 
 class DumpFile(DumpStr):
-    BLOCK = 1024 * 124
+    __slots__ = 'fd'
+    BLOCK     = 1024 * 124
 
     def __init__(self, fd):
         self.fd   = fd
@@ -202,6 +205,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
