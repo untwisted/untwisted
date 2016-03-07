@@ -39,7 +39,7 @@ class ImageUpload(object):
     def add_image(self, con, data, version, header, fd):
         item              = fd['file']
         DB[item.filename] = item.file.read()
-        self.send_base(con, header, None, None, version)
+        self.send_base(con, None, None, None, None)
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -61,6 +61,8 @@ if __name__ == '__main__':
 
     core.gear.mainloop()
     
+
+
 
 
 

@@ -22,7 +22,7 @@ class QuoteHandle(object):
         xmap(con, 'GET /load_index', self.load_index)
         xmap(con, 'GET /add_quote', self.add_quote)
 
-    def send_base(self, con, header, fd, data, version):
+    def send_base(self, con, data, version, header, fd):
         # The http response.
         response = Response()
         response.set_response('HTTP/1.1 200 OK')
@@ -34,7 +34,7 @@ class QuoteHandle(object):
 
         send_response(con, str(response))
     
-    def load_index(self, con, header, fd, data, version):
+    def load_index(self, con, data, version, header, fd):
         index        = data['index'][0]
         name, quote  = DB[index]
         HTML         = render('view.jinja', name=name, quote=quote)
@@ -45,13 +45,14 @@ class QuoteHandle(object):
 
         send_response(con, str(response))
 
-    def add_quote(self, con, header, fd, data, version):
+    def add_quote(self, con, data, version, header, fd):
+        # print 'test'
         name      = data['name'][0]
         quote     = data['quote'][0]
         index     = str(len(DB))
         DB[index] = (name, quote)
 
-        self.send_base(con, header, fd, data, version)
+        self.send_base(con, data, version, header, fd)
 
 if __name__ == '__main__':
     import sys
@@ -60,9 +61,10 @@ if __name__ == '__main__':
 
     app.add_handle(QuoteHandle)
     app.add_handle(Locate, make(__file__, 'static'))
-    app.add_handle(DebugGet)
     core.gear.mainloop()
     
+
+
 
 
 

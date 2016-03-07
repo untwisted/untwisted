@@ -88,20 +88,20 @@ class RapidServ(object):
         HttpTransferHandle(spin)
         HttpRequestHandle(spin)
         HttpMethodHandle(spin)
-        NonPersistentConnection(spin)
-
-        # spin.add_handle(on_all)
-        # xmap(spin, HttpTransferHandle.HTTP_TRANSFER, on_event)
-        # xmap(spin, HttpRequestHandle.HTTP_REQUEST, on_event)
-
-        # xmap(spin, TmpFile.DONE, on_event)
-
-        # xmap(spin, AccUntil.DONE, on_event)
+        # NonPersistentConnection(spin)
+        PersistentConnection(spin)
         # InvalidRequest(client)
 
         for ind in self.setup:
             ind(spin)
 
+        # xmap(spin, HttpTransferHandle.HTTP_TRANSFER, on_event)
+
+        # xmap(spin, HttpRequestHandle.HTTP_REQUEST, on_event)
+
+        # xmap(spin, AccUntil.DONE, on_event)
+
+        # xmap(spin, TmpFile.DONE, on_event)
         xmap(spin, CLOSE, lambda con, err: lose(con))
 
 
@@ -135,13 +135,16 @@ class HttpRequestHandle(object):
     MAX_SIZE     = 124 * 1024
 
     def __init__(self, spin):
-        xmap(spin, HttpTransferHandle.HTTP_TRANSFER, self.start_data_transfer)
-
-    def start_data_transfer(self, spin, request, data):
+        self.request = None
+        xmap(spin, HttpTransferHandle.HTTP_TRANSFER, self.process)
         xmap(spin, TmpFile.DONE,  
                    lambda spin, fd, data: spawn(spin, 
-                                 HttpRequestHandle.HTTP_REQUEST, request, fd))
+                                 HttpRequestHandle.HTTP_REQUEST, self.request, fd))
+
+    def process(self, spin, request, data):
+        self.request = request
         TmpFile(spin, data, int(request.headers.get('content-length', '0')))
+
 
 class HttpMethodHandle(object):
     def __init__(self, spin):
@@ -166,11 +169,23 @@ class HttpMethodHandle(object):
 
 class NonPersistentConnection(object):
     def __init__(self, spin):
-        xmap(spin, DUMPED, lambda con: lose(con))
+        xmap(spin, DUMPED, self.stop)
+
+    def stop(self, con):
+        try:
+            con.destroy()
+        except Exception:
+            pass
+        
+        try:
+            con.close()
+        except Exception:
+            pass
 
 class PersistentConnection(object):
     def __init__(self, spin, max=10, timeout=120):
         xmap(spin, TmpFile.DONE, lambda con, fd, data: AccUntil(con, data))
+
 
 class InvalidRequest(object):
     """ 
@@ -234,24 +249,26 @@ class Locate(object):
 
         # Start sending the header.
         spin.dump(str(header))
-
-        drop(spin, path)
-
-        # Wait to dump the file.
-        xmap(spin, DUMPED, lose)
         xmap(spin, OPEN_FILE_ERR, lambda con, err: lose(con))
+        drop(spin, path)
 
 
 class Header(object):
     """ 
     This class is used to drop header content to the client.
     """
+
+    default = {}
+            
     def __init__(self):
         self.response = ''
         self.header   = dict()
+        self.header.update(Header.default)
         self.add_header(('Content-Type', 'text/html;charset=utf-8'))
         self.add_header(('Server', 'Rapidserv'))
-
+        self.add_header(('connection', 'keep-alive'))
+        self.add_header(('keep-alive', 'timeout=15, max=10'))
+    
     def set_response(self, data):
         """ Used to add a http response. """
         self.response = data
@@ -260,9 +277,14 @@ class Header(object):
         """ 
         Add headers to the http response. 
         """
-        for key, value in args:
-            self.header[str(key)] = str(value)
 
+        for key, value in args:
+            self.header[str(key).lower()] = str(value)
+
+    @staticmethod
+    def add_default_header(self, *args):
+        for key, value in args:
+            Header.default[str(key).lower()] = str(value)
 
     def __str__(self):
         """
@@ -291,7 +313,7 @@ class Response(Header):
 
         self.header['Content-Length'] = len(self.data)
 
-        x = Header.__str__(self) + self.data
+        x = Header.__str__(self) + self.data 
         return x
 
 class DebugPost(object):
@@ -324,9 +346,7 @@ def send_response(spin, response):
     as all object whose method __str__ is implemented.
     """
 
-    spin.ACTIVE = True
     spin.dump(str(response))
-    xmap(spin, DUMPED, lambda con: lose(con))
 
 def get_env(header):
     """

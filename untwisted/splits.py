@@ -72,24 +72,21 @@ class Accumulator(object):
 
 class AccUntil(object):
     DONE = get_event()
-
     def __init__(self, spin, data='', delim='\r\n\r\n'):
         self.delim = delim
         self.arr   = bytearray()
         self.spin  = spin
         xmap(spin, LOAD, self.update)
-
         self.update(spin, data)
 
     def update(self, spin, data):
         self.arr.extend(data)
-
-        if self.delim in data or self.delim in self.arr[:-(len(self.delim) + len(data))]:
+        if self.delim in self.arr:
             self.process(spin)
 
     def process(self, spin):
         zmap(spin, LOAD, self.update)
-        a, b = self.arr.split(self.delim)
+        a, b = self.arr.split(self.delim, 1)
         spawn(spin, AccUntil.DONE, str(a), str(b))
 
 class TmpFile(object):
@@ -118,6 +115,8 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
+
 
 
 

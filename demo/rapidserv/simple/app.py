@@ -12,7 +12,7 @@ class Simple(object):
         # Used to map a router to a handle.
         xmap(con, 'GET /', self.send_base)
 
-    def send_base(self, con, header, fd, data, version):
+    def send_base(self, con, data, version, header, fd):
         # The http response.
         response = Response()
         response.set_response('HTTP/1.1 200 OK')
@@ -30,13 +30,14 @@ class Simple(object):
     
 
 if __name__ == '__main__':
-    app = RapidServ('0.0.0.0', 1234, 60)
+    app = RapidServ('0.0.0.0', 80, 60)
 
     app.add_handle(Simple)
     app.add_handle(Simple)
 
     core.gear.mainloop()
     
+
 
 
 
