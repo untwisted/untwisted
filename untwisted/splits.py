@@ -1,5 +1,7 @@
-from untwisted.network import core, xmap, READ, WRITE, spawn
-from untwisted.event import LOAD, BOX, FOUND
+from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
+from untwisted.event import LOAD, BOX, FOUND, get_event
+from tempfile import TemporaryFile as tmpfile
+
 import sys
 
 class Breaker(object):
@@ -67,11 +69,59 @@ class Accumulator(object):
 
     def update(self, spin, data):
         self.data = self.data + data
-                
+
+class AccUntil(object):
+    DONE = get_event()
+
+    def __init__(self, spin, data='', delim='\r\n\r\n'):
+        self.delim = delim
+        self.arr   = bytearray()
+        self.spin  = spin
+        xmap(spin, LOAD, self.update)
+
+        self.update(spin, data)
+
+    def update(self, spin, data):
+        self.arr.extend(data)
+
+        if self.delim in data or self.delim in self.arr[:-(len(self.delim) + len(data))]:
+            self.process(spin)
+
+    def process(self, spin):
+        zmap(spin, LOAD, self.update)
+        a, b = self.arr.split(self.delim)
+        spawn(spin, AccUntil.DONE, str(a), str(b))
+
+class TmpFile(object):
+    DONE = get_event()
+
+    def __init__(self, spin, data, max_size):
+        self.fd       = tmpfile('a+')
+        self.max_size = max_size
+        xmap(spin, LOAD, self.update)
+
+        self.update(spin, data)
+
+    def update(self, spin, data):
+        pos   = self.fd.tell()
+        count = self.max_size - pos
+        self.fd.write(data[:count])
+
+        if len(data) < count: 
+            return
+
+        zmap(spin, LOAD, self.update)
+        self.fd.seek(0)
+        spawn(spin, TmpFile.DONE, self.fd, data[count:])
+
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
+
+
+
 
 
 

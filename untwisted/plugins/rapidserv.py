@@ -1,11 +1,12 @@
 """ 
 """
 
-from tempfile import TemporaryFile as tmpfile
 from untwisted.network import *
 from untwisted.iostd import Stdin, Stdout, Server, DUMPED, lose, LOAD, ACCEPT, CLOSE
+from untwisted.splits import AccUntil, TmpFile
 from untwisted.timer import Timer
 from untwisted.event import get_event
+from untwisted.debug import on_event, on_all
 from urlparse import parse_qs
 from cgi import FieldStorage
 
@@ -14,10 +15,12 @@ from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename
 from traceback import print_exc as debug
+from cStringIO import StringIO
 import sys
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
+DELIM = '\r\n\r\n'
 
 class RapidServ(object):
     """
@@ -41,6 +44,8 @@ class RapidServ(object):
 
     def __init__(self, addr, port, backlog):
         sock = socket(AF_INET, SOCK_STREAM)
+        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+
         sock.bind((addr, port))
         sock.listen(backlog)
 
@@ -76,169 +81,96 @@ class RapidServ(object):
 
         self.setup.append(lambda spin: handle(spin, *args, **kwargs))
     
-    def handle_accept(self, local, client):
-        Stdin(client)
-        Stdout(client)
-        HttpServer(client)
-        Get(client)
-        Post(client)
-        InvalidRequest(client)
+    def handle_accept(self, local, spin):
+        Stdin(spin)
+        Stdout(spin)
+        AccUntil(spin)
+        HttpTransferHandle(spin)
+        HttpRequestHandle(spin)
+        HttpMethodHandle(spin)
+        NonPersistentConnection(spin)
 
-        client.ACTIVE = False
+        # spin.add_handle(on_all)
+        # xmap(spin, HttpTransferHandle.HTTP_TRANSFER, on_event)
+        # xmap(spin, HttpRequestHandle.HTTP_REQUEST, on_event)
+
+        # xmap(spin, TmpFile.DONE, on_event)
+
+        # xmap(spin, AccUntil.DONE, on_event)
+        # InvalidRequest(client)
 
         for ind in self.setup:
-            ind(client)
+            ind(spin)
 
-        xmap(client, CLOSE, lambda con, err: lose(con))
+        xmap(spin, CLOSE, lambda con, err: lose(con))
 
-class Get(object):
-    def __init__(self, spin):
-        xmap(spin, 'GET', self.tokenizer)
 
-    def tokenizer(self, spin, header, fd, resource, version):
-        data = ''
+class Request(object):
+    def __init__(self, data):
+        headers                              = data.split('\r\n')
+        request                              = headers.pop(0)
+        self.method, self.path, self.version = request.split(' ')
+        self.headers                         = dict(map(self.format_field, headers))
 
+    def format_field(self, data):
         try:
-            resource, data = resource.split('?', 1)
+            key, value = data.split(':')
         except ValueError:
-            pass
-
-        spawn(spin, 'GET %s' % resource, header, fd,
-                                     parse_qs(data), version)
-
-class Post(object):
-    def __init__(self, spin):
-        xmap(spin, 'POST', self.tokenizer)
-
-    def tokenizer(self, spin, header, fd, resource, version):
-        data = ''
-
-        try:
-            resource, data = resource.split('?', 1)
-        except ValueError:
-            pass
-
-        spawn(spin, 'POST %s' % resource, header, 
-              FieldStorage(fp=fd, environ=get_env(header)),
-                                         parse_qs(data), version)
-
-class HttpServer:
-    MAX_SIZE = 124 * 1024
-    TIMEOUT  = 16
-
-    def __init__(self, spin):
-        self.request  = ''
-        self.header   = ''
-        self.data     = ''
-        self.spin     = spin
-        self.fd       = None
-        self.timer    = Timer(self.TIMEOUT, self.spawn_idle_timeout)
-        xmap(spin, LOAD, self.get_header)
-
-    def spawn_idle_timeout(self):
-        spawn(self.spin, IDLE_TIMEOUT)
-
-    def split_header(self, data):
-        header  = data.split('\r\n')
-        request = header[0].split(' ') 
-        del header[0]
-
-        header  = map(lambda x: x.split(': ', 1), header)
-        header  = dict(header)
-        return request, header
-
-    def get_header(self, spin, data):
-        DELIM       = '\r\n\r\n'
-        self.header = self.header + data
-
-        if not DELIM in data: return
-
-        header, self.data         = self.header.split(DELIM, 1)
-        self.request, self.header = self.split_header(header)
-
-        # So, we have our request.
-        # We no more will issue FOUND.
-        zmap(spin, LOAD, self.get_header)
-        self.check_data_existence()
-
-    def check_data_existence(self):
-        try:
-            size = self.header['Content-Length']
-        except KeyError:
-            self.spawn_request()
-            return
-
-        self.size = int(size)
-
-        # If self.size is larger than self.MAX_SIZE
-        # it spawns INVALID_BODY_SIZE
-        # As self.fd.tell() == 0 and self.size > 0
-        # xmap(self.spin, LOAD, self.get_data will not be
-        # mapped. The body will be empty, no need to drop    
-        # the connection here. Permiting clients of the protocol
-        # to install handles to deal with this event.
-        if self.size > self.MAX_SIZE:
-            spawn(self.spin, INVALID_BODY_SIZE)
+            return data, ''
         else:
-            self.wait_for_data()
+            return key.lower(), value
+
+class HttpTransferHandle(object):
+    HTTP_TRANSFER = get_event()
+
+    def __init__(self, spin):
+        xmap(spin, AccUntil.DONE, self.process_request)
+
+    def process_request(self, spin, request, data):
+        request = Request(request)
+        spawn(spin, HttpTransferHandle.HTTP_TRANSFER, request, data)
+
+class HttpRequestHandle(object):
+    HTTP_REQUEST = get_event()
+    MAX_SIZE     = 124 * 1024
+
+    def __init__(self, spin):
+        xmap(spin, HttpTransferHandle.HTTP_TRANSFER, self.start_data_transfer)
+
+    def start_data_transfer(self, spin, request, data):
+        xmap(spin, TmpFile.DONE,  
+                   lambda spin, fd, data: spawn(spin, 
+                                 HttpRequestHandle.HTTP_REQUEST, request, fd))
+        TmpFile(spin, data, int(request.headers.get('content-length', '0')))
+
+class HttpMethodHandle(object):
+    def __init__(self, spin):
+        xmap(spin, HttpRequestHandle.HTTP_REQUEST, self.process)
 
 
-    def wait_for_data(self):
+    def process(self, spin, request, fd):
+        fd = FieldStorage(fp=fd, environ=get_env(request.headers))
+
+        spawn(spin, request.method, request.path, 
+                                    request.version, request.headers, fd)
+    
         try:
-            self.fd = tmpfile('a+')
-        except Exception:
-            debug()
-            return
+            path, data = request.path.split('?', 1)
+        except ValueError:
+            spawn(spin, '%s %s' % (request.method, request.path), 
+                                 parse_qs(''), request.version, request.headers, fd)
+        else:
+            spawn(spin, '%s %s' % (request.method, path), 
+                                  parse_qs(data), request.version, request.headers, fd)
 
-        try:
-            self.fd.write(self.data)
-        except Exception:
-            debug()
-            return
 
-        is_done = self.check_data_size()
+class NonPersistentConnection(object):
+    def __init__(self, spin):
+        xmap(spin, DUMPED, lambda con: lose(con))
 
-        if is_done:
-            return
-
-        xmap(self.spin, LOAD, self.get_data)
-
-    def spawn_request(self):
-        self.timer.cancel()
-        spawn(self.spin, self.request[0], self.header, self.fd,
-                                    self.request[1], self.request[2])
-
-        if not self.spin.ACTIVE:
-            lose(self.spin)
-
-    def check_data_size(self):
-        if not self.fd.tell() >= self.size:
-            return False
-
-        self.fd.seek(0)
-        self.spawn_request()
-        self.fd.close()
-
-        return True
-
-    def get_data(self, spin, data):
-        """
-
-        """
-
-        try:
-            self.fd.write(data)
-        except Exception:
-            zmap(spin, LOAD, self.get_data)
-            debug()
-
-        is_done = self.check_data_size()
-
-        if is_done:
-            zmap(spin, LOAD, self.get_data)
-
-        # keep alive connections.
-        # self.__init__(self.spin)
+class PersistentConnection(object):
+    def __init__(self, spin, max=10, timeout=120):
+        xmap(spin, TmpFile.DONE, lambda con, fd, data: AccUntil(con, data))
 
 class InvalidRequest(object):
     """ 
@@ -277,7 +209,7 @@ class Locate(object):
         xmap(spin, 'GET', self.locate)
         self.path     = abspath(path)
 
-    def locate(self, spin, header, fd, resource, version):
+    def locate(self, spin, resource, version, headers, fd):
         path = join(self.path, basename(resource))
 
         if not isfile(path):
@@ -396,13 +328,6 @@ def send_response(spin, response):
     spin.dump(str(response))
     xmap(spin, DUMPED, lambda con: lose(con))
 
-def send_response_wait(spin, response):
-    """
-    Used to dump content to the client and do not lose the connection.
-    """
-    pass
-
-
 def get_env(header):
     """
     Shouldn't be called outside this module.
@@ -410,8 +335,8 @@ def get_env(header):
 
     environ = {
                 'REQUEST_METHOD':'POST',
-                'CONTENT_LENGTH':header['Content-Length'],
-                'CONTENT_TYPE':header['Content-Type']
+                'CONTENT_LENGTH':header.get('content-length', 0),
+                'CONTENT_TYPE':header.get('content-type', 'text')
               }
 
     return environ
