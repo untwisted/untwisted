@@ -14,9 +14,8 @@ from socket import *
 from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename
-from traceback import print_exc as debug
 from cStringIO import StringIO
-import sys
+from untwisted.network import core
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
@@ -24,63 +23,24 @@ DELIM = '\r\n\r\n'
 
 class RapidServ(object):
     """
-    The rapidserv class is used to instantiate the server instance with
-    handles.
-
-    Example:
-
-    # The '0.0.0.0' is an interface where to listen for connections.
-    # The value 5000 is the port.
-    # The value 60 is the backlog.
-    app = RapidServ('0.0.0.0', 5000, 60)
-
-    # Handle is any callable object.
-    app.add_handle(Handle)
-
-    # Tells untwisted to start processing events.
-    core.gear.mainloop()
-
     """
 
-    def __init__(self, addr, port, backlog):
+    def __init__(self):
         sock = socket(AF_INET, SOCK_STREAM)
         sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        self.local = Spin(sock)
 
-        sock.bind((addr, port))
-        sock.listen(backlog)
-
-        local = Spin(sock)
-        Server(local) 
+    def bind(self, addr, port, backlog):
+        Server(self.local) 
+        self.local.bind((addr, port))
+        self.local.listen(backlog)
         
-        xmap(local, ACCEPT, self.handle_accept)
-        
-        # The web apps.
-        self.setup = []
+        xmap(self.local, ACCEPT, self.handle_accept)
 
-    def add_handle(self, handle, *args, **kwargs):
-        """
-        Handle   - Any callable object.
-        *args    - Arguments to be passed to Handle.
-        **kwargs - A dict passed to Handle.
+    def run(self, addr, port, backlog):
+        self.bind(addr, port, backlog)
+        core.gear.mainloop()
 
-        Example:
-
-        class Handle(object):
-            def __init__(self, con):
-                # xmap is used to map a router to a callback.
-                xmap(con, 'GET /', self.on_get)
-        
-            def on_get(self, con, header, fd, data, version):
-                pass
-
-        if __name__ == '__main__':
-            app = RapidServ('0.0.0.0', 5000, 60)
-            app.add_handle(Simple)
-        
-        """
-
-        self.setup.append(lambda spin: handle(spin, *args, **kwargs))
-    
     def handle_accept(self, local, spin):
         Stdin(spin)
         Stdout(spin)
@@ -92,18 +52,24 @@ class RapidServ(object):
         PersistentConnection(spin)
         # InvalidRequest(client)
 
-        for ind in self.setup:
-            ind(spin)
-
-        # xmap(spin, HttpTransferHandle.HTTP_TRANSFER, on_event)
-
-        # xmap(spin, HttpRequestHandle.HTTP_REQUEST, on_event)
-
-        # xmap(spin, AccUntil.DONE, on_event)
-
-        # xmap(spin, TmpFile.DONE, on_event)
         xmap(spin, CLOSE, lambda con, err: lose(con))
 
+    def route(self, method):
+        def shell(handle):
+            def build(spin, data, version, header, fd):
+                kwargs = dict()
+                kwargs.update(data)
+                if fd: 
+                    kwargs.update(fd)
+                handle(spin, **kwargs)
+            def install(local, spin):
+                xmap(spin, method, build)
+            xmap(self.local, ACCEPT, install)
+            return handle
+        return shell
+
+    def accept(self, handle):
+        xmap(self.local, ACCEPT, lambda local, spin: handle(spin))
 
 class Request(object):
     def __init__(self, data):
@@ -229,11 +195,6 @@ class Locate(object):
 
         if not isfile(path):
             return
-
-        # This is used to tell rapidserv reactor that 
-        # the connection will keep alive to process
-        # sending of data.
-        spin.ACTIVE = True
 
         # Where we are going to serve files.
         # I might spawn an event like FILE_NOT_FOUND.
@@ -411,6 +372,8 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
+
 
 
 

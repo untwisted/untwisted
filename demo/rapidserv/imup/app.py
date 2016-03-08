@@ -8,38 +8,37 @@ import shelve
 DB_FILENAME = 'DB'
 DB          = shelve.open(make(__file__, DB_FILENAME))
 render      = build(__file__, 'templates', 'view.jinja')
+HttpRequestHandle.MAX_SIZE = 1024 * 5024
 
-class ImageUpload(object):
-    HttpRequestHandle.MAX_SIZE = 1024 * 5024
+app = RapidServ()
 
-    def __init__(self, con):
-        xmap(con, 'GET /', self.send_base)
-        xmap(con, 'POST /add_image', self.add_image)
-        xmap(con, 'GET /load_index', self.load_index)
+@app.accept
+def setup(con):
+    InvalidRequest(con)
 
-    def send_base(self, con, data, version, header, fd):
-        response = Response()
-        response.set_response('HTTP/1.1 200 OK')
+@app.route('GET /')
+def index(con):
+    response = Response()
+    response.set_response('HTTP/1.1 200 OK')
 
-        HTML = render('view.jinja', posts = DB.iterkeys())
-        response.add_data(HTML)
+    HTML = render('view.jinja', posts = DB.iterkeys())
+    response.add_data(HTML)
 
-        send_response(con, response)
+    send_response(con, response)
 
-    def load_index(self, con, data, version, header, fd):
-        index = data['index'][0]
+@app.route('GET /load_index')
+def load_index(con, index):
+    response = Response()
+    response.set_response('HTTP/1.1 200 OK')
+    response.add_header(('Content-Type', 'image/jpeg'))
 
-        response = Response()
-        response.set_response('HTTP/1.1 200 OK')
-        response.add_header(('Content-Type', 'image/jpeg'))
+    response.add_data(DB[index[0]])
+    send_response(con, response)
 
-        response.add_data(DB[index])
-        send_response(con, response)
-
-    def add_image(self, con, data, version, header, fd):
-        item              = fd['file']
-        DB[item.filename] = item.file.read()
-        self.send_base(con, None, None, None, None)
+@app.route('POST /add_image')
+def add_image(con, file):
+    DB[file.filename] = file.file.read()
+    index(con)
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -55,18 +54,6 @@ if __name__ == '__main__':
 
     (opt, args) = parser.parse_args()
 
-    app = RapidServ(opt.addr, opt.port, opt.backlog)
-    app.add_handle(ImageUpload)
-    app.add_handle(InvalidRequest)
-
-    core.gear.mainloop()
-    
-
-
-
-
-
-
-
+    app.run(opt.addr, opt.port, opt.backlog)
 
 

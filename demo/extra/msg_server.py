@@ -10,7 +10,7 @@ import sys
 def set_up_con(server, con):
     Stdout(con)
     xmap(con, CLOSE, lambda con, err: lose(con))
-    xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\n' % data))
+    xmap(con, LOAD, lambda con, data: sys.stdout.write(data))
     
 sock = socket(AF_INET, SOCK_STREAM)
 server = Spin(sock) 
@@ -21,6 +21,7 @@ Server(server)
 xmap(server, ACCEPT, set_up_con)
 
 core.gear.mainloop()
+
 
 
 
