@@ -1,6 +1,5 @@
 from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
 from untwisted.event import LOAD, BOX, FOUND, get_event
-from tempfile import TemporaryFile as tmpfile
 
 import sys
 
@@ -92,8 +91,8 @@ class AccUntil(object):
 class TmpFile(object):
     DONE = get_event()
 
-    def __init__(self, spin, data, max_size):
-        self.fd       = tmpfile('a+')
+    def __init__(self, spin, data, max_size, fd):
+        self.fd       = fd
         self.max_size = max_size
         xmap(spin, LOAD, self.update)
 
@@ -108,13 +107,13 @@ class TmpFile(object):
             return
 
         zmap(spin, LOAD, self.update)
-        self.fd.seek(0)
         spawn(spin, TmpFile.DONE, self.fd, data[count:])
 
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 

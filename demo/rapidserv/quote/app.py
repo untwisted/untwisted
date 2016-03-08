@@ -7,64 +7,65 @@ python app.py '0.0.0.0' 1025
 """
 
 from untwisted.plugins.rapidserv import RapidServ, send_response, Response, Locate, DebugGet, core, xmap, build, make
-import shelve
+import sqlite3
+import os.path
 
 DB_FILENAME = 'DB'
-DB          = shelve.open(make(__file__, DB_FILENAME))
+DB          = sqlite3.connect(make(__file__, DB_FILENAME))
 render      = build(__file__, 'templates', 'show.jinja', 'view.jinja')
+app         = RapidServ()
+DB.execute('CREATE TABLE quotes (id  INTEGER PRIMARY KEY, name TEXT, quote TEXT)')
+DB.commit()
 
-class QuoteHandle(object):
-    MAX_LENGTH = 30
+@app.accept
+def setup(con):
+    Locate(con, make(__file__, 'static'))
 
-    def __init__(self, con):
-        # Used to map a handle to a route.
-        xmap(con, 'GET /', self.send_base)
-        xmap(con, 'GET /load_index', self.load_index)
-        xmap(con, 'GET /add_quote', self.add_quote)
+@app.request('GET /')
+def send_base(con, request):
+    # The http response.
+    response = Response()
+    response.set_response('HTTP/1.1 200 OK')
 
-    def send_base(self, con, data, version, header, fd):
-        # The http response.
-        response = Response()
-        response.set_response('HTTP/1.1 200 OK')
+    rst  = DB.execute('SELECT * FROM quotes')
+    HTML = render('show.jinja', posts = rst.fetchall())
 
-        HTML = render('show.jinja', posts = DB.iteritems())
+    response.add_data(HTML)
+    send_response(con, str(response))
 
-        # Add a body.
-        response.add_data(HTML)
+@app.request('GET /load_index')
+def load_index(con, request):
+    index        = request.query['index']
+    rst          = DB.execute('SELECT name, quote FROM quotes where id=?', index)
+    name, quote  = rst.fetchone()
+    HTML         = render('view.jinja', name=name, quote=quote)
+    response     = Response()
 
-        send_response(con, str(response))
-    
-    def load_index(self, con, data, version, header, fd):
-        index        = data['index'][0]
-        name, quote  = DB[index]
-        HTML         = render('view.jinja', name=name, quote=quote)
-        response     = Response()
+    response.set_response('HTTP/1.1 200 OK')
+    response.add_data(HTML)
 
-        response.set_response('HTTP/1.1 200 OK')
-        response.add_data(HTML)
+    send_response(con, str(response))
 
-        send_response(con, str(response))
-
-    def add_quote(self, con, data, version, header, fd):
-        # print 'test'
-        name      = data['name'][0]
-        quote     = data['quote'][0]
-        index     = str(len(DB))
-        DB[index] = (name, quote)
-
-        self.send_base(con, data, version, header, fd)
+@app.request('GET /add_quote')
+def add_quote(con, request):
+    name      = request.query['name'][0]
+    quote     = request.query['quote'][0]
+    DB.execute("INSERT INTO quotes (name, quote) VALUES %s" % repr((name, quote)))
+    send_base(con, request)
 
 if __name__ == '__main__':
-    import sys
-    BACKLOG = 50
-    app     = RapidServ(sys.argv[1], int(sys.argv[2]), BACKLOG)
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-a", "--addr", dest="addr",
+                      metavar="string", default='0.0.0.0')
+                  
+    parser.add_option("-p", "--port", dest="port",
+                      metavar="integer", default=80)
 
-    app.add_handle(QuoteHandle)
-    app.add_handle(Locate, make(__file__, 'static'))
-    core.gear.mainloop()
+    parser.add_option("-b", "--backlog", dest="backlog",
+                      metavar="integer", default=50)
+
+    (opt, args) = parser.parse_args()
+    app.run(opt.addr, opt.port, opt.backlog)
     
-
-
-
-
 

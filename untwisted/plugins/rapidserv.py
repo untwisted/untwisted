@@ -9,6 +9,7 @@ from untwisted.event import get_event
 from untwisted.debug import on_event, on_all
 from urlparse import parse_qs
 from cgi import FieldStorage
+from tempfile import TemporaryFile as tmpfile
 
 from socket import *
 from os.path import getsize
@@ -56,11 +57,11 @@ class RapidServ(object):
 
     def route(self, method):
         def shell(handle):
-            def build(spin, data, version, header, fd):
+            def build(spin, request):
                 kwargs = dict()
-                kwargs.update(data)
-                if fd: 
-                    kwargs.update(fd)
+                kwargs.update(request.query)
+                if request.data: 
+                    kwargs.update(request.data)
                 handle(spin, **kwargs)
             def install(local, spin):
                 xmap(spin, method, build)
@@ -71,20 +72,32 @@ class RapidServ(object):
     def accept(self, handle):
         xmap(self.local, ACCEPT, lambda local, spin: handle(spin))
 
+    def request(self, method):
+        def shell(handle):
+            def install(local, spin):
+                xmap(spin, method, handle)
+            xmap(self.local, ACCEPT, install)
+            return handle
+        return shell
+
 class Request(object):
     def __init__(self, data):
         headers                              = data.split('\r\n')
         request                              = headers.pop(0)
         self.method, self.path, self.version = request.split(' ')
-        self.headers                         = dict(map(self.format_field, headers))
+        self.headers                         = dict(map(self.split_field, headers))
+        self.fd                              = tmpfile('a+')
+        self.data                            = None
+        self.path, sep, self.query           = self.path.partition('?')
+        self.query                           = parse_qs(self.query)
 
-    def format_field(self, data):
-        try:
-            key, value = data.split(':')
-        except ValueError:
-            return data, ''
-        else:
-            return key.lower(), value
+    def build_data(self):
+        self.fd.seek(0)
+        self.data = FieldStorage(fp=self.fd, environ=get_env(self.headers))
+
+    def split_field(self, data):
+        field, sep, value = data.partition(':')
+        return field.lower(), value
 
 class HttpTransferHandle(object):
     HTTP_TRANSFER = get_event()
@@ -105,33 +118,20 @@ class HttpRequestHandle(object):
         xmap(spin, HttpTransferHandle.HTTP_TRANSFER, self.process)
         xmap(spin, TmpFile.DONE,  
                    lambda spin, fd, data: spawn(spin, 
-                                 HttpRequestHandle.HTTP_REQUEST, self.request, fd))
+                                 HttpRequestHandle.HTTP_REQUEST, self.request))
 
     def process(self, spin, request, data):
         self.request = request
-        TmpFile(spin, data, int(request.headers.get('content-length', '0')))
-
+        TmpFile(spin, data, int(request.headers.get('content-length', '0')), request.fd)
 
 class HttpMethodHandle(object):
     def __init__(self, spin):
         xmap(spin, HttpRequestHandle.HTTP_REQUEST, self.process)
 
-
-    def process(self, spin, request, fd):
-        fd = FieldStorage(fp=fd, environ=get_env(request.headers))
-
-        spawn(spin, request.method, request.path, 
-                                    request.version, request.headers, fd)
-    
-        try:
-            path, data = request.path.split('?', 1)
-        except ValueError:
-            spawn(spin, '%s %s' % (request.method, request.path), 
-                                 parse_qs(''), request.version, request.headers, fd)
-        else:
-            spawn(spin, '%s %s' % (request.method, path), 
-                                  parse_qs(data), request.version, request.headers, fd)
-
+    def process(self, spin, request):
+        request.build_data()
+        spawn(spin, request.method, request)
+        spawn(spin, '%s %s' % (request.method, request.path), request)
 
 class NonPersistentConnection(object):
     def __init__(self, spin):
@@ -152,7 +152,6 @@ class PersistentConnection(object):
     def __init__(self, spin, max=10, timeout=120):
         xmap(spin, TmpFile.DONE, lambda con, fd, data: AccUntil(con, data))
 
-
 class InvalidRequest(object):
     """ 
     This handle is used to finish a connection
@@ -172,26 +171,14 @@ class InvalidRequest(object):
 
 class Locate(object):
     """
-    This handle is used to serve static html.
-
-    Example:
-
-    import sys
-    BACKLOG = 50
-    app     = RapidServ(sys.argv[1], int(sys.argv[2]), BACKLOG)
-
-    # It will tell Rapidserv to serve html document in a folder
-    # under the directory __file__.
-    app.add_handle(Locate, make(__file__, 'static'))
-    core.gear.mainloop()
     """
 
-    def __init__(self, spin, path):
+    def __init__(self, spin, folder):
         xmap(spin, 'GET', self.locate)
-        self.path     = abspath(path)
+        self.folder = abspath(folder)
 
-    def locate(self, spin, resource, version, headers, fd):
-        path = join(self.path, basename(resource))
+    def locate(self, spin, request):
+        path = join(self.folder, basename(request.path))
 
         if not isfile(path):
             return
@@ -372,6 +359,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
