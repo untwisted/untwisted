@@ -5,36 +5,27 @@ Usage:
 python app.py
 """
 
-from untwisted.plugins.rapidserv import RapidServ, send_response, Response, core, xmap
+from untwisted.plugins.rapidserv import RapidServ, xmap
+app = RapidServ()
 
+@app.accept
 class Simple(object):
     def __init__(self, con):
-        # Used to map a router to a handle.
         xmap(con, 'GET /', self.send_base)
 
-    def send_base(self, con, data, version, header, fd):
-        # The http response.
-        response = Response()
-        response.set_response('HTTP/1.1 200 OK')
-
+    def send_base(self, con, request):
         HTML = """ <html> 
                    <body>
                    <p> It is simple :P </p>
                    </body> </html>
                """
 
-        response.add_data(HTML)
-
-        # This function should be called just once.
-        send_response(con, response)
-    
+        con.add_data(HTML)
+        con.done()
 
 if __name__ == '__main__':
-    app = RapidServ('0.0.0.0', 80, 60)
-    app.add_handle(Simple)
+    app.run('0.0.0.0', 80, 60)
 
-    core.gear.mainloop()
-    
 
 
 

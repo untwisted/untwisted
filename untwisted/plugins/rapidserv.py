@@ -1,27 +1,69 @@
 """ 
 """
 
-from untwisted.network import *
+from untwisted.network import xmap, zmap, core, spawn
 from untwisted.iostd import Stdin, Stdout, Server, DUMPED, lose, LOAD, ACCEPT, CLOSE
 from untwisted.splits import AccUntil, TmpFile
 from untwisted.timer import Timer
 from untwisted.event import get_event
 from untwisted.debug import on_event, on_all
+from untwisted import network
+
 from urlparse import parse_qs
 from cgi import FieldStorage
 from tempfile import TemporaryFile as tmpfile
 
-from socket import *
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename
 from cStringIO import StringIO
-from untwisted.network import core
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
 DELIM = '\r\n\r\n'
 
+class Spin(network.Spin):
+    def __init__(self, sock):
+        network.Spin.__init__(self, sock)
+        self.response = ''
+        self.headers  = dict()
+        self.data     = ''
+        self.add_default_headers()
+
+    def add_default_headers(self):
+        self.set_response('HTTP/1.1 200 OK')
+        self.add_header(('Server', 'Rapidserv'))
+
+    def set_response(self, data):
+        self.response = data
+
+    def add_header(self, *args):
+        for key, value in args:
+            self.headers[str(key).lower()] = str(value)
+
+    def add_data(self, data, mimetype='text/html;charset=utf-8'):
+        self.add_header(('Content-Type', mimetype))
+        self.data = str(data)
+
+    def done(self):
+        self.headers['Content-Length'] = len(self.data)
+        self.send_headers()
+        self.dump(self.data)
+        self.add_default_headers()
+        self.data = ''
+        self.response = ''
+
+    def send_headers(self):
+        """
+        """
+
+        data = self.response
+        for key, value in self.headers.iteritems():
+            data = data + '\r\n' + '%s:%s' % (key, value)
+        data = data + '\r\n\r\n'
+        self.dump(data)
+    
 class RapidServ(object):
     """
     """
@@ -49,36 +91,45 @@ class RapidServ(object):
         HttpTransferHandle(spin)
         HttpRequestHandle(spin)
         HttpMethodHandle(spin)
-        # NonPersistentConnection(spin)
-        PersistentConnection(spin)
+        NonPersistentConnection(spin)
+        # PersistentConnection(spin)
         # InvalidRequest(client)
 
         xmap(spin, CLOSE, lambda con, err: lose(con))
 
     def route(self, method):
+        """
+        """
+
         def shell(handle):
-            def build(spin, request):
-                kwargs = dict()
-                kwargs.update(request.query)
-                if request.data: 
-                    kwargs.update(request.data)
-                handle(spin, **kwargs)
-            def install(local, spin):
-                xmap(spin, method, build)
-            xmap(self.local, ACCEPT, install)
+            xmap(self.local, ACCEPT, lambda local, spin: 
+                 xmap(spin, method, self.build_kw, handle))
             return handle
         return shell
+
+    def request(self, method):
+        """
+        """
+
+        def shell(handle):
+            xmap(self.local, ACCEPT, lambda local, spin: 
+                 xmap(spin, method, handle))
+            return handle
+        return shell
+
+    def build_kw(self, spin, request, handle):
+        """
+        """
+
+        kwargs = dict()
+        kwargs.update(request.query)
+
+        if request.data: 
+            kwargs.update(request.data)
+        handle(spin, **kwargs)
 
     def accept(self, handle):
         xmap(self.local, ACCEPT, lambda local, spin: handle(spin))
-
-    def request(self, method):
-        def shell(handle):
-            def install(local, spin):
-                xmap(spin, method, handle)
-            xmap(self.local, ACCEPT, install)
-            return handle
-        return shell
 
 class Request(object):
     def __init__(self, data):
@@ -151,6 +202,8 @@ class NonPersistentConnection(object):
 class PersistentConnection(object):
     def __init__(self, spin, max=10, timeout=120):
         xmap(spin, TmpFile.DONE, lambda con, fd, data: AccUntil(con, data))
+        spin.add_header(('connection', 'keep-alive'))
+        spin.add_header(('keep-alive', 'timeout=15, max=10'))
 
 class InvalidRequest(object):
     """ 
@@ -163,11 +216,10 @@ class InvalidRequest(object):
         xmap(spin, IDLE_TIMEOUT, self.error)
 
     def error(self, spin):
-        response  = Response()
-        response.set_response('HTTP/1.1 400 Bad request')
+        spin.set_response('HTTP/1.1 400 Bad request')
         HTML = '<html> <body> <h1> Bad request </h1> </body> </html>'
-        response.add_data(HTML)
-        send_response(spin, HTML)
+        spin.add_data(HTML)
+        spin.done()
 
 class Locate(object):
     """
@@ -189,112 +241,12 @@ class Locate(object):
         type_file, encoding = guess_type(path)
         default_type = 'application/octet-stream'
 
-        header = Header()
-        header.set_response('HTTP/1.1 200 OK')
-
-        header.add_header(('Content-Type', type_file if type_file else default_type),
+        spin.add_header(('Content-Type', type_file if type_file else default_type),
                      ('Content-Length', getsize(path)))
 
-        # Start sending the header.
-        spin.dump(str(header))
+        spin.send_headers()
         xmap(spin, OPEN_FILE_ERR, lambda con, err: lose(con))
         drop(spin, path)
-
-
-class Header(object):
-    """ 
-    This class is used to drop header content to the client.
-    """
-
-    default = {}
-            
-    def __init__(self):
-        self.response = ''
-        self.header   = dict()
-        self.header.update(Header.default)
-        self.add_header(('Content-Type', 'text/html;charset=utf-8'))
-        self.add_header(('Server', 'Rapidserv'))
-        self.add_header(('connection', 'keep-alive'))
-        self.add_header(('keep-alive', 'timeout=15, max=10'))
-    
-    def set_response(self, data):
-        """ Used to add a http response. """
-        self.response = data
-
-    def add_header(self, *args):
-        """ 
-        Add headers to the http response. 
-        """
-
-        for key, value in args:
-            self.header[str(key).lower()] = str(value)
-
-    @staticmethod
-    def add_default_header(self, *args):
-        for key, value in args:
-            Header.default[str(key).lower()] = str(value)
-
-    def __str__(self):
-        """
-        """
-
-        data = self.response
-        for key, value in self.header.iteritems():
-            data = data + '\r\n' + '%s:%s' % (key, value)
-        data = data + '\r\n\r\n'
-        return data
-
-class Response(Header):
-    """ 
-    This class is used to dump header and body content to the client.
-    """
-    def __init__(self):
-        Header.__init__(self)
-        self.data = ''
-
-    def add_data(self, data):
-        self.data = self.data + data
-
-    def __str__(self):
-        """
-        """
-
-        self.header['Content-Length'] = len(self.data)
-
-        x = Header.__str__(self) + self.data 
-        return x
-
-class DebugPost(object):
-    """
-    Used to debug POST calls.
-    """
-
-    def __init__(self, spin):
-        xmap(spin, 'POST' , self.show_header)
-
-    def show_header(self, spin, header, fd, resource, version):
-        print 'POST request handled, ', header, version, resource, fd, spin.getpeername()  
-
-
-class DebugGet(object):
-    """
-    Used to debug GET calls.
-    """
-
-    def __init__(self, spin):
-        xmap(spin, 'GET' , self.show_header)
-
-    def show_header(self, spin, header, fd, resource, version):
-        print 'GET request handled, ', header, resource, version, spin.getpeername()   
-
-
-def send_response(spin, response):
-    """
-    Used to dump a Response/Header object to the client as well
-    as all object whose method __str__ is implemented.
-    """
-
-    spin.dump(str(response))
 
 def get_env(header):
     """
@@ -359,9 +311,6 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
-
-
-
 
 
 

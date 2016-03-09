@@ -6,7 +6,7 @@ python app.py '0.0.0.0' 1025
 
 """
 
-from untwisted.plugins.rapidserv import RapidServ, send_response, Response, Locate, DebugGet, core, xmap, build, make
+from untwisted.plugins.rapidserv import RapidServ, Locate, xmap, build, make
 import sqlite3
 import os.path
 
@@ -23,15 +23,10 @@ def setup(con):
 
 @app.request('GET /')
 def send_base(con, request):
-    # The http response.
-    response = Response()
-    response.set_response('HTTP/1.1 200 OK')
-
     rst  = DB.execute('SELECT * FROM quotes')
     HTML = render('show.jinja', posts = rst.fetchall())
-
-    response.add_data(HTML)
-    send_response(con, str(response))
+    con.add_data(HTML)
+    con.done()
 
 @app.request('GET /load_index')
 def load_index(con, request):
@@ -39,12 +34,9 @@ def load_index(con, request):
     rst          = DB.execute('SELECT name, quote FROM quotes where id=?', index)
     name, quote  = rst.fetchone()
     HTML         = render('view.jinja', name=name, quote=quote)
-    response     = Response()
 
-    response.set_response('HTTP/1.1 200 OK')
-    response.add_data(HTML)
-
-    send_response(con, str(response))
+    con.add_data(HTML)
+    con.done()
 
 @app.request('GET /add_quote')
 def add_quote(con, request):
@@ -68,4 +60,5 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
 

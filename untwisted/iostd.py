@@ -163,7 +163,7 @@ class Server(object):
         while True:
             try:
                 sock, addr = spin.accept()
-                new = Spin(sock)
+                new = spin.__class__(sock)
                 spawn(spin, ACCEPT, new)
             except socket.error as excpt:
                 err = excpt.args[0]
@@ -205,6 +205,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
