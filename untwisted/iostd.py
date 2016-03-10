@@ -173,14 +173,16 @@ class Server(object):
                     break
 
 def lose(spin):
-    spin.destroy()
+    try:
+        spin.destroy()
+    except Exception as err:
+        spawn(spin, CLOSE_ERR, err)
 
     try:
         spin.close()
     except Exception as excpt:
         err = excpt.args[0]
         spawn(spin, CLOSE_ERR, err)
-        debug()
 
 def put(spin, data):
     print data
@@ -205,6 +207,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 

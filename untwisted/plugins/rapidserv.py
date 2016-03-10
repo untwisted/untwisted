@@ -186,18 +186,7 @@ class HttpMethodHandle(object):
 
 class NonPersistentConnection(object):
     def __init__(self, spin):
-        xmap(spin, DUMPED, self.stop)
-
-    def stop(self, con):
-        try:
-            con.destroy()
-        except Exception:
-            pass
-        
-        try:
-            con.close()
-        except Exception:
-            pass
+        xmap(spin, DUMPED, lambda con: lose(con))
 
 class PersistentConnection(object):
     def __init__(self, spin, max=10, timeout=120):
@@ -311,6 +300,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 

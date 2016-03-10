@@ -8,7 +8,6 @@ python app.py '0.0.0.0' 1025
 
 from untwisted.plugins.rapidserv import RapidServ, Locate, xmap, build, make
 import sqlite3
-import os.path
 
 DB_FILENAME = 'DB'
 DB          = sqlite3.connect(make(__file__, DB_FILENAME))
@@ -60,5 +59,6 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
 
 
