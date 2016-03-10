@@ -1,9 +1,10 @@
 """ 
 """
 
-from untwisted.splits import FOUND
+from untwisted.splits import Fixed, BOX, FOUND
 from untwisted.iputils import ip_to_long, long_to_ip
 from untwisted.network import *
+from untwisted.dispatcher import Dispatcher
 from untwisted.iostd import *
 from untwisted.timer import Timer
 from untwisted.event import TIMEOUT, DONE
@@ -21,83 +22,61 @@ PREFIX_REG     = re.compile(PREFIX_STR)
 PRIVMSG_HEADER = 'PRIVMSG %s :%s\r\n'
 CMD_HEADER = '%s\r\n'
 
-class DccServer(Spin):
+class DccServer(Dispatcher):
     """ 
     This class is used to send files. It is called DccServer cause the one sending 
     a file is the one who sets up a server.
     """
 
-    def __init__(self, file_obj, port, timeout=20):
-        """ 
-        Class constructor.
-        file_obj -> The file that is being sent.
-        port     -> The port which will be used.
-        timeout  -> How long the server must be up.
+    def __init__(self, fd, port, timeout=20):
+        """
+        fd      -> The file to be sent.
+        port    -> The port which will be used.
+        timeout -> How long the server must be up.
         """
 
         sock = socket(AF_INET, SOCK_STREAM)
         sock.bind(('', port))
         sock.listen(1)
+        self.local = Spin(sock)
+        Server(self.local)
 
-        Spin.__init__(self, sock)
-        self.file_obj = file_obj
+        Dispatcher.__init__(self)
+        self.fd      = fd
         self.timeout = timeout
-        self.port = port
+        self.port    = port
        
-        Server(self)
-
-        self.is_on = False
-        xmap(self, ACCEPT, self.start_transfer) 
-
-        Timer(self.timeout, self.run_timeout)
+        xmap(self.local, ACCEPT, self.on_accept) 
+        self.timer = Timer(self.timeout, self.on_timeout)
         
-    def run_timeout(self):
+    def on_timeout(self):
+        spawn(self, TIMEOUT)
+        lose(self.local)
+
+    def on_accept(self, local, spin):
         """
         """
 
-        if not self.is_on:
-            spawn(self, TIMEOUT)
-        lose(self)
+        Stdout(spin)
+        Stdin(spin)
+        Fixed(spin)
 
-    def start_transfer(self, server, client):
+        spin.dumpfile(self.fd)
+
+        xmap(spin, CLOSE, lambda con, err: lose(con)) 
+        xmap(spin, BOX, self.is_done) 
+        spin.add_handle(lambda spin, event, args: spawn(self, event, spin, *args))
+        self.timer.cancel()
+
+    def is_done(self, spin, ack):
         """
         """
-
-        xmap(client, WRITE, self.send_file) 
-        Stdout(client)
-        Stdin(client)
-
-        Fixed(client)
-
-        xmap(client, CLOSE, lambda con, err: lose(con)) 
-        xmap(client, BOX, self.run_done) 
-
-        self.is_on = True
-        hook(self, client, CLOSE, DONE)
-
-    def send_file(self, client):
-        """
-        """
-
-        data = self.file_obj.read(1024)
-        if not data:
-           zmap(client, WRITE, self.send_file) 
-           #xmap(client, DUMPED, self.run_done)
-        else:
-            client.dump(data)
-
-    def run_done(self, client, chunk):
-        """
-        """
-
-        pos = unpack("!I", chunk)[0]
-
-        if not pos >= self.file_obj.tell(): 
+        pos = unpack("!I", ack)[0]
+        if not pos >= self.fd.tell(): 
             return
-
-        spawn(client, DONE)
-        lose(client)
-
+        spawn(spin, DONE)
+        lose(spin)
+        lose(self.local)
 
 class DccClient(Spin):
     def __init__(self, host, port, file_obj, size):
@@ -299,6 +278,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
