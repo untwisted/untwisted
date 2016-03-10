@@ -146,7 +146,7 @@ class DccClient(Spin):
 
         zmap(self, LOAD, self.recv_file) 
 
-        yield hold(self, DUMPED)
+        yield self, DUMPED
 
         spawn(client, DONE)
         lose(client)
@@ -299,6 +299,8 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
+
 
 
 
