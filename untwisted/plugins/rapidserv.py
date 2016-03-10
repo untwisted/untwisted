@@ -17,7 +17,6 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename
-from cStringIO import StringIO
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
@@ -300,6 +299,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 

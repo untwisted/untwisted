@@ -13,7 +13,7 @@ DB_FILENAME = 'DB'
 DB          = sqlite3.connect(make(__file__, DB_FILENAME))
 render      = build(__file__, 'templates', 'show.jinja', 'view.jinja')
 app         = RapidServ()
-DB.execute('CREATE TABLE quotes (id  INTEGER PRIMARY KEY, name TEXT, quote TEXT)')
+DB.execute('CREATE TABLE IF NOT EXISTS quotes (id  INTEGER PRIMARY KEY, name TEXT, quote TEXT)')
 DB.commit()
 
 @app.accept
@@ -42,6 +42,7 @@ def add_quote(con, request):
     name      = request.query['name'][0]
     quote     = request.query['quote'][0]
     DB.execute("INSERT INTO quotes (name, quote) VALUES %s" % repr((name, quote)))
+    DB.commit()
     send_base(con, request)
 
 if __name__ == '__main__':
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
 
 
 
