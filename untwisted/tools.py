@@ -7,12 +7,10 @@ class Hold(object):
         self.dispatcher.add_map(self.event, self)
 
     def __call__(self, dispatcher, *args):
-        self.seq.send(args)
-
         try:
-            dispacher, event = next(self.seq)
-        except StopIteration:
-            self.dispatcher.del_map(self, self.event)
+            dispacher, event = self.seq.send(args)
+        except StopIteration, Exception:
+            self.dispatcher.del_map(self.event, self)
         else:
             if self.dispatcher != dispatcher or event != self.event:
                 self.swap_dispatcher(event, dispatcher)
@@ -27,6 +25,8 @@ def coroutine(handle):
     def start(*args, **kwargs):
         hold = Hold(handle(*args, **kwargs))
     return start
+
+
 
 
 
