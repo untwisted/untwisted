@@ -28,6 +28,8 @@ class SSL(Dispatcher):
 
     def destroy(self):
         self.base.clear()
+        SSL.base.clear()
+        del self.pool[:]
         core.gear.unregister(self)
 
 class Spin(socket, Dispatcher):
@@ -48,6 +50,8 @@ class Spin(socket, Dispatcher):
 
     def destroy(self):
         self.base.clear()
+        Spin.base.clear()
+        del self.pool[:]
         core.gear.unregister(self)
 
 class Device(Dispatcher):
@@ -73,6 +77,8 @@ class Device(Dispatcher):
 
     def destroy(self):
         self.base.clear()
+        Device.base.clear()
+        del self.pool[:]
         gear.unregister(self)
 
     def __getattr__(self, name):
@@ -81,6 +87,7 @@ class Device(Dispatcher):
 
 # _all__ = ['Spin',  'Device', 'Stop','Root','Kill','spawn','core', 'hold','xmap',
           # 'zmap','READ','WRITE','get_event','install_reactor']
+
 
 
 

@@ -98,7 +98,6 @@ class DccClient(Dispatcher):
    
         xmap(spin, CONNECT, self.on_connect) 
         xmap(spin, CONNECT_ERR, lambda con, err: lose(con)) 
-        xmap(spin, CONNECT_ERR, lambda con, err: lose(con)) 
 
         spin.add_handle(lambda spin, event, args: spawn(self, event, spin, *args))
 
@@ -273,6 +272,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
