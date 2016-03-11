@@ -64,71 +64,66 @@ class DccServer(Dispatcher):
         spin.dumpfile(self.fd)
 
         xmap(spin, CLOSE, lambda con, err: lose(con)) 
-        xmap(spin, BOX, self.is_done) 
+        xmap(spin, BOX, self.on_box) 
         spin.add_handle(lambda spin, event, args: spawn(self, event, spin, *args))
         self.timer.cancel()
 
-    def is_done(self, spin, ack):
+    def on_box(self, spin, ack):
         """
         """
         pos = unpack("!I", ack)[0]
-        if not pos >= self.fd.tell(): 
-            return
-        spawn(spin, DONE)
+
+        if pos >= self.fd.tell(): 
+            self.run_done(spin)
+
+    def run_done(self, spin):
         lose(spin)
         lose(self.local)
+        spawn(spin, DONE)
 
-class DccClient(Spin):
-    def __init__(self, host, port, file_obj, size):
+class DccClient(Dispatcher):
+    def __init__(self, host, port, fd, size):
         """
         """
+        Dispatcher.__init__(self)
 
-        sock = socket(AF_INET, SOCK_STREAM)
-
-        Spin.__init__(self, sock)
-
+        sock      = socket(AF_INET, SOCK_STREAM)
+        spin      = Spin(sock)
         self.port = port
-        self.file_obj = file_obj
+        self.fd   = fd
         self.size = size
         
-        Client(self)
-        self.connect_ex((host, port))
-        
+        Client(spin)
+        spin.connect_ex((host, port))
    
-        xmap(self, CONNECT, self.set_up_con) 
-        xmap(self, CONNECT_ERR, lambda con, err: lose(con)) 
+        xmap(spin, CONNECT, self.on_connect) 
+        xmap(spin, CONNECT_ERR, lambda con, err: lose(con)) 
+        xmap(spin, CONNECT_ERR, lambda con, err: lose(con)) 
 
-    def set_up_con(self, client):
+        spin.add_handle(lambda spin, event, args: spawn(self, event, spin, *args))
+
+    def on_connect(self, spin):
         """
         """
 
-        Stdout(self)
-        Stdin(self)
-        xmap(self, LOAD, self.recv_file) 
-        xmap(self, CLOSE, lambda con, err: lose(con)) 
- 
+        Stdout(spin)
+        Stdin(spin)
+        xmap(spin, LOAD, self.on_load) 
+        xmap(spin, CLOSE, lambda con, err: lose(con)) 
 
-    def recv_file(self, client, data):
+    def on_load(self, spin, data):
         """
         """
 
-        self.file_obj.write(data)
+        self.fd.write(data)
+        spin.dump(pack('!I', self.fd.tell()))
 
-        # It packs the ack.
-        ack = pack('!I', self.file_obj.tell())
+        if self.fd.tell() >= self.size:
+            xmap(spin, DUMPED, self.run_done)
 
-        # it sends the ack.
-        client.dump(ack)
-
-        if not self.file_obj.tell() >= self.size:
-            return
-
-        zmap(self, LOAD, self.recv_file) 
-
-        yield self, DUMPED
-
-        spawn(client, DONE)
-        lose(client)
+    def run_done(self, spin):
+        lose(spin)
+        spawn(self, DONE)
 
 class Irc(object):
     def __init__(self, spin):
@@ -278,6 +273,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 

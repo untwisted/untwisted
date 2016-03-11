@@ -109,10 +109,26 @@ class TmpFile(object):
         zmap(spin, LOAD, self.update)
         spawn(spin, TmpFile.DONE, self.fd, data[count:])
 
+# class AccAck(object):
+    # DONE = get_event()
+# 
+    # def __init__(self, spin, fd, max_size, ack):
+        # self.fd       = fd
+        # self.max_size = size
+        # xmap(spin, LOAD, self.update)
+# 
+    # def update(self, spin, data):
+        # self.fd.write(data)
+        # spin.dump(self.ack(fd, self.max_size))
+# 
+        # if self.fd.tell() >= self.max_size:
+            # pass
+
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, FOUND, log)
+
 
 
 
