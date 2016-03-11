@@ -20,7 +20,6 @@ class Timer(object):
     def update(self):
         if not time.time() - self.time > self.inc:
             return
-        print 'calling callback'
         self.callback(*self.args, **self.kwargs)
         self.cancel()
 
@@ -42,5 +41,6 @@ class Sched(Timer):
             self.callback(*self.args, **self.kwargs)
         except CancelCall:
             self.cancel()
+
 
 
