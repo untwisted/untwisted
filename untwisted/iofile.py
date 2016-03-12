@@ -1,7 +1,6 @@
-from untwisted.network import core, xmap, READ, WRITE, spawn, zmap
+from untwisted.network import xmap, spawn
 from untwisted import iostd
-from untwisted.event import DUMPED, CLOSE, LOAD
-from collections import deque
+from untwisted.event import CLOSE, LOAD
 import os
 
 class DumpStr(iostd.DumpStr):
@@ -47,6 +46,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 
