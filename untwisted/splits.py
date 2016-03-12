@@ -1,5 +1,5 @@
 from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
-from untwisted.event import LOAD, BOX, FOUND, get_event
+from untwisted.event import LOAD, BOX, get_event
 
 import sys
 
@@ -38,6 +38,7 @@ class Fixed(object):
             spawn(spin, BOX, chunk)
 
 class Shrug:
+    FOUND = get_event()
     def __init__(self, spin, delim='\r\n'):
         self.delim = delim
         self.msg   = bytearray()
@@ -55,7 +56,7 @@ class Shrug:
         del chain[-1]
 
         for ind in chain:
-            spawn(spin, FOUND, str(ind))
+            spawn(spin, Shrug.FOUND, str(ind))
             
 class Accumulator(object):
     """
@@ -127,20 +128,6 @@ class TmpFile(object):
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
-    xmap(spin, FOUND, log)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    xmap(spin, Shrug.FOUND, log)
 
 

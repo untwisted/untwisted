@@ -41,7 +41,6 @@ DUMPED_FILE      = get_event()
 CLOSE_ERR        = get_event()
 COMPLETE         = get_event()
 DONE             = get_event()
-FOUND            = get_event()
 BOX              = get_event()
 TIMEOUT          = get_event()
 SSL_SEND_ERR        = get_event()
@@ -49,6 +48,7 @@ SSL_RECV_ERR        = get_event()
 SSL_CERTIFICATE_ERR = get_event()
 SSL_CONNECT_ERR     = get_event()
 SSL_CONNECT         = get_event()
+
 
 
 

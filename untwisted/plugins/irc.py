@@ -1,7 +1,7 @@
 """ 
 """
 
-from untwisted.splits import Fixed, BOX, FOUND
+from untwisted.splits import Shrug, Fixed, BOX
 from untwisted.iputils import ip_to_long, long_to_ip
 from untwisted.network import *
 from untwisted.dispatcher import Dispatcher
@@ -129,7 +129,7 @@ class Irc(object):
         """ 
         Install the protocol inside a Spin instance. 
         """
-        xmap(spin, FOUND, self.main)
+        xmap(spin, Shrug.FOUND, self.main)
 
     def main(self, spin, data):
         """ 
@@ -272,6 +272,7 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
 
 
 
