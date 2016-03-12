@@ -1,55 +1,41 @@
 from untwisted.network import core, xmap, READ, WRITE, spawn, zmap
+from untwisted import iostd
 from untwisted.event import DUMPED, CLOSE, LOAD
 from collections import deque
 
-class Stdin(object):
-    """
-    A protocol for sending data through a device.
-    """
+class DumpStr(iostd.DumpStr):
+    def process(self, dev):
+        try:
+            dev.write(self.data)  
+        except IOError as excpt:
+            spawn(dev, CLOSE, excpt)
+        else:
+            self.data = buffer('')
 
+class DumpFile(DumpStr, iostd.DumpFile):
+    pass
 
-    def __init__(self, device):
-        self.device = device
-        device.dump = self.dump
-        self.queue  = deque()
-
-
+class Stdin(iostd.Stdin):
     def dump(self, data):
-        """
-        It sends data asynchronously through the device.
-        """
-
+        self.start()
+        data = DumpStr(data)
         self.queue.append(data)
-        xmap(self.device, WRITE, self.update)
 
-    def update(self, device):
+    def dumpfile(self, fd):
+        self.start()
+        fd = DumpFile(fd)
+        self.queue.append(fd)
+
+class Stdout(iostd.Stdout):
+    def update(self, dev):
         try:
-            data = self.queue.popleft()
-        except IndexError:
-            zmap(device, WRITE, self.update)
-            spawn(device, DUMPED)
+            self.process_data(dev)
         except IOError as excpt:
-            err = excpt.args[0]
-            spawn(device, CLOSE, err)
-        else:
-            device.write(data)
+            spawn(dev, CLOSE, excpt)
 
-class Stdout(object):
-    """
-    A protocol for reading data from a device.
-    """
-
-    def __init__(self, device):
-        xmap(device, READ, self.update)
-
-    def update(self, device):
-        try:
-            data = device.read()
-        except IOError as excpt:
-            err = excpt.args[0]
-            spawn(device, CLOSE, err)
-        else:
-            spawn(device, LOAD, data)
+    def process_data(self, dev):
+        data = dev.read(self.SIZE)
+        spawn(dev, LOAD, data)
 
 def lose(device):
     """
@@ -57,6 +43,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 
