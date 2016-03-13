@@ -1,7 +1,7 @@
 """ 
 """
 
-from untwisted.splits import Shrug, Fixed, BOX
+from untwisted.splits import Shrug, Fixed
 from untwisted.iputils import ip_to_long, long_to_ip
 from untwisted.network import *
 from untwisted.dispatcher import Dispatcher
@@ -64,11 +64,11 @@ class DccServer(Dispatcher):
         spin.dumpfile(self.fd)
 
         xmap(spin, CLOSE, lambda con, err: lose(con)) 
-        xmap(spin, BOX, self.on_box) 
+        xmap(spin, Fixed.FOUND, self.on_ack) 
         spin.add_handle(lambda spin, event, args: spawn(self, event, spin, *args))
         self.timer.cancel()
 
-    def on_box(self, spin, ack):
+    def on_ack(self, spin, ack):
         """
         """
         pos = unpack("!I", ack)[0]
@@ -272,6 +272,8 @@ def send_msg(server, target, msg):
 
 def send_cmd(server, cmd):
     server.dump(CMD_HEADER % cmd)
+
+
 
 
 

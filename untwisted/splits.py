@@ -1,5 +1,5 @@
 from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
-from untwisted.event import LOAD, BOX, get_event
+from untwisted.event import LOAD, get_event
 
 import sys
 
@@ -22,6 +22,7 @@ class Fixed(object):
     It spawns BOX when the accumulator hits the specified
     size in bytes.
     """
+    FOUND = get_event()
 
     def __init__(self, spin, size=4):
         xmap(spin, LOAD, self.update)
@@ -35,7 +36,7 @@ class Fixed(object):
         while len(self.box) >= self.size:
             chunk    = buffer(self.box, 0, 4)
             self.box = buffer(self.box, 4)
-            spawn(spin, BOX, chunk)
+            spawn(spin, Fixed.FOUND, chunk)
 
 class Shrug:
     FOUND = get_event()
@@ -129,5 +130,6 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, Shrug.FOUND, log)
+
 
 
