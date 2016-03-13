@@ -193,6 +193,16 @@ class PersistentConnection(object):
         spin.add_header(('connection', 'keep-alive'))
         spin.add_header(('keep-alive', 'timeout=15, max=10'))
 
+class DebugRequest(object):
+    def __init__(self, spin):
+        xmap(spin, HttpRequestHandle.HTTP_REQUEST, self.process)
+
+    def process(self, spin, request):
+        print request.method
+        print request.path
+        print request.data
+        print request.headers
+
 class InvalidRequest(object):
     """ 
     This handle is used to finish a connection
@@ -299,6 +309,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
