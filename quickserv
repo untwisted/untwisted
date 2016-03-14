@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 if __name__ == '__main__':
-    from untwisted.plugins.rapidserv import RapidServ, Locate, DebugRequest
+    from untwisted.plugins.rapidserv import RapidServ, DebugRequest
     from untwisted.network import xmap
     from untwisted.iostd import ACCEPT
     from optparse import OptionParser
@@ -21,14 +21,14 @@ if __name__ == '__main__':
                       metavar="string", default=os.getcwd())
 
     (opt, args) = parser.parse_args()
-    app = RapidServ()
+    app = RapidServ(opt.folder, os.path.basename(opt.folder))
 
     def setup(local, con):
-        Locate(con, opt.folder)
         DebugRequest(con)
 
     xmap(app.local, ACCEPT, setup)
     app.run(opt.addr, opt.port, opt.backlog)
+
 
 
 

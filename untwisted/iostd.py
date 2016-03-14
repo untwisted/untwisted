@@ -156,15 +156,15 @@ class Server(object):
     """
     """
 
-    def __init__(self, spin):
+    def __init__(self, spin, wrap = lambda sock: Spin(sock)):
         xmap(spin, READ, self.update)
+        self.wrap = wrap
 
     def update(self, spin):
         while True:
             try:
                 sock, addr = spin.accept()
-                new = spin.__class__(sock)
-                spawn(spin, ACCEPT, new)
+                spawn(spin, ACCEPT, self.wrap(sock))
             except socket.error as excpt:
                 err = excpt.args[0]
                 if not err in ACCEPT_ERR_CODE:
@@ -207,6 +207,8 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
+
 
 
 

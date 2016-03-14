@@ -12,13 +12,9 @@ import sqlite3
 DB_FILENAME = 'DB'
 DB          = sqlite3.connect(make(__file__, DB_FILENAME))
 render      = build(__file__, 'templates', 'show.jinja', 'view.jinja')
-app         = RapidServ()
+app         = RapidServ(__file__)
 DB.execute('CREATE TABLE IF NOT EXISTS quotes (id  INTEGER PRIMARY KEY, name TEXT, quote TEXT)')
 DB.commit()
-
-@app.accept
-def setup(con):
-    Locate(con, make(__file__, 'static'))
 
 @app.request('GET /')
 def send_base(con, request):
@@ -60,6 +56,8 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
+
 
 
 

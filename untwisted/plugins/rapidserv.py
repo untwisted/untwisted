@@ -16,18 +16,20 @@ from tempfile import TemporaryFile as tmpfile
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from os.path import getsize
 from mimetypes import guess_type
-from os.path import isfile, join, abspath, basename
+from os.path import isfile, join, abspath, basename, dirname
+from jinja2 import Template, FileSystemLoader, Environment
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
 DELIM = '\r\n\r\n'
 
 class Spin(network.Spin):
-    def __init__(self, sock):
+    def __init__(self, sock, app):
         network.Spin.__init__(self, sock)
-        self.response = ''
-        self.headers  = dict()
-        self.data     = ''
+        self.app          = app
+        self.response     = ''
+        self.headers      = dict()
+        self.data         = ''
         self.add_default_headers()
 
     def add_default_headers(self):
@@ -62,18 +64,24 @@ class Spin(network.Spin):
             data = data + '\r\n' + '%s:%s' % (key, value)
         data = data + '\r\n\r\n'
         self.dump(data)
-    
+
+    def render(self, template):
+        pass
+
 class RapidServ(object):
     """
     """
 
-    def __init__(self):
-        sock = socket(AF_INET, SOCK_STREAM)
-        sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.local = Spin(sock)
+    def __init__(self, app_dir, static_dir='static', template_dir='templates'):
+        self.app_dir      = dirname(abspath(app_dir))
+        self.static_dir   = static_dir
+        self.template_dir = template_dir
+        sock              = socket(AF_INET, SOCK_STREAM)
+        self.local        = network.Spin(sock)
+        self.local.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
     def bind(self, addr, port, backlog):
-        Server(self.local) 
+        Server(self.local, lambda sock: Spin(sock, self)) 
         self.local.bind((addr, port))
         self.local.listen(backlog)
         
@@ -90,7 +98,12 @@ class RapidServ(object):
         HttpTransferHandle(spin)
         HttpRequestHandle(spin)
         HttpMethodHandle(spin)
+
+        # must be improved.
+        Locate(spin)
+
         NonPersistentConnection(spin)
+
         # PersistentConnection(spin)
         # InvalidRequest(client)
 
@@ -223,12 +236,11 @@ class Locate(object):
     """
     """
 
-    def __init__(self, spin, folder):
+    def __init__(self, spin):
         xmap(spin, 'GET', self.locate)
-        self.folder = abspath(folder)
 
     def locate(self, spin, request):
-        path = join(self.folder, basename(request.path))
+        path = join(spin.app.app_dir, spin.app.static_dir, basename(request.path))
 
         if not isfile(path):
             return
@@ -290,8 +302,6 @@ def build(searchpath, folder, *args):
     Would render show.jinja with the parameter a = 'cool'.
     """
 
-    from jinja2 import Template, FileSystemLoader, Environment
-    from os.path import join, abspath, dirname
 
     loader        = FileSystemLoader(searchpath = make(searchpath, folder))
     env           = Environment(loader=loader)
@@ -306,9 +316,9 @@ def make(searchpath, folder):
     Used to build a path search for Locate plugin.
     """
 
-    from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 

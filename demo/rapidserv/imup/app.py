@@ -10,11 +10,7 @@ DB          = shelve.open(make(__file__, DB_FILENAME))
 render      = build(__file__, 'templates', 'view.jinja')
 HttpRequestHandle.MAX_SIZE = 1024 * 5024
 
-app = RapidServ()
-
-@app.accept
-def setup(con):
-    InvalidRequest(con)
+app = RapidServ(__file__)
 
 @app.route('GET /')
 def index(con):
@@ -47,5 +43,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
 
     app.run(opt.addr, opt.port, opt.backlog)
+
+
 
 

@@ -1,4 +1,10 @@
 
+The rapidserv plugin
+====================
+
+The requests plugin
+===================
+
 The event-driven paradigm
 =========================
 
@@ -14,15 +20,9 @@ Basic events
 Mapping handles to events
 =========================
 
-
-The requests plugin
-===================
-
-The rapidserv plugin
-====================
-
 The IRC Client plugin
 =====================
+
 
 
 
