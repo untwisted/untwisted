@@ -1,8 +1,4 @@
 """
-Description: Just send html back to the client.
-
-Usage:
-python app.py
 """
 
 from untwisted.plugins.rapidserv import RapidServ, xmap
@@ -25,6 +21,7 @@ class Simple(object):
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 80, 60)
+
 
 
 

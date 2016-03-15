@@ -8,7 +8,7 @@ class Root(Exception):
 class Kill(Exception):
     pass
 
-def die(msg):
+def die(msg=''):
     """
     It is used to stop the reactor.
     """
@@ -293,6 +293,7 @@ def default():
 install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

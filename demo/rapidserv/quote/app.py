@@ -1,9 +1,4 @@
 """
-Description: This file implements a simple quote system using jinja2 template system.
-
-Usage:
-python app.py '0.0.0.0' 1025
-
 """
 
 from untwisted.plugins.rapidserv import RapidServ, xmap, build, make
@@ -56,6 +51,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
 
 
 
