@@ -6,7 +6,7 @@ python app.py '0.0.0.0' 1025
 
 """
 
-from untwisted.plugins.rapidserv import RapidServ, Locate, xmap, build, make
+from untwisted.plugins.rapidserv import RapidServ, xmap, build, make
 import sqlite3
 
 DB_FILENAME = 'DB'
@@ -56,6 +56,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     app.run(opt.addr, opt.port, opt.backlog)
     
+
 
 
 
