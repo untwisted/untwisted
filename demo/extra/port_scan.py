@@ -3,7 +3,7 @@
 
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Client, lose, CONNECT, CONNECT_ERR
-from untwisted.task import Task, COMPLETE
+from untwisted.task import Task, DONE
 from untwisted.network import die
 from socket import *
 
@@ -23,7 +23,7 @@ def scan(addr, min, max):
     for ind in xrange(min, max):
         task.add(create_connection(addr, ind), CONNECT, CONNECT_ERR)
     
-    xmap(task, COMPLETE, lambda task: die())
+    xmap(task, DONE, lambda task: die())
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -36,6 +36,7 @@ if __name__ == '__main__':
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
+
 
 
 

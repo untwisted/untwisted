@@ -38,7 +38,6 @@ Rapidserv uses jinja2 although it doesn't enforce the usage.
 
 ### The quote web app
 
-
 The requests plugin
 ===================
 
@@ -47,6 +46,20 @@ The event-driven paradigm
 
 Dispatcher class
 ================
+
+### Events and handles
+
+### Binding handles to events
+
+### Unbinding handles
+
+### Exceptions in handles
+
+### Static handles
+
+### binding static handles to events
+
+### Unbinding static handles to events
 
 Super socket class
 ==================
@@ -59,6 +72,7 @@ Mapping handles to events
 
 The IRC Client plugin
 =====================
+
 
 
 

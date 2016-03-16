@@ -1,5 +1,5 @@
 from untwisted.dispatcher import Dispatcher
-from untwisted.event import COMPLETE
+from untwisted.event import DONE
 
 class Task(Dispatcher):
     """
@@ -14,22 +14,13 @@ class Task(Dispatcher):
         """
 
         self.count = self.count + 1
-
         for ind in events:
-            dispatcher.add_map(ind, self.checker, events)
+            dispatcher.add_map(ind, self.is_done, events)
 
-    def checker(self, dispatcher, events):
-        """
-        """
+    def is_done(self, dispatcher, events):
         self.count = self.count - 1
-
         for ind in events:
-            dispatcher.del_map(ind, self.checker, events)
-
-        if self.count:
-            self.drive(COMPLETE)
-
-
-
+            dispatcher.del_map(ind, self.is_done, events)
+        if self.count: self.drive(DONE)
 
 
