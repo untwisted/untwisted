@@ -38,7 +38,7 @@ class Fixed(object):
             self.box = buffer(self.box, 4)
             spawn(spin, Fixed.FOUND, chunk)
 
-class Shrug:
+class Terminator:
     FOUND = get_event()
     def __init__(self, spin, delim='\r\n'):
         self.delim = delim
@@ -57,7 +57,7 @@ class Shrug:
         del chain[-1]
 
         for ind in chain:
-            spawn(spin, Shrug.FOUND, str(ind))
+            spawn(spin, Terminator.FOUND, str(ind))
             
 class Accumulator(object):
     """
@@ -129,7 +129,9 @@ class TmpFile(object):
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
-    xmap(spin, Shrug.FOUND, log)
+    xmap(spin, Terminator.FOUND, log)
+
+
 
 
 
