@@ -1,8 +1,14 @@
+Untwisted Framework
+===================
+
+How to read this book?
+======================
+
 The rapidserv plugin
 ====================
 
 Rapidserv is a micro web framework that is built on top of a powerful asynchronous networking library. It shares with flask
-some similarities in the design of the applications that are built on top of rapidserv. Rapidserv is non blocking network I/O
+some similarities in the design of the applications that are built on top of Rapidserv. Rapidserv is non blocking network I/O
 consequently it can scale a lot of connections and it is ideal for some applications. 
 Rapidserv uses jinja2 although it doesn't enforce the usage.
 
@@ -55,6 +61,8 @@ Dispatcher class
 
 ### Exceptions in handles
 
+### Dispatcher flow control
+
 ### Static handles
 
 ### binding static handles to events
@@ -64,17 +72,67 @@ Dispatcher class
 Super socket class
 ==================
 
+Spin class
+==========
+
+Reactors
+========
+
+### Select 
+
+### Epoll
+
+### Poll
+
+Reactor mainloop
+================
+
+Reactor flow control
+====================
+
 Basic events
 ============
 
-Mapping handles to events
-=========================
+Basic built-in handles
+======================
+
+Internet protocol events
+========================
+
+Clients
+=======
+
+Servers
+=======
+
+Timers
+======
+
+Coroutines
+==========
+
+Tasks
+=====
+
+SSL Clients
+===========
+
+SSL Servers
+===========
+
+Threads
+=======
+
+Spawning processes
+==================
 
 The IRC Client plugin
 =====================
 
+Debugging
+=========
 
-
-
+Tests
+=====
 
 
