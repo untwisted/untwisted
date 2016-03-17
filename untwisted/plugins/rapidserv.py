@@ -17,7 +17,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename, dirname
-from jinja2 import Template, FileSystemLoader, Environment
+from jinja2 import Template, FileSystemLoader, Environment, PackageLoader
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
@@ -287,42 +287,26 @@ def drop(spin, filename):
         spin.dumpfile(fd)
 
 
-def build(searchpath, folder, *args):
-    """
-    Used to render a template.
+class Jinja2(object):
+    def __init__(self, app):
+        self.loader   = FileSystemLoader(searchpath = join(app.app_dir, app.template_dir))
+        self.env      = Environment(loader=self.loader)
+        self.app      = app
 
-    Example:
     
-    render is a function that will render the templates show.jinja or view.jinja.
+    def render(self, template_name, *args, **kwargs):
+        template = self.env.get_template(template_name)
+        return template.render(*args, **kwargs)
 
-    render = build(__file__, 'templates', 'show.jinja', 'view.jinja')
-    
-    render('show.jinja', a = 'cool')
-
-    Would render show.jinja with the parameter a = 'cool'.
-    """
-
-
-    loader        = FileSystemLoader(searchpath = make(searchpath, folder))
-    env           = Environment(loader=loader)
-    base          = dict(zip(args, map(env.get_template, args)))
-
-    def render(filename, *args, **kwargs):
-        return base[filename].render(*args, **kwargs)
-    return render
 
 def make(searchpath, folder):
     """
     Used to build a path search for Locate plugin.
     """
 
+    from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
-
-
-
-
-
 
 
 

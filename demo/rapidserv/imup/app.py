@@ -2,20 +2,19 @@
 
 """
 
-from untwisted.plugins.rapidserv import RapidServ, build, make, HttpRequestHandle, InvalidRequest
+from untwisted.plugins.rapidserv import RapidServ, Jinja2, make, HttpRequestHandle
 import shelve
 
 DB_FILENAME = 'DB'
 DB          = shelve.open(make(__file__, DB_FILENAME))
-render      = build(__file__, 'templates', 'view.jinja')
 HttpRequestHandle.MAX_SIZE = 1024 * 5024
 
-app = RapidServ(__file__)
+app    = RapidServ(__file__)
+jinja2 = Jinja2(app)
 
 @app.route('GET /')
 def index(con):
-    HTML = render('view.jinja', posts = DB.iterkeys())
-    con.add_data(HTML)
+    con.add_data(jinja2.render('view.jinja', posts = DB.iterkeys()))
     con.done()
 
 @app.route('GET /load_index')
@@ -43,6 +42,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
 
     app.run(opt.addr, opt.port, opt.backlog)
+
 
 
 
