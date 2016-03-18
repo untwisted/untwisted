@@ -26,23 +26,5 @@ def add_image(con, file):
     index(con)
 
 if __name__ == '__main__':
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option("-a", "--addr", dest="addr",
-                      metavar="string", default='0.0.0.0')
-                  
-    parser.add_option("-p", "--port", dest="port",
-                      metavar="integer", default=80)
-
-    parser.add_option("-b", "--backlog", dest="backlog",
-                      metavar="integer", default=50)
-
-    (opt, args) = parser.parse_args()
-
-    app.run(opt.addr, opt.port, opt.backlog)
-
-
-
-
-
+    app.run()
 

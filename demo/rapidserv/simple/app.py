@@ -1,8 +1,9 @@
 """
 """
 
-from untwisted.plugins.rapidserv import RapidServ, xmap
-app = RapidServ()
+from untwisted.plugins.rapidserv import RapidServ, core, xmap
+
+app = RapidServ(__file__)
 
 @app.accept
 class Simple(object):
@@ -20,7 +21,8 @@ class Simple(object):
         con.done()
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', 80, 60)
+    app.bind('0.0.0.0', 80, 60)
+    core.gear.mainloop()
 
 
 
