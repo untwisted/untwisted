@@ -17,7 +17,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from os.path import getsize
 from mimetypes import guess_type
 from os.path import isfile, join, abspath, basename, dirname
-from jinja2 import Template, FileSystemLoader, Environment, PackageLoader
+from jinja2 import Template, FileSystemLoader, Environment
 
 INVALID_BODY_SIZE = get_event()
 IDLE_TIMEOUT      = get_event()
@@ -65,17 +65,20 @@ class Spin(network.Spin):
         data = data + '\r\n\r\n'
         self.dump(data)
 
-    def render(self, template):
-        pass
+    def render(self, template_name, *args, **kwargs):
+        template = self.app.env.get_template(template_name)
+        self.add_data(template.render(*args, **kwargs))
 
 class RapidServ(object):
     """
     """
 
-    def __init__(self, app_dir, static_dir='static', template_dir='templates'):
+    def __init__(self, app_dir, static_dir='static', template_dir='templates', auto_reload=True):
         self.app_dir      = dirname(abspath(app_dir))
         self.static_dir   = static_dir
         self.template_dir = template_dir
+        self.loader       = FileSystemLoader(searchpath = join(self.app_dir, self.template_dir))
+        self.env          = Environment(loader=self.loader, auto_reload=auto_reload)
         sock              = socket(AF_INET, SOCK_STREAM)
         self.local        = network.Spin(sock)
         self.local.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -286,19 +289,6 @@ def drop(spin, filename):
     else:
         spin.dumpfile(fd)
 
-
-class Jinja2(object):
-    def __init__(self, app):
-        self.loader   = FileSystemLoader(searchpath = join(app.app_dir, app.template_dir))
-        self.env      = Environment(loader=self.loader)
-        self.app      = app
-
-    
-    def render(self, template_name, *args, **kwargs):
-        template = self.env.get_template(template_name)
-        return template.render(*args, **kwargs)
-
-
 def make(searchpath, folder):
     """
     Used to build a path search for Locate plugin.
@@ -307,6 +297,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
