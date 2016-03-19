@@ -1,63 +1,36 @@
 """
-This example post code onto codepad.org.
-Usage:
-python codepad.py filename
-
-Example
-python codepad.py /home/tau/vimperator-keys.html
 """
 
-from untwisted.plugins.requests import HttpClient, HTTP_RESPONSE, post_data
-from untwisted.utils.stdio import Stdin, Stdout, CONNECT, CONNECT_ERR, CLOSE, lose, Client
+from untwisted.plugins.requests import HttpResponseHandle, post
 from untwisted.network import Spin, xmap, core, die
+import argparse
 
-
-def set_up_con(con, data):
-    Stdin(con)
-    Stdout(con)
-    
-    HttpClient(con)
-    xmap(con, HTTP_RESPONSE, handle_http_response)
-    xmap(con, CLOSE, lambda con, err: lose(con))
-
-    con.dump(data)
-    
-def handle_http_response(spin, version, code, reason, header, data):
-    print 'URL:%s' % header['Location']
+def on_done(spin, response):
+    print 'URL:%s' % response.headers['location']
     die()
 
 if __name__ == '__main__':
-    import sys
-    fd   = open(sys.argv[1], 'r')
+    parser= argparse.ArgumentParser()
+    parser.add_argument('-f', '--filename',  default='0.0.0.0', help='filename')
+    parser.add_argument('-t', '--type',  default='Plain Text', help='type')
+    parser.add_argument('-r', '--run',  default=False, type=bool, help='run')
+    args = parser.parse_args()
+
+    fd   = open(args.filename, 'r')
     code = fd.read()
     fd.close()
 
-    ADDR = 'codepad.org'    
-    PORT = 80
-
-    HEADER = {
-    'Host':ADDR,
-    'User-Agent':"uxreq/1.0", 
-    'Accept-Charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-    'Connection':'close',
-    }
-
-
-    PARAMS = {
+    payload = {
                     'code':code,
-                    'lang':'Plain Text',
-                    'submit':'Submit'
-               }
-
-    con  = Spin()
-
-    Client(con)
-    con.connect_ex((ADDR, PORT))
-
-    xmap(con, CONNECT, set_up_con, post_data('/', data=PARAMS, header=HEADER))
-    xmap(con, CONNECT_ERR, lambda con, err: lose(con))
-
+                    'lang':args.type,
+                    'submit':'Submit',
+                    'run': args.run
+              }
+    
+    con = post('codepad.org', 80, '/', payload)
+    xmap(con, HttpResponseHandle.HTTP_RESPONSE, on_done)
     core.gear.mainloop()
+
 
 
 

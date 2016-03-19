@@ -1,121 +1,99 @@
-from untwisted.utils.stdio import LOAD, CLOSE
-from untwisted.network import Spin, xmap, get_event, spawn, zmap
+from untwisted.iostd import LOAD, CLOSE, CONNECT, CONNECT_ERR, Client, Stdin, Stdout, lose
+from untwisted.splits import AccUntil, TmpFile
+from untwisted.network import Spin, xmap, spawn, zmap
+from untwisted.event import get_event
 from urllib import urlencode
+from untwisted.plugins import rapidserv
+from tempfile import TemporaryFile as tmpfile
 
-HTTP_RESPONSE = get_event()
+DEFAULT_HEADERS = {
+    'user-agent':"uxreq/1.0", 
+    'accept-charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+    'connection':'close',
+    }
 
-class HttpClient(object):
+class Response(rapidserv.Request):
+    def __init__(self, data):
+        headers                              = data.split('\r\n')
+        response                             = headers.pop(0)
+        self.version, self.code, self.reason = response.split(' ', 2)
+        self.headers                         = dict(map(self.split_field, headers))
+        self.fd                              = tmpfile('a+')
+        # self.data                            = None
 
-    def __init__(self, spin):
-
+class HttpTransferHandle(rapidserv.HttpTransferHandle):
+    def process_request(self, spin, response, data):
+        """
         """
 
-        """
+        response = Response(response)
+        spawn(spin, HttpTransferHandle.HTTP_TRANSFER, response, data)
 
-        xmap(spin, LOAD, self.get_header)
-        xmap(spin, CLOSE,  self.spawn_response)
-
-        self.spin     = spin
-        self.header   = ''
-        self.data     = ''
-        self.response = ''
-        self.size     = None
-
-    def get_header(self, spin, data):
-        """
-
-        """
-
-        DELIM       = '\r\n\r\n'
-        self.header = self.header + data
-
-        if not DELIM in data:
-            return
-
-        self.header, self.data     = self.header.split(DELIM, 1)
-        self.response, self.header = self.split_header(self.header)
-        zmap(spin, LOAD, self.get_header)
-        xmap(spin, LOAD, self.get_data)
-
-    def split_header(self, data):
-        """
-
-        """
-
-
-        DELIM_LINE     = '\r\n'
-        DELIM_PAIR     = ': '
-        DELIM_RESPONSE = ' '
-
-        data           = data.split(DELIM_LINE)
-        response       = data[0]
-        response       = response.split(DELIM_RESPONSE)
-        header         = dict()
-
-        del data[0]
-
-        for ind in data:
-            key, value  = ind.split(DELIM_PAIR, 1)
-            header[key] = value
-
-        return response, header
-
-    def spawn_response(self, *args):
-        """
-
-        """
-        spawn(self.spin, HTTP_RESPONSE, self.response[0], self.response[1], 
-                                    self.response[2], self.header, self.data)
-
-
-    def get_data(self, spin, data):
-        """
-
-        """
-
-        self.data = self.data + data
+class HttpResponseHandle(rapidserv.HttpRequestHandle):
+    HTTP_RESPONSE = rapidserv.HttpRequestHandle.HTTP_REQUEST
 
 class HttpCode(object):
     def __init__(self, spin):
-        xmap(spin, HTTP_RESPONSE, self.spawn_method)
+        xmap(spin, HttpResponseHandle.HTTP_RESPONSE, self.spawn_method)
 
-    def spawn_method(self, spin, version, code, reason, header, message):
-        spawn(spin, code, version, reason, header, message)
+    def process(self, spin, response):
+        pass
 
-def get(rsc, args={}, version='HTTP/1.1', header={}):
+def on_connect(spin, request):
+    Stdin(spin)
+    Stdout(spin)
+    AccUntil(spin)
+    HttpTransferHandle(spin)
+
+    # It has to be mapped here otherwise HttpTransferHandle.HTTP_RESPONSE
+    # will be spawned and response.fd cursor will be at the end of the file.
+    xmap(spin, TmpFile.DONE, 
+                        lambda spin, fd, data: fd.seek(0))
+
+    HttpResponseHandle(spin)
+    xmap(spin, CLOSE, lambda con, err: lose(con))
+
+    spin.dump(request)
+
+def create_connection(addr, port, request):
+    con  = Spin()
+    Client(con)
+    con.connect_ex((addr, port))
+
+    xmap(con, CONNECT,  on_connect, request)
+    xmap(con, CONNECT_ERR, lambda con, err: lose(con))
+    return con
+
+def get(addr, port, path, args={}, version='HTTP/1.1', headers=DEFAULT_HEADERS):
     args = '?%s' % urlencode(args) if args else ''
-    data  = 'GET %s%s %s\r\n' % (rsc, args, version)
+    headers['host'] = addr
 
-    for key, value in header.iteritems():
+    data  = 'GET %s%s %s\r\n' % (path, args, version)
+
+    for key, value in headers.iteritems():
         data = data + '%s: %s\r\n' % (key, value)
     data = data + '\r\n'
-    return data
+    spin = create_connection(addr, port, data)
+    return spin
 
-def post_data(rsc, data={}, version='HTTP/1.1', header={}):
-    params                   = urlencode(data)
-    data                     = 'POST %s %s\r\n' % (rsc, version)
-    header['Content-Type']   = 'application/x-www-form-urlencoded'
-    header['Content-Length'] = len(params)
+def post(addr, port, path, payload={}, version='HTTP/1.1', headers=DEFAULT_HEADERS):
+    payload                  = urlencode(payload)
+    request                  = 'POST %s %s\r\n' % (path, version)
+    # should be fixed the content type thing.
+    headers['host'] = addr
 
-    for key, value in header.iteritems():
-        data = data + '%s: %s\r\n' % (key, value)
+    headers['content-type']   = 'application/x-www-form-urlencoded'
+    headers['content-length'] = len(payload)
 
-    data = data + '\r\n'
-    data = data + params
-    return data
+    for key, value in headers.iteritems():
+        request = request + '%s: %s\r\n' % (key, value)
+    request = request + '\r\n' + payload
+    spin    = create_connection(addr, port, request)
+    return spin
 
 def auth(username, password):
     from base64 import encodestring
     base = encodestring('%s:%s' % (username, password))
     base = base.replace('\n', '')
     return "Basic %s" % base
-
-def post_file():
-    pass
-
-
-
-
-
-
 
