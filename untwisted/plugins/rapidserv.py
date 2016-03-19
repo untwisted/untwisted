@@ -48,9 +48,9 @@ class Spin(network.Spin):
         self.headers['Content-Length'] = len(self.data)
         self.send_headers()
         self.dump(self.data)
-        self.add_default_headers()
         self.data = ''
-        self.response = ''
+        self.headers.clear()
+        self.add_default_headers()
 
     def send_headers(self):
         """
@@ -107,9 +107,9 @@ class RapidServ(object):
         # must be improved.
         Locate(spin)
 
-        NonPersistentConnection(spin)
+        # NonPersistentConnection(spin)
 
-        # PersistentConnection(spin)
+        PersistentConnection(spin)
         # InvalidRequest(client)
 
         xmap(spin, CLOSE, lambda con, err: lose(con))
@@ -206,10 +206,35 @@ class NonPersistentConnection(object):
         xmap(spin, DUMPED, lambda con: lose(con))
 
 class PersistentConnection(object):
-    def __init__(self, spin, max=10, timeout=120):
-        xmap(spin, TmpFile.DONE, lambda con, fd, data: AccUntil(con, data))
+    TIMEOUT = 10
+    MAX     = 10
+
+    def __init__(self, spin):
+        self.timer = Timer(PersistentConnection.TIMEOUT, lambda: lose(spin))
+        self.data  = ''
+        self.count = 0
+        xmap(spin, TmpFile.DONE, self.alloc_data)
+        xmap(spin, DUMPED, self.process)
+        xmap(spin, HttpTransferHandle.HTTP_TRANSFER, lambda spin, request, data: self.timer.cancel())
+
         spin.add_header(('connection', 'keep-alive'))
-        spin.add_header(('keep-alive', 'timeout=15, max=10'))
+        spin.add_header(('keep-alive', 'timeout=%s, max=%s' % (PersistentConnection.TIMEOUT, 
+                                                                        PersistentConnection.MAX)))
+
+    def alloc_data(self, spin, fd, data):
+        self.data = data
+
+    def process(self, spin):
+        self.count = self.count + 1
+
+        if self.count >= PersistentConnection.MAX:
+            lose(spin)
+        else:
+            self.install_timeout(spin)
+
+    def install_timeout(self, spin):
+        AccUntil(spin, self.data)
+        self.timer = Timer(PersistentConnection.TIMEOUT, lambda: lose(spin))
 
 class DebugRequest(object):
     def __init__(self, spin):
@@ -298,6 +323,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
