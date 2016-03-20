@@ -7,8 +7,15 @@ import shelve
 
 DB_FILENAME = 'DB'
 DB          = shelve.open(make(__file__, DB_FILENAME))
-HttpRequestHandle.MAX_SIZE = 1024 * 5024
+HttpRequestHandle.MAX_SIZE = 1024 * 1024 * 3
 app    = RapidServ(__file__)
+
+@app.overflow
+def response(con, request):
+    con.set_response('HTTP/1.1 400 Bad request')
+    HTML = '<html> <body> <h1> Bad request </h1> </body> </html>'
+    con.add_data(HTML)
+    con.done()
 
 @app.route('GET /')
 def index(con):
@@ -27,4 +34,6 @@ def add_image(con, file):
 
 if __name__ == '__main__':
     app.run()
+
+
 

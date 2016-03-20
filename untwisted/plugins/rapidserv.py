@@ -148,6 +148,10 @@ class RapidServ(object):
     def accept(self, handle):
         xmap(self.local, ACCEPT, lambda local, spin: handle(spin))
 
+    def overflow(self, handle):
+        xmap(self.local, ACCEPT, lambda local, spin: 
+                    xmap(spin, HttpRequestHandle.OVERFLOW, handle))
+
 class Request(object):
     def __init__(self, data):
         headers                              = data.split('\r\n')
@@ -179,7 +183,8 @@ class HttpTransferHandle(object):
 
 class HttpRequestHandle(object):
     HTTP_REQUEST = get_event()
-    MAX_SIZE     = 124 * 1024
+    OVERFLOW     = get_event()
+    MAX_SIZE     = 1024 * 5024
 
     def __init__(self, spin):
         self.request = None
@@ -189,8 +194,13 @@ class HttpRequestHandle(object):
                                  HttpRequestHandle.HTTP_REQUEST, self.request))
 
     def process(self, spin, request, data):
+        size         = int(request.headers.get('content-length', '0'))
         self.request = request
-        TmpFile(spin, data, int(request.headers.get('content-length', '0')), request.fd)
+
+        if HttpRequestHandle.MAX_SIZE <= size:
+            spawn(spin, HttpRequestHandle.OVERFLOW, request)
+        else:
+            TmpFile(spin, data, size, request.fd)
 
 class HttpMethodHandle(object):
     def __init__(self, spin):
@@ -200,6 +210,7 @@ class HttpMethodHandle(object):
         request.build_data()
         spawn(spin, request.method, request)
         spawn(spin, '%s %s' % (request.method, request.path), request)
+        spin.dump('')
 
 class NonPersistentConnection(object):
     def __init__(self, spin):
@@ -211,29 +222,22 @@ class PersistentConnection(object):
 
     def __init__(self, spin):
         self.timer = Timer(PersistentConnection.TIMEOUT, lambda: lose(spin))
-        self.data  = ''
         self.count = 0
-        xmap(spin, TmpFile.DONE, self.alloc_data)
-        xmap(spin, DUMPED, self.process)
+        xmap(spin, TmpFile.DONE, self.process)
+        xmap(spin, DUMPED, self.install_timeout)
         xmap(spin, HttpTransferHandle.HTTP_TRANSFER, lambda spin, request, data: self.timer.cancel())
 
         spin.add_header(('connection', 'keep-alive'))
         spin.add_header(('keep-alive', 'timeout=%s, max=%s' % (PersistentConnection.TIMEOUT, 
                                                                         PersistentConnection.MAX)))
 
-    def alloc_data(self, spin, fd, data):
-        self.data = data
-
-    def process(self, spin):
+    def process(self, spin, fd, data):
         self.count = self.count + 1
 
-        if self.count >= PersistentConnection.MAX:
-            lose(spin)
-        else:
-            self.install_timeout(spin)
+        if self.count < PersistentConnection.MAX:
+            AccUntil(spin, data)
 
     def install_timeout(self, spin):
-        AccUntil(spin, self.data)
         self.timer = Timer(PersistentConnection.TIMEOUT, lambda: lose(spin))
 
 class DebugRequest(object):
@@ -323,6 +327,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 
