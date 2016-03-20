@@ -145,6 +145,13 @@ core.gear.mainloop()
 Install
 =======
 
+Untwisted depends on python2.
+
+    pip install jinja2
+    cd /tmp
+    git clone https://github.com/iogf/untwisted.git untwisted-code
+    cd untwisted-code
+    python setup.py install
 
 The Untwisted Book
 ==================
