@@ -39,11 +39,7 @@ from untwisted.network import Spin, xmap, core
 from untwisted.iostd import Server, Stdout, Stdin, ACCEPT, LOAD, CLOSE, lose
 
 class EchoServer(object):
-    def __init__(self):
-        server = Spin()
-        server.bind(('', 1234))
-        server.listen(200)
-    
+    def __init__(self, server):
         Server(server)
         xmap(server, ACCEPT, self.handle_accept)
 
@@ -55,7 +51,11 @@ class EchoServer(object):
         xmap(con, CLOSE, lambda con, err: lose(con))
 
 if __name__ == '__main__':
-    EchoServer()
+    server = Spin()
+    server.bind(('', 1234))
+    server.listen(200)
+
+    EchoServer(server)
     core.gear.mainloop()
 ~~~
 
@@ -146,6 +146,8 @@ The Untwisted Book
 ==================
 
 [BOOK.md](BOOK.md)
+
+
 
 
 
