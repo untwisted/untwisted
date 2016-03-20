@@ -192,6 +192,7 @@ def create_server(addr, port, backlog):
     server.bind(('', 1234))
     server.listen(200)
     Server(server)
+    xmap(server, ACCEPT, lambda server, spin: install_basic_handles(spin))
     return server
 
 def install_basic_handles(spin):
@@ -211,5 +212,6 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
