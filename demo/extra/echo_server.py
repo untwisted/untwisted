@@ -1,6 +1,3 @@
-"""
-"""
-
 from untwisted.network import Spin, xmap, core
 from untwisted.iostd import Server, Stdout, Stdin, ACCEPT, LOAD, CLOSE
 
@@ -24,8 +21,6 @@ class EchoServer(object):
         client.close()
 
 if __name__ == '__main__':
-    # We create a Spin class pretty much as we would
-    # do with a socket class.
     spin = Spin()
     spin.bind(('', 1234))
     spin.listen(200)
@@ -36,6 +31,7 @@ if __name__ == '__main__':
 
     EchoServer(spin)
     core.gear.mainloop()
+
 
 
 
