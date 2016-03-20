@@ -187,8 +187,12 @@ def lose(spin):
 def put(spin, data):
     print data
 
-def create_server():
-    pass
+def create_server(addr, port, backlog):
+    server = Spin()
+    server.bind(('', 1234))
+    server.listen(200)
+    Server(server)
+    return server
 
 def install_basic_handles(spin):
     """
@@ -207,13 +211,5 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
-
-
-
-
-
-
-
-
 
 

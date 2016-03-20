@@ -1,9 +1,10 @@
 from untwisted.network import xmap, Spin, core
-from untwisted.iostd import Client, Stdin, CONNECT, DUMPED, lose
+from untwisted.iostd import Client, Stdout, Stdin, CONNECT, DUMPED, lose
 from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.usual import die
+from untwisted.core import die
 
-def set_up_con(con, msg):
+def setup(con, msg):
+    Stdout(con)
     Stdin(con)
     con.dump(msg)
     xmap(con, DUMPED, lambda con: die())
@@ -14,7 +15,7 @@ def create_connection(addr, port, msg):
 
     Client(con)
     con.connect_ex((addr, port))
-    xmap(con, CONNECT, set_up_con, msg)
+    xmap(con, CONNECT, setup, msg)
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -32,4 +33,5 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     create_connection(opt.addr, opt.port, opt.msg)
     core.gear.mainloop()
+
 
