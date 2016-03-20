@@ -142,4 +142,15 @@ expect.send('print "hello world"\nquit()\n')
 core.gear.mainloop()
 ~~~
 
+Install
+=======
+
+
+The Untwisted Book
+==================
+
+[BOOK.md](BOOK.md)
+
+
+
 
