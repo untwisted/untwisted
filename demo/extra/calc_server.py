@@ -3,7 +3,7 @@
 
 from untwisted.network import core, Spin, xmap, spawn
 from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
-from untwisted.splits import Shrug, FOUND
+from untwisted.splits import Terminator
 import operator
 
 class InvalidExpression(Exception):
@@ -14,7 +14,7 @@ class CalcParser(object):
     """
 
     def __init__(self, client):
-        xmap(client, FOUND, self.handle_found)
+        xmap(client, Terminator.FOUND, self.handle_found)
 
     def handle_found(self, client, data):
         op, args = data.split(' ', 1)
@@ -37,7 +37,7 @@ class CalcServer(object):
     def handle_accept(self, server, client):
         Stdin(client)
         Stdout(client)
-        Shrug(client, delim='\r\n')
+        Terminator(client, delim='\r\n')
         CalcParser(client)
         
         xmap(client, 'add', self. on_add)    
@@ -78,5 +78,7 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
+
+
 
 

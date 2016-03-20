@@ -77,9 +77,12 @@ if __name__ == '__main__':
 This simple chat permits clients to connect through telnet protocol, pick up a nick then start chatting.
 
 ~~~python
+"""
+"""
+
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Stdin, Stdout, Server, ACCEPT, CLOSE, lose
-from untwisted.splits import Shrug, FOUND
+from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 
 class ChatServer(object):
@@ -91,14 +94,14 @@ class ChatServer(object):
     def handle_accept(self, server, client):
         Stdin(client)
         Stdout(client)
-        Shrug(client, delim='\r\n')
+        Terminator(client, delim='\r\n')
         
         xmap(client, CLOSE, self.handle_close)
         client.dump('Type a nick.\r\nNick:')    
         
-        client.nick, = yield client, FOUND
+        client.nick, = yield client, Terminator.FOUND
 
-        xmap(client, FOUND, self.echo_msg)
+        xmap(client, Terminator.FOUND, self.echo_msg)
         self.pool.append(client)
 
     def echo_msg(self, client, data):
@@ -120,5 +123,23 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
+
+### Spawn Processes
+
+The example below spawns a python process then sends a line of code.
+
+~~~python
+from untwisted.expect import Expect, LOAD, CLOSE
+from untwisted.network import core, xmap, die
+
+def handle(expect, data):
+    print data
+
+expect = Expect('python', '-i', '-u')
+xmap(expect, LOAD, handle)
+xmap(expect, CLOSE, lambda expect: die())
+expect.send('print "hello world"\nquit()\n')
+core.gear.mainloop()
+~~~
 
 

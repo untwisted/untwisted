@@ -3,7 +3,7 @@
 
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import *
-from untwisted.splits import Shrug, FOUND
+from untwisted.splits import Terminator
 
 class IrcHub(object):
     def __init__(self, server_port, backlog, irc_address, irc_port):
@@ -21,9 +21,9 @@ class IrcHub(object):
     def handle_accept(self, server, client):
         Stdin(client)
         Stdout(client)
-        Shrug(client, delim='\r\n')
+        Terminator(client, delim='\r\n')
 
-        xmap(client, FOUND, self.handle_found)
+        xmap(client, Terminator.FOUND, self.handle_found)
         xmap(client, CLOSE, self.down_connection)
 
         irc = Spin()
@@ -31,7 +31,7 @@ class IrcHub(object):
         Stdin(irc)
         Stdout(irc)
         Shrug(irc, delim='\r\n')
-        xmap(irc, FOUND, self.handle_found)
+        xmap(irc, Terminator.FOUND, self.handle_found)
         xmap(irc, CONNECT, self.handle_connect)
         xmap(irc, CONNECT_ERR, self.down_connection)
         xmap(irc, CLOSE, self.down_connection)
@@ -61,6 +61,7 @@ if __name__ == '__main__':
     script, server_port, backlog, target_address, target_port = sys.argv
     IrcHub(int(server_port), int(backlog), target_address, int(target_port))
     core.gear.mainloop()
+
 
 
 

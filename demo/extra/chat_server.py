@@ -3,7 +3,7 @@
 
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Stdin, Stdout, Server, ACCEPT, CLOSE, lose
-from untwisted.splits import Shrug, FOUND
+from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 
 class ChatServer(object):
@@ -15,14 +15,14 @@ class ChatServer(object):
     def handle_accept(self, server, client):
         Stdin(client)
         Stdout(client)
-        Shrug(client, delim='\r\n')
+        Terminator(client, delim='\r\n')
         
         xmap(client, CLOSE, self.handle_close)
         client.dump('Type a nick.\r\nNick:')    
         
-        client.nick, = yield client, FOUND
+        client.nick, = yield client, Terminator.FOUND
 
-        xmap(client, FOUND, self.echo_msg)
+        xmap(client, Terminator.FOUND, self.echo_msg)
         self.pool.append(client)
 
     def echo_msg(self, client, data):
@@ -42,6 +42,7 @@ if __name__ == '__main__':
     Server(server)
     ChatServer(server)
     core.gear.mainloop()
+
 
 
 
