@@ -1,6 +1,15 @@
 Untwisted Framework
 ===================
 
+What can i create with untwisted?
+=================================
+
+Untwisted plugins
+=================
+
+Untwisted reactors
+==================
+
 How to read this book?
 ======================
 
@@ -134,5 +143,6 @@ Debugging
 
 Tests
 =====
+
 
 
