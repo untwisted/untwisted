@@ -242,8 +242,6 @@ when using untwisted, these are sockets, threads, processes etc.
 
 It is interesting notice that handles can be seen as events and vice versa. For example.
 
-
-
 Dispatcher class
 ================
 
