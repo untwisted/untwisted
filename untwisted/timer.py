@@ -41,6 +41,8 @@ class Sched(Timer):
             self.callback(*self.args, **self.kwargs)
         except CancelCall:
             self.cancel()
+        else:
+            self.time = time.time()
 
 
 

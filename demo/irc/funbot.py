@@ -1,12 +1,6 @@
-""" Name: funbot.py
-    Description: It connects to an irc network and prints irc events
-    when them are issued.
-"""
-
-# We import the basic modules.
 from untwisted.network import *
-from untwisted.utils.stdio import *
-from untwisted.utils.shrug import *
+from untwisted.iostd import *
+from untwisted.splits import Terminator, logcon
 from untwisted.plugins.irc import *
 from socket import *
 
@@ -30,12 +24,12 @@ class FunBot(object):
         con.connect_ex((ip, port))
 
         # We save whatever we might need.
-        self.nick = nick
-        self.user = user
-        self.password = password
+        self.nick      = nick
+        self.user      = user
+        self.password  = password
         self.chan_list = chan_list
-        self.ip = ip
-        self.port = port
+        self.ip        = ip
+        self.port      = port
 
         # It maps CONNECT to self.send_auth so
         # when our socket connects it sends NICK and USER info.
@@ -52,7 +46,7 @@ class FunBot(object):
         Stdout(con)
 
         # This protocol spawns FOUND whenever it finds \r\n.
-        Shrug(con)
+        Terminator(con)
 
         Irc(con)
         
@@ -147,6 +141,7 @@ class FunBot(object):
 
 bot = FunBot('irc.freenode.com', 6667, 'Fourier1', 'kaus keus kius :kous', '', '##calculus')
 core.gear.mainloop()
+
 
 
 
