@@ -234,10 +234,11 @@ object0 {
 
 }
 
-Using this approach it is possible to describe nearly almost all philosophical entities that can be built
+~~~
+
+Using this approach it is possible to describe reasonably well almost all philosophical entities that can be built
 in order to understand the reality surrounding our mind senses. However, we'll be interested in specific objects
 when using untwisted, these are sockets, threads, processes etc.
-~~~
 
 It is interesting notice that handles can be seen as events and vice versa. For example.
 
