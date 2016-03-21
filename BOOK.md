@@ -219,8 +219,8 @@ H1 -> E1
 ~~~
 
 But it is not the case that everyone would open an umbrella when it starts raining, i particularly hate to carry umbrellas.
-So, it is related to a specific object in the context it is a given person. A set of relations between events and handles and
-vice versa are always related to a given object.
+So, it is related to a specific object in the context it is a given person. A set of relations between events and handles 
+are always related to a given object or a set of objects.
 
 The notation below is used to denote when a given set of events and handles are related to a given object:
 
@@ -326,6 +326,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
