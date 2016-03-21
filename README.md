@@ -58,8 +58,11 @@ if __name__ == '__main__':
 This simple chat permits clients to connect through telnet protocol, pick up a nick then start chatting.
 
 ~~~python
+"""
+"""
+
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import create_server, Stdin, Stdout, ACCEPT, CLOSE, lose
+from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 
@@ -124,6 +127,7 @@ The Untwisted Book
 ==================
 
 [BOOK.md](BOOK.md)
+
 
 
 

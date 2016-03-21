@@ -2,7 +2,7 @@
 """
 
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import create_server, Stdin, Stdout, ACCEPT, CLOSE, lose
+from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 
@@ -31,5 +31,6 @@ if __name__ == '__main__':
     server = create_server('', 1234, 5)
     ChatServer(server)
     core.gear.mainloop()
+
 
 
