@@ -7,9 +7,6 @@ What can i create with untwisted?
 Untwisted plugins
 =================
 
-Untwisted reactors
-==================
-
 How to read this book?
 ======================
 
@@ -58,6 +55,193 @@ The requests plugin
 
 The event-driven paradigm
 =========================
+
+The event-driven paradigm is a powerful tool to deal with some specific systems, in the event-driven paradigm
+the flow of the program is based on events. Events are intrinsically related to handles, if there is a handle
+mapped to an event and such an event occurs then the handle is called. An event can carry arguments that better
+characterize the type of happening that is related to the event. 
+
+In untwisted context, events can be any kind of python object, an integer, a function, a class, an exception etc.
+It is possible to map one or more handles to a given event, when the event occurs then the handles will be called
+with the event's arguments.
+
+In event-driven applications there will exist generally an event loop that is responsible by processing a set of handles
+according to some set of events. Untwisted reactor is responsible by processing a set of handles according to a few basic
+events. These basic events are related to the state of a given set of sockets. So, when a socket is ready to send data
+it spawns an event WRITE, when there is data available for reading then it spawns READ, etc.
+
+The fact of untwisted being such a powerful approach to implement networking applications consists
+of being possible to have events that are mapped to handles that spawn other events and so on. It may not
+sound obvious at first glance why it turns to be useful but it will make more sense later. 
+
+The diagram below examplifies the scheme:
+    
+~~~
+Event0  -> Handle0 -> (Event1, Event2)
+Event1  -> Handle1
+Event2  -> Handle2
+~~~
+
+The expression:
+
+~~~
+m -> n
+~~~
+
+When m and n are either an event or a handle it means that when m is processed then n is processed.
+A handle is processed when it is called, an event is processed when it merely happens.
+
+Note that the expression:
+
+~~~
+(Event0, event1, event2, ...)
+~~~
+
+It means that the sequence of events will be processed.
+
+When a given handle is called it will process the event arguments and eventually it may occur an exception inside the handle.
+The event loop can't stop due to that exception being raised because it is advantageous under some perspectives
+to keep the reactor processing other events. There will exist situations that it will not be advantageous to keep
+the reactor processing a given list of handles for a given event, in that case there are specific exceptions
+that can be raised to change the flow of the events it means avoiding some events to occur or having more
+events to occur. So, in untwisted, the flow of the events can be controlled with a set of specific exceptions.
+
+It is necessary to introduce some notation to simplify the exposition of ideas and facts.
+
+A set of events is denoted by:
+
+~~~
+{Event0, Event1, Event2, ...}
+~~~
+
+A set of handles is denoted by:
+
+~~~
+n = {Handle0, Handle1, Handle2, ...}
+~~~
+
+The expression:
+
+~~~
+m => n
+~~~
+
+When m is an event and n is a handle then when m is processed it may occur of n being called and vice versa. When m is a set of 
+events and n is a handle it means that when one of the events happens then it may happen of n being processed. When m is a set of handles
+and n is an event then when one of the handles is processed it may occur of n being processed.
+
+on the other hand the expression:
+
+~~~
+m -> n
+~~~
+
+When m is an event and n is a handle it means when the event is processed then the handle is processed and vice versa. When m is a set
+of events and n is a handle it means that when one of the events is processed then the handle will be processed.
+The case where m is a set of handles and n is an event the expression means that whenever one of the handles is
+called then the event is processed.
+
+The expression:
+
+~~~
+m = (Event0, Event1, Event2, ...)
+~~~
+
+It means a sequence of events whose order matters. The same occurs with the sequence of handles.
+
+~~~
+n = (Handle0, Handle1, Handl2, ...)
+~~~
+
+The expression:
+
+~~~
+Handle0 -> (Event0, Event1)
+~~~
+
+It means that Handle0 will spawn Event0 and Event1 in that exact order. While the expression.
+
+~~~
+Handle0 -> {Event0, Event1}
+~~~
+
+It means that Handle0 will spawn Event0 and Event1 but not exactly in that order.
+
+Using this scheme of notation it is possible to describe reasonably well the flow of a program that is implemented
+using event-driven paradigm. In order to denote arguments that are carried by events, the notation below is used.
+
+~~~
+Event0 -(arg0, arg1, ...)-> Handle0
+~~~
+
+and
+
+~~~
+Event0 =(arg0, arg1, ...)=> Handle0
+~~~
+
+Where the symbols -> and => have been explained above.
+
+Events are related to the state of some objects, events are mapped to handles and handles can change
+the state of objects that can then generate events. A socket can be abstracted as a object that can
+hold a set of possible states. We will be interested initially in the states of it being ready to be read
+and ready to be written to.
+
+The expressions below need to be related to some object in order to better express systems.
+
+~~~
+m -> n
+m => n
+~~~
+
+Consider the handles defined below.
+
+~~~
+H0 = "Open the umbrella"
+H1 = "Close the umbrella"
+~~~
+
+These handles are mapped to the events.
+
+~~~
+E0 = "It starts raining"
+~~~
+
+~~~
+E1 = "It stops raining"
+~~~
+
+So you would have.
+
+~~~
+H0 -> E0
+H1 -> E1
+~~~
+
+But it is not the case that everyone would open an umbrella when it starts raining, i particularly hate to carry umbrellas.
+So, it is related to a specific object in the context it is a given person. A set of relations between events and handles and
+vice versa are always related to a given object.
+
+The notation below is used to denote when a given set of events and handles are related to a given object:
+
+~~~
+object0 { 
+    Handle0 -> Event0 -> Handle1 -> Event1
+    Event1 -> Handle2
+    .
+    .
+    .
+
+}
+
+Using this approach it is possible to describe nearly almost all philosophical entities that can be built
+in order to understand the reality surrounding our mind senses. However, we'll be interested in specific objects
+when using untwisted, these are sockets, threads, processes etc.
+~~~
+
+It is interesting notice that handles can be seen as events and vice versa. For example.
+
+
 
 Dispatcher class
 ================
@@ -143,6 +327,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
