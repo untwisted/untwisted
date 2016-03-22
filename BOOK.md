@@ -390,15 +390,15 @@ Handles that are mapped to events can spawn events inside objects.
 The code below clarifies better:
 
 ~~~python
-from untwisted.dispatcher import Dispatcher, xmap, spawn
+>>> from untwisted.dispatcher import Dispatcher
 >>> from untwisted.event import LOAD
 >>> 
 >>> dispatcher = Dispatcher()
 >>> 
 >>> def on_load(dispatcher, data):
 ...     cmd = data.split(' ')
-    spawn(dispatcher, cmd.pop(0), cmd)
-... ... 
+...     dispatcher.drive(cmd.pop(0), cmd)
+... 
 >>> dispatcher.add_map(LOAD, on_load)
 >>> 
 ~~~
@@ -500,6 +500,39 @@ def on_event(dispatcher, *args):
 ~~~
 
 ### Unbinding handles
+
+As it is useful to add mappings it is useful to remove them. Removing a mapping may avoid
+a chain of events of being processed, there are circumstances where that is necessary as well.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.event import LOAD
+>>> 
+dispatcher = Dispatcher()
+>>> >>> 
+>>> def on_load(dispatcher, data):
+...     print 'LOAD event occured:', data
+...     dispatcher.del_map(LOAD, on_load)
+... 
+>>> dispatcher.add_map(LOAD, on_load)
+>>> dispatcher.drive(LOAD, 'cd /glau')
+LOAD event occured: cd /glau
+>>> dispatcher.drive(LOAD, 'ls')
+>>> 
+~~~
+
+The method 'del_map' is used to remove a mapping from a Dispatcher object. In the above code,
+the handle 'on_load' will be processed just once for the event LOAD.
+
+The diagram below is equivalent to the code above.
+
+~~~
+dispatcher {
+    LOAD -(data)-> *on_load
+}
+~~~
+
+The symbol '*' means that 'on_load' will be processed just once when the event LOAD is processed.
 
 ### Exceptions in handles
 
