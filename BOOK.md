@@ -335,7 +335,7 @@ There is a standard way to add a mapping between an event and a handle to a Disp
 using the xmap function. This function is used preferablely rather than the method 'add_map'.
 
 ~~~python
->>> from untwisted.dispatcher import Dispatcher, xmap
+>>> from untwisted.dispatcher import Dispatcher, xmap, spawn
 >>> dispatcher = Dispatcher()
 >>> 
 >>> def on_alpha(dispatcher):
@@ -348,8 +348,13 @@ using the xmap function. This function is used preferablely rather than the meth
 The reasons to use 'xmap' function instead of add_map are aestheticals. The same occurs when firing events.
 
 ~~~python
-
+>>> spawn(dispatcher, 'ALPHA')
+Event ALPHA occured
+>>> spawn(dispatcher, 'BETA', 'arg1', 'arg2', 'arg3')
+>>> 
 ~~~
+
+### Spawning events from handles
 
 ### Unbinding handles
 
