@@ -238,16 +238,118 @@ object0 {
 
 Using this approach it is possible to describe reasonably well almost all philosophical entities that can be built
 in order to understand the reality surrounding our mind senses. However, we'll be interested in specific objects
-when using untwisted, these are sockets, threads, processes etc.
+when using untwisted, these are sockets, threads, processes etc. It is interesting notice that handles can be 
+seen as events and vice versa. 
 
-It is interesting notice that handles can be seen as events and vice versa. For example.
+### Related objects
 
 Dispatcher class
 ================
 
-### Events and handles
+The dispatcher class is responsible by processing handles that are mapped to events. In order to get a 
+clear picture of how implementing networking applications on top of untwisted it is needed to understand
+the features of the Dispatcher class. There are other classes that inherit from Dispatcher and these are the
+used ones to model applications.
 
-### Binding handles to events
+A Dispatcher instance is an object that can hold a set of mappings of the type:
+
+~~~
+Dispatcher {
+    m0 -> n0 -> m1 ...
+    m1 ->  n1 -> ...
+    .
+    .
+    .
+}
+~~~
+
+The best way to grasp the behavior of Dispatcher objects is testing them in the python interpreter.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> dispatcher = Dispatcher()
+>>> dir(dispatcher)
+
+['__class__', '__delattr__', '__dict__', '__doc__', '__format__', 
+'__getattribute__', '__hash__', '__init__', '__module__', '__new__', 
+'__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', 
+'__str__', '__subclasshook__', '__weakref__', 'add_handle', 'add_map', 
+'add_static_map', 'base', 'del_handle', 'del_map', 'del_static_map',
+'drive', 'pool', 'process_base']
+~~~
+
+The methods 'add_map' and 'del_handle' are the most used ones. These methods are used to bind handles to events that
+are related to the given Dispatcher object. 
+
+As handles and events are related to objects, objects may be related between each other in some way. A given object
+may change the state of other object then an event happens. The method 'drive' of the Dispatcher class is used
+to fire an event in the Dispatcher object. Once an event is fired in a given Dispatcher object then all handles associated
+with that event will be processed. As mentioned before, events can carry arguments that better characterize the event,
+the 'drive' method permits to fire events with a given set of arguments associated to the event.
+
+~~~python
+dispatcher.drive('RAINING', 'Brasil', 'Rio de Janeiro', 'Rio das ostras')
+~~~
+
+The above code spawns an event named 'RAINING' with three arguments that correspond to the country, state and city
+that characterizes the event.
+
+Events in untwisted can be all kind of python objects. Handles can be all kind of objects that are
+callable.
+
+~~~python
+>>> def handle0(dispatcher, country, state, city):
+...     print 'It is raining in %s, %s, %s' % (country, state, city)
+... 
+>>> dispatcher.add_map('RAINING', handle0)
+~~~
+
+The above code adds a mapping between the event 'RAINING' and the callback 'handle0'. Now if the event 'RAINING'
+occurs then the callback will be called with the arguments.
+
+~~~python
+>>> dispatcher.drive('RAINING', 'Brazil', 'Rio de janeiro', 'Rio das ostras')
+It is raining in Brazil, Rio de janeiro, Rio das ostras
+>>> 
+~~~
+
+Let us define a new callback and maps to the 'RAINING' event then check out what happens.
+
+~~~python
+>>> def handle1(dispatcher, country, state, city):
+...     if country == 'Brazil' and \
+...                state == 'Rio de janeiro' and \
+...                         city == 'Rio das ostras':
+...         print 'It is raining in hell'
+... 
+>>> dispatcher.add_map('RAINING', handle1)
+>>> dispatcher.drive('RAINING', 'Brazil', 'Minas gerais', 'Belo horizonte')
+It is raining in Brazil, Minas gerais, Belo horizonte
+>>> dispatcher.drive('RAINING', 'Brazil', 'Rio de janeiro', 'Rio das ostras')
+It is raining in Brazil, Rio de janeiro, Rio das ostras
+It is raining in hell
+>>> 
+~~~
+
+There is a standard way to add a mapping between an event and a handle to a Dispatcher object it is
+using the xmap function. This function is used preferablely rather than the method 'add_map'.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher, xmap
+>>> dispatcher = Dispatcher()
+>>> 
+>>> def on_alpha(dispatcher):
+...     print 'Event ALPHA occured'
+... 
+>>> xmap(dispatcher, 'ALPHA', on_alpha)
+>>> 
+~~~
+
+The reasons to use 'xmap' function instead of add_map are aestheticals. The same occurs when firing events.
+
+~~~python
+
+~~~
 
 ### Unbinding handles
 
@@ -326,6 +428,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
