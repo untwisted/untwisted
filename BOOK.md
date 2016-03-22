@@ -243,6 +243,12 @@ seen as events and vice versa.
 
 ### Related objects
 
+### Adding dynamically mappings to objects
+
+### Domain of handles
+
+### Image of handle events
+
 Dispatcher class
 ================
 
@@ -331,8 +337,8 @@ It is raining in hell
 >>> 
 ~~~
 
-There is a standard way to add a mapping between an event and a handle to a Dispatcher object it is
-using the xmap function. This function is used preferablely rather than the method 'add_map'.
+There is a other way to add a mapping between an event and a handle to a Dispatcher object it is
+using the xmap function. This function is merely a synonymous for 'add_map'.
 
 ~~~python
 >>> from untwisted.dispatcher import Dispatcher, xmap, spawn
@@ -345,7 +351,8 @@ using the xmap function. This function is used preferablely rather than the meth
 >>> 
 ~~~
 
-The reasons to use 'xmap' function instead of add_map are aestheticals. The same occurs when firing events.
+The reasons to use 'xmap' function instead of add_map are aestheticals. 
+The same occurs when firing events.
 
 ~~~python
 >>> spawn(dispatcher, 'ALPHA')
@@ -354,7 +361,142 @@ Event ALPHA occured
 >>> 
 ~~~
 
+### Event creation
+
+Events can be any kind of python objects but it is interesting to have a reliable scheme 
+to define new events. Untwisted implements the 'get_event' function that returns a unique event.
+
+~~~python
+>>> from untwisted.event import get_event
+>>> 
+>>> LOAD = get_event()
+>>> 
+>>> print LOAD
+24
+>>> FOUND = get_event()
+>>> 
+>>> print FOUND
+25
+>>> 
+~~~
+
+These events are used for situations where the usage of strings wouldn't be interesting 
+or ambiguous in some circumstances.
+
 ### Spawning events from handles
+
+Handles that are mapped to events can spawn events inside objects. 
+
+The code below clarifies better:
+
+~~~python
+from untwisted.dispatcher import Dispatcher, xmap, spawn
+from untwisted.event import LOAD
+
+dispatcher = Dispatcher()
+
+def on_load(dispatcher, data):
+    cmd = data.split(' ')
+    spawn(dispatcher, cmd.pop(0), cmd)
+
+dispatcher.add_map(LOAD, on_load)
+~~~
+
+The code above corresponds to:
+
+~~~
+dispatcher {
+    LOAD -(data)-> on_load -(args)-> $cmd
+
+}
+~~~
+
+Where $cmd may be any python string that is carried by LOAD and processed by on_load handle.
+Let us drive a LOAD event inside that dispatcher object.  
+
+~~~python
+
+>>> def on_add(dispatcher, args):
+...     print 'Sum:', sum(map(int, args))
+... 
+>>> dispatcher.add_map('add', on_add)
+>>> dispatcher.drive(LOAD, 'add 1 1 2')
+Sum: 4
+~~~
+
+It creates a new handle named 'on_add' and maps it to the event 'add'.
+The dispatcher object with the mappings previously defined should look like.
+
+~~~
+dispatcher {
+    LOAD -(data)-> on_load -(args)-> $cmd
+    $cmd('add') -(args)-> on_add
+~~~
+
+The symbol below means that 'cmd' is an event variable that can assume the value 'add' 
+and when such an event occurs then the handle 'on_add' is processed.
+
+~~~
+$cmd('add') -(args)-> on_add
+~~~
+
+it is interesting notice that the diagram below is equivalent to the above but not describe
+all the system.
+
+~~~
+dispatcher {
+    LOAD -(data)-> on_load -(args)-> $cmd
+    'add' -(args)-> on_add
+~~~
+
+The same occurs with:
+
+~~~
+dispatcher {
+    LOAD -> on_load -> $cmd
+    'add' -> on_add
+}
+~~~
+
+### Passing additional arguments to handles
+
+There will occur situations that it is necessary to pass addional information
+to a handle that is called when an event occurs.  The example below examplifies:
+
+~~~python
+>>> from untwisted.event import DONE
+>>> 
+>>> dispatcher = Dispatcher()
+>>> 
+>>> def on_done(dispatcher, data, value):
+...     print data, value
+... 
+>>> dispatcher.add_map(DONE, on_done, 100)
+>>> dispatcher.drive(DONE, 'Tau')
+Tau 100
+>>> 
+~~~
+
+That example looks useless under a perspective but is enough to explain the feature. You'll find
+yourself passing extra arguments to handles a lot of times in some applications. 
+Notice that if you call the method drive with more arguments then you'll get an exception.
+
+~~~python
+>>> dispatcher.drive(DONE, 1000, 1200)
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/site-packages/untwisted/dispatcher.py", line 34, in process_base
+    seq = handle(self, *(args + data))
+TypeError: on_done() takes exactly 3 arguments (4 given)
+>>> 
+~~~
+
+When it is not known the number of arguments of the event then it is useful to implement the handle with.
+
+
+~~~python
+def on_event(dispatcher, *args):
+    pass
+~~~
 
 ### Unbinding handles
 
@@ -433,6 +575,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
