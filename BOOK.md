@@ -294,7 +294,7 @@ with that event will be processed. As mentioned before, events can carry argumen
 the 'drive' method permits to fire events with a given set of arguments associated to the event.
 
 ~~~python
-dispatcher.drive('RAINING', 'Brasil', 'Rio de Janeiro', 'Rio das ostras')
+>>> dispatcher.drive('RAINING', 'Brasil', 'Rio de Janeiro', 'Rio das ostras')
 ~~~
 
 The above code spawns an event named 'RAINING' with three arguments that correspond to the country, state and city
@@ -391,15 +391,16 @@ The code below clarifies better:
 
 ~~~python
 from untwisted.dispatcher import Dispatcher, xmap, spawn
-from untwisted.event import LOAD
-
-dispatcher = Dispatcher()
-
-def on_load(dispatcher, data):
-    cmd = data.split(' ')
+>>> from untwisted.event import LOAD
+>>> 
+>>> dispatcher = Dispatcher()
+>>> 
+>>> def on_load(dispatcher, data):
+...     cmd = data.split(' ')
     spawn(dispatcher, cmd.pop(0), cmd)
-
-dispatcher.add_map(LOAD, on_load)
+... ... 
+>>> dispatcher.add_map(LOAD, on_load)
+>>> 
 ~~~
 
 The code above corresponds to:
