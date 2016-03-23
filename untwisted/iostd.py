@@ -1,4 +1,4 @@
-from untwisted.network import Spin, spawn, xmap, zmap, Erase
+from untwisted.network import Spin, spawn, xmap, zmap
 from traceback import print_exc as debug
 from untwisted.event import *
 from collections import deque
@@ -212,6 +212,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
