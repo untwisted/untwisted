@@ -337,7 +337,7 @@ It is raining in hell
 >>> 
 ~~~
 
-There is a other way to add a mapping between an event and a handle to a Dispatcher object it is
+There is other way to add a mapping between an event and a handle to a Dispatcher object it is
 using the xmap function. This function is merely a synonymous for 'add_map'.
 
 ~~~python
@@ -536,6 +536,34 @@ The symbol '*' means that 'on_load' will be processed just once when the event L
 
 ### Exceptions in handles
 
+When handles are processed it might occur exceptions, the way of how untwisted is used to model 
+applications doesn't permit to catch exceptions as it is usually done.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> dispatcher = Dispatcher()
+>>> 
+>>> def handle(dispatcher, x, y):
+...     print x/y
+... 
+>>> dispatcher.add_map('div', handle)
+>>> dispatcher.drive('div', 1, 2)
+0
+~~~
+
+That's expected, what about if the event carried the values 1 and 0?
+
+~~~python
+>>> dispatcher.drive('div', 1, 0)
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/site-packages/untwisted/dispatcher.py", line 34, in process_base
+    seq = handle(self, *(args + data))
+  File "<stdin>", line 2, in handle
+ZeroDivisionError: integer division or modulo by zero
+>>> 
+~~~
+
+
 ### Dispatcher flow control
 
 ### Static handles
@@ -609,6 +637,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
