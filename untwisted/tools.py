@@ -27,12 +27,23 @@ def coroutine(handle):
     return start
 
 
+def mapcall(handle):
+    def shell(dispatcher, *args):
+        try:
+            val = handle(dispatcher, *args)
+        except Exception as e:
+            dispatcher.drive((handle, e.__class__), e)
+        else:
+            dispatcher.drive(handle, val)
+    return shell
 
-
-
-
-
-
-
-
+def mapclass(handle):
+    def shell(instance, dispatcher, *args):
+        try:
+            val = handle(instance, dispatcher, *args)
+        except Exception as e:
+            dispatcher.drive((instance, e.__class__), e)
+        else:
+            dispatcher.drive(instance, val)
+    return shell
 

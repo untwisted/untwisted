@@ -4,10 +4,8 @@
 from untwisted.network import core, Spin, xmap, spawn
 from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
 from untwisted.splits import Terminator
+from untwisted.tools import mapclass
 import operator
-
-class InvalidExpression(Exception):
-    pass
 
 class CalcParser(object):
     """
@@ -16,16 +14,11 @@ class CalcParser(object):
     def __init__(self, client):
         xmap(client, Terminator.FOUND, self.handle_found)
 
+    @mapclass
     def handle_found(self, client, data):
         op, args = data.split(' ', 1)
-        args     = args.split(' ')
-
-        try:
-            args = map(float, args)
-        except ValueError as e:
-            raise InvalidExpression
-        else:
-            spawn(client, op, args)
+        args     = map(float, args.split(' '))
+        spawn(client, op, args)
 
 class CalcServer(object):
     """ 
@@ -38,13 +31,13 @@ class CalcServer(object):
         Stdin(client)
         Stdout(client)
         Terminator(client, delim='\r\n')
-        CalcParser(client)
+        parser = CalcParser(client)
         
         xmap(client, 'add', self. on_add)    
         xmap(client, 'sub', self.on_sub)    
         xmap(client, 'mul', self.on_mul)    
         xmap(client, 'div', self.on_div)    
-        xmap(client, InvalidExpression, self.on_error)    
+        xmap(client, (parser, ValueError), self.on_error)    
 
         xmap(client, CLOSE, self.handle_close)
 
@@ -60,8 +53,8 @@ class CalcServer(object):
     def on_mul(self, client, args):
         self.send_msg(client, reduce(operator.mul, args, 1))
 
-    def on_error(self, client, args):
-        self.send_msg(client, 'The expression is invalid!')
+    def on_error(self, client, excpt):
+        self.send_msg(client, excpt)
 
     def handle_close(self, client, err):
         client.destroy()
@@ -78,6 +71,7 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
+
 
 
 

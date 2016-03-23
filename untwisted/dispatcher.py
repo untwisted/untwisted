@@ -16,20 +16,20 @@ class Dispatcher(object):
 
     def drive(self, event, *args):
         try:
-            self.process_base(self.base, event, args)
+            self.process_base(event, args)
         except KeyError:
             pass
 
         try:
-            self.process_base(Dispatcher.base, event, args)
+            self.process_static_base(event, args)
         except KeyError:
             pass
 
         for handle in self.pool:
             handle(self, event, args)
 
-    def process_base(self, base, event, args):
-        for handle, data in base[event][:]:
+    def process_base(self, event, args):
+        for handle, data in self.base[event][:]:
             try:
                 seq = handle(self, *(args + data))
             except Stop:
@@ -39,11 +39,11 @@ class Dispatcher(object):
             except Kill, Root:
                 raise
             except Erase:
-                base[event].remove((handle, data))
+                self.base[event].remove((handle, data))
             except Exception as e:
                 debug()
-                self.drive(e.__class__, e)
-    
+                self.drive(Exception, handle, e)
+
     def add_map(self, event, handle, *args):
         item = self.base.setdefault(event, list())
         item.append((handle, args))
@@ -55,14 +55,9 @@ class Dispatcher(object):
             self.base[event] = filter(lambda ind: 
                         ind[0] != handle, self.base[event])
 
-    @classmethod
-    def add_static_map(event, handle, *args):
-        item = Dispatcher.base.setdefault(event, list())
-        item.append((handle, args))
-
-    @classmethod
-    def del_static_map(event, handle, *args):
-        pass
+    process_static_base = classmethod(process_base)
+    add_static_map      = classmethod(add_map)
+    del_static_map      = classmethod(del_map)
 
     def add_handle(self, handle):
         self.pool.append(handle)
