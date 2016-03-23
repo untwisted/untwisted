@@ -49,10 +49,11 @@ class Dispatcher(object):
         item.append((handle, args))
 
     def del_map(self, event, handle, *args):
-        self.base[event].remove((handle, args))
-
-    def clear_maps(self, event, handle):
-        self.base[event] = filter(lambda ind: ind[0] != handle, self.base[event])
+        if args:
+            self.base[event].remove((handle, args))
+        else:
+            self.base[event] = filter(lambda ind: 
+                        ind[0] != handle, self.base[event])
 
     @classmethod
     def add_static_map(event, handle, *args):
@@ -72,5 +73,6 @@ class Dispatcher(object):
 xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
 zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
 spawn = lambda dispatcher, *args: dispatcher.drive(*args)
+
 
 
