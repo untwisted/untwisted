@@ -4,7 +4,7 @@
 from untwisted.network import core, Spin, xmap, spawn
 from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
 from untwisted.splits import Terminator
-from untwisted.tools import class_exception
+from untwisted.tools import handle_exception
 import operator
 
 class CalcParser(object):
@@ -14,8 +14,8 @@ class CalcParser(object):
     def __init__(self, client):
         xmap(client, Terminator.FOUND, self.handle_found)
 
-    @class_exception(ValueError)
-    def handle_found(self, client, data):
+    @handle_exception(ValueError)
+    def handle_found(client, data):
         op, args = data.split(' ', 1)
         args     = map(float, args.split(' '))
         spawn(client, op, args)
@@ -37,7 +37,7 @@ class CalcServer(object):
         xmap(client, 'sub', self.on_sub)    
         xmap(client, 'mul', self.on_mul)    
         xmap(client, 'div', self.on_div)    
-        xmap(client, (parser, ValueError), self.on_error)    
+        xmap(client, (parser.handle_found, ValueError), self.on_error)    
 
         xmap(client, CLOSE, self.handle_close)
 
@@ -71,6 +71,7 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
+
 
 
 

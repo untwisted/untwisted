@@ -21,52 +21,33 @@ class Hold(object):
         self.dispatcher  = dispatcher
         self.event       = event
 
+class HandleProcessor(object):
+    def __call__(self, handle):
+        self.handle = handle
+        return self.process_handle
+
+    def __init__(self, *excpts):
+        self.excpts = excpts
+
+class handle_exception(HandleProcessor):
+    def process_handle(self, dispatcher, *args):
+        try:
+            value = self.handle(dispatcher, *args)
+        except self.excpts as e:
+            dispatcher.drive((self.process_handle, e.__class__), e)
+
+class mapcall(HandleProcessor):
+    def process_handle(self, dispatcher, *args):
+        try:
+            value = self.handle(dispatcher, *args)
+        except self.excpts as e:
+            dispatcher.drive((self.process_handle, e.__class__), e)
+        else:
+            dispatcher.drive(self.process_handle, value)
+
 def coroutine(handle):
     def start(*args, **kwargs):
         hold = Hold(handle(*args, **kwargs))
     return start
-
-def mapcall(handle):
-    """
-    """
-
-    def shell(dispatcher, *args):
-        dispatcher.drive(handle, handle(dispatcher, *args))
-    return shell
-
-def handle_exception(*ex):
-    """
-    """
-
-    def wrapper(handle):
-        def shell(dispatcher, *args):
-            try:
-                value = handle(dispatcher, *args)
-            except ex as e:
-                dispatcher.drive((handle, e.__class__), e)
-        return shell
-    return wrapper
-
-def mapclass(handle):
-    """
-    """
-
-    def shell(self, dispatcher, *args):
-        dispatcher.drive(self, handle(dispatcher, *args))
-    return shell
-
-def class_exception(*ex):
-    """
-    """
-
-    def wrapper(handle):
-        def shell(self, dispatcher, *args):
-            try:
-                value = handle(self, dispatcher, *args)
-            except ex as e:
-                dispatcher.drive((self, e.__class__), e)
-        return shell
-    return wrapper
-
 
 

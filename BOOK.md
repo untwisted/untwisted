@@ -563,6 +563,158 @@ ZeroDivisionError: integer division or modulo by zero
 >>> 
 ~~~
 
+When we call a function or class method that could throw an exception it is natural to use a try/except block
+to catch the exceptioin then decide what to do based on the exception type. When modelling applications using
+untwisted one would use the decorator 'handle_exception' to catch exceptions that might happen from handle calls.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.tools import handle_exception
+>>> 
+>>> dispatcher = Dispatcher()
+>>> 
+>>> @handle_exception(ZeroDivisionError)
+... def handle(dispatcher, x, y):
+...     print x/y
+... 
+>>> dispatcher.add_map('div', handle)
+>>> 
+~~~
+
+The decorator 'handle_exception' solves the problem of the unhandled exception. When spawning the 'div' event
+with values that could cause an exception it will not be printed.
+
+~~~python
+>>> dispatcher.drive('div', 4, 2)
+2
+>>> dispatcher.drive('div', 1, 0)
+>>> 
+~~~
+
+However, it is not the case that avoiding the exception of being printed is enough, it is important to have
+other parts of the code being noticed of the exception. The decorator 'handle_exception' turns an exception
+that occured inside a handle into an event of the type (handle, exception).
+
+~~~python
+>>> def on_zero_division_error(dispatcher, excpt):
+...     print 'The exception was thrown:', excpt
+... 
+>>> 
+>>> dispatcher.add_map((handle, ZeroDivisionError), on_zero_division_error)
+>>> dispatcher.drive('div', 1, 0)
+The exception was thrown: integer division or modulo by zero
+~~~
+
+In the code above, the handle 'on_zero_division-error' was defined to catch the exception 'ZeroDivisionError' that
+could occur inside the 'handle' function that does the division of two numbers when the 'div' event occurs.
+Using this approach it is possible to have one or more handles deciding what to do when an exception occurs at some
+point of the program it increases extensibility and turns modelling of applications more succint and modular.
+
+### Handle returns
+
+When handles are called on events, they aren't supposed to return a value that is advantaged by other parts
+of the program unless it is explicitly defined using the 'mapcall' decorator.
+
+Consider the example below:
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> 
+>>> dispatcher = Dispatcher()
+>>> 
+>>> def handle(dispatcher, x, y):
+...     return x/y
+... 
+>>> dispatcher.add_map('div', handle)
+>>> dispatcher.drive('div', 4, 2)
+>>> 
+~~~
+
+Nothing happened as expected. It is possible to turn handle into an event by using the 'mapcall' decorator.
+So, when handle is processed then an event is processed which corresponds to the handle function. The
+event carries the return value of the function handle. 
+
+Using 'mapcall' in the code above:
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.tools import mapcall
+>>> 
+>>> dispatcher = Dispatcher()
+>>> 
+>>> @mapcall(ZeroDivisionError)
+... def handle(dispatcher, x, y):
+...     return x/y
+... 
+>>> def on_handle(dispatcher, result):
+...     print 'Div:', result
+... 
+>>> dispatcher.add_map('div', handle)
+>>> dispatcher.add_map(handle, on_handle)
+>>> dispatcher.drive('div', 2, 4)
+Div: 0
+>>> dispatcher.drive('div', 4, 2)
+Div: 2
+>>> 
+~~~
+
+The mapcall decorator receives arguments that correspond to exceptions that could be raised by the 'handle' function.
+The 'handle' function is mapped to the event 'div', when 'div' happens handle is processed and its return value
+is carried into an event whose value is the 'handle' function. The code below maps the 'handle' function that turned
+into an event to the 'on_handle' function.
+
+~~~python
+>>> dispatcher.add_map(handle, on_handle)
+~~~
+
+What about if an exception occurs inside 'handle' function? 
+
+~~~python
+>>> dispatcher.drive('div', 1, 0)
+>>> 
+~~~
+
+Well, the exception is automatically handled and turned into an event of the type:
+
+~~~python
+(handle, ZeroDivisionError)
+~~~
+
+Whose argment carried is a ZeroDivisionError instance. it is possible to define a handle to deal
+with the exception that occured like it would be done using 'handle_exception' decorator.
+
+~~~python
+>>> def on_zero_division_error(dispatcher, excpt):
+...     print 'The exception was thrown:', excpt
+... 
+>>> dispatcher.add_map((handle, ZeroDivisionError), on_zero_division_error)
+>>> dispatcher.drive('div', 1, 2)
+Div: 0
+>>> dispatcher.drive('div', 1, 0)
+The exception was thrown: integer division or modulo by zero
+>>> 
+~~~
+
+When using the 'mapcall' decorator and an exception occurs inside a handle then there is no event that corresponds
+to the handle return value but an event that corresponds to the exception that was raised.
+
+It is interesting to notice that when using 'handle_exception' or 'mapcall' it could be possible to pass a set of
+exceptions like:
+
+~~~python
+@mapcall(ZeroDivisionError, ValueError)
+def handle(dispatcher):
+    raise ValueError
+~~~
+
+The example below would turn into events all possible exceptions that occured inside 'handle'.
+
+~~~python
+@mapcall(Exception):
+def handle(dispatcher):
+    raise ValueError
+
+~~~
 
 ### Dispatcher flow control
 
@@ -637,6 +789,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
