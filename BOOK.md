@@ -256,6 +256,8 @@ can be processed but just one and just once.
 
 **These diagrams will be used sometimes to explain some untwisted workings.**
 
+### The symbol **
+
 ### Related objects
 
 ### Adding dynamically mappings to objects
@@ -796,6 +798,9 @@ core.gear.mainloop()
 The method 'core.gear.mainloop' is used to process the events, after such a method being called
 the program will be listening for events that are related to the file descriptors.
 
+A word on handles
+=================
+
 Basic built-in handles
 ======================
 
@@ -816,7 +821,7 @@ The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In
 
 ~~~
 spin {
-WRITE -> Client => *{CONNECT, CONNECT_ERR}
+WRITE -> Client -> *{CONNECT, CONNECT_ERR}
 }
 ~~~
 
@@ -832,12 +837,24 @@ spawns CLOSE, RECV_ERR as well.
 
 ~~~
 spin {
-READ -> Stdout -(data)-> LOAD
-READ -> Stdout -(err)-> CLOSE
+READ -> Stdout =(str:data)=> LOAD
+        Stdout =(int:err)=> **CLOSE
 }
 ~~~
 
-That basically means that when the handle 'Stdout' is processed then the event LOAD is processed
+That is equivalent to:
+
+~~~
+spin {
+READ -> Stdout -(str:int:data)-> {LOAD, **CLOSE}
+}
+~~~
+
+The symbols ** at the left of the event CLOSE means that if CLOSE is processed then
+the handle Stdout will no more process other events. So, once CLOSE is processed the event LOAD
+will no more be processed.
+
+That basically means that when the handle 'Stdout' is processed then the event LOAD may be processed
 and it carries the data that was read from the 'Spin' instance that is a socket. If the CLOSE event
 occurs it means the connection is down and the value err corresponds to the error that occured. The
 err value should be in the python module 'errno.errorcode'.
@@ -886,6 +903,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
