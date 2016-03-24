@@ -258,6 +258,8 @@ can be processed but just one and just once.
 
 ### The symbol **
 
+### A word on argument types of events
+
 ### Related objects
 
 ### Adding dynamically mappings to objects
@@ -821,7 +823,7 @@ The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In
 
 ~~~
 spin {
-WRITE -> Client -> *{CONNECT, CONNECT_ERR}
+WRITE -> Client -(:, int:err)-> *{CONNECT, CONNECT_ERR}
 }
 ~~~
 
@@ -846,7 +848,7 @@ That is equivalent to:
 
 ~~~
 spin {
-READ -> Stdout -(str:int:data)-> {LOAD, **CLOSE}
+READ -> Stdout -(str:data, int:err)-> {LOAD, **CLOSE}
 }
 ~~~
 
@@ -903,6 +905,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
