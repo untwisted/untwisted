@@ -241,7 +241,20 @@ in order to understand the reality surrounding our mind senses. However, we'll b
 when using untwisted, these are sockets, threads, processes etc. It is interesting notice that handles can be 
 seen as events and vice versa. 
 
-### Set of events that may have just one event processed just once.
+Consider the situation in which a handle is processed and a set of possible events might occur but just once.
+Such a situation is described using the notation below.
+
+~~~
+object {
+    Handle0 -> *{Event0, Event1, Event2, ...}
+
+}
+~~~
+
+That basically means that if Handle0 is processed then one of the events in the set
+can be processed but just one and just once. 
+
+**These diagrams will be used sometimes to explain some untwisted workings.**
 
 ### Related objects
 
@@ -737,9 +750,15 @@ Untwisted implements the following reactors.
 
 **Select**
 
+The select reactor can be used in Unix and Win32 platforms.
+
 **Epoll**
 
+The epoll reactor is used in Linux platforms, it is default in Linux.
+
 **Poll**
+
+It is used in Unix platforms (Not implemented yet).
 
 Super socket class
 ==================
@@ -755,7 +774,7 @@ in the untwisted reactor.
 Spin class
 ==========
 
-Yhe Spin class is a 'socket' class that inherits from 'Dispatcher' class. The untwisted reactor scales
+The Spin class is a 'socket' class that inherits from 'Dispatcher' class. The untwisted reactor scales
 which file descriptors are ready for reading or writting then notifies the 'Spin' instances of such
 events. The basic two events that can occur in the 'Spin' class are READ and WRITE. Every other event
 that can happen and is associated with a 'Spin' instance is generated from these two ones.
@@ -867,6 +886,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
