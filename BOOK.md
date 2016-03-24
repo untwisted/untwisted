@@ -241,6 +241,8 @@ in order to understand the reality surrounding our mind senses. However, we'll b
 when using untwisted, these are sockets, threads, processes etc. It is interesting notice that handles can be 
 seen as events and vice versa. 
 
+### Set of events that may have just one event processed just once.
+
 ### Related objects
 
 ### Adding dynamically mappings to objects
@@ -724,41 +726,117 @@ def handle(dispatcher):
 
 ### Unbinding static handles to events
 
+Reactors
+========
+
+Untwisted reactor is an event loop that listen for events that are related to file descriptors. When
+objects that are associated with file descriptors are created in untwisted then they are registered
+in the reactor for reading and writting events.
+
+Untwisted implements the following reactors.
+
+**Select**
+
+**Epoll**
+
+**Poll**
+
 Super socket class
 ==================
+
+As objects can be associated with events and handles as seen previously, it is elegant and useful to think of
+a socket as an object that can throw events. The basic events associated to a socket are READ and WRITE.
+So, why not having a 'socket' class that has the features of the 'Dispatcher' class? That is what 
+the class defined in 'untwisted.network.SuperSocket' is. The 'SuperSocket' class abstracts the behavior of
+other classes. The 'SuperSocket' class holds a file descriptor that is associated with objects that can
+be associated with a file descriptor. When a 'SuperSocket' instance is created it registers itself
+in the untwisted reactor. 
 
 Spin class
 ==========
 
-Reactors
-========
+Yhe Spin class is a 'socket' class that inherits from 'Dispatcher' class. The untwisted reactor scales
+which file descriptors are ready for reading or writting then notifies the 'Spin' instances of such
+events. The basic two events that can occur in the 'Spin' class are READ and WRITE. Every other event
+that can happen and is associated with a 'Spin' instance is generated from these two ones.
 
-### Select 
+When a 'Spin' class is created and handles are mapped to events it is needed to call the method 'mainloop'
+of the reactor in order to get events being processed for the file descriptors.
 
-### Epoll
+~~~python
+from untwisted.network import Spin, core
 
-### Poll
+sock = Spin()
 
-Reactor mainloop
-================
+# Install events in sock.
+# Connect the socket to a host.
 
-Reactor flow control
-====================
+core.gear.mainloop()
+~~~
 
-Basic events
-============
+The method 'core.gear.mainloop' is used to process the events, after such a method being called
+the program will be listening for events that are related to the file descriptors.
 
 Basic built-in handles
 ======================
 
-Internet protocol events
-========================
+It is needed some built-in handles to get the usefulness of the 'Spin' instances, these handles are responsible
+by spawning more specific events. The reactor spawns just two events READ and WRITE, the remaining ones
+that correspond to CLOSE, CONNECT_ERR, CLOSE_ERR, ACCEPT, ACCEPT_ERR are spawned by these built-in handles.
+
+**Built-in TCP/IP handles**
+
+~~~python
+untwisted.iostd.Client
+untwisted.iostd.Stdin
+untwisted.iostd.Stdout
+Untwisted.iostd.Server
+~~~
+
+The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In diagram it is equivalent to:
+
+~~~
+spin {
+WRITE -> Client => *{CONNECT, CONNECT_ERR}
+}
+~~~
+
+That basically means that if CONNECT is processed then CONNECT_ERR will not be processed and that if 
+CONNECT_ERR then CONNECT will not be processed and that CONNECT or CONNECT_ERR will be processed just once.
+
+The 'Stdin' handle is used to send data through a socket asynchronously. It basically monkey patch
+a method in a given 'Spin' instance that is used to send data through the socket. The 'Stdin'
+handle can spawn the event CLOSE as well.
+
+The 'Stdout' handle spawns the event LOAD that carries the data that was read from the socket. It may
+spawns CLOSE, RECV_ERR as well.
+
+~~~
+spin {
+READ -> Stdout -(data)-> LOAD
+READ -> Stdout -(err)-> CLOSE
+}
+~~~
+
+That basically means that when the handle 'Stdout' is processed then the event LOAD is processed
+and it carries the data that was read from the 'Spin' instance that is a socket. If the CLOSE event
+occurs it means the connection is down and the value err corresponds to the error that occured. The
+err value should be in the python module 'errno.errorcode'.
+
+The 'Server' handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
 
 Clients
 =======
 
 Servers
 =======
+
+Reactor flow control
+====================
+
+Internet protocol events
+========================
+
 
 Timers
 ======
@@ -789,6 +867,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
