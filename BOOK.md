@@ -735,6 +735,8 @@ def handle(dispatcher):
 
 ~~~
 
+### Handles that are mapped upon events and produce events.
+
 ### Dispatcher flow control
 
 ### Static handles
@@ -875,11 +877,39 @@ READ -> Server -(Spin:client, int:err)-> {ACCEPT, ACCEPT_ERR}
 That means when a server socket got a client connected the 'Server' handle will accept the connection
 then process the ACCEPT event, if it fails then it processes ACCEPT_ERR.
 
+Splits
+======
+
 Clients
 =======
 
+### A simple Client
+
+spin {
+    Client -(:, int:err)-> *{CONNECT, CONNECT_ERR}
+    CONNECT ~ (Stdin, Stdout)
+    Stdout -(str:data)-> LOAD
+}
+
+You don't need to know which events Stdin, Stdout are binded to use the events that it produces.
+
+### Msg Client
+
+### IRC Client 
+
+### A FTP Client 
+
+### A Port Scan 
+
 Servers
 =======
+
+### Echo Server
+
+### Calc Server
+
+### Msg Server
+
 
 Reactor flow control
 ====================
@@ -917,6 +947,8 @@ Debugging
 
 Tests
 =====
+
+
 
 
 
