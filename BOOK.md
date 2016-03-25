@@ -880,8 +880,8 @@ then process the ACCEPT event, if it fails then it processes ACCEPT_ERR.
 Splits
 ======
 
-Clients
-=======
+Basic Client/Server Applications
+================================
 
 ### A simple Client
 
@@ -895,21 +895,20 @@ You don't need to know which events Stdin, Stdout are binded to use the events t
 
 ### Msg Client
 
+### Msg Server
+
 ### IRC Client 
 
 ### A FTP Client 
 
 ### A Port Scan 
 
-Servers
-=======
-
 ### Echo Server
 
 ### Calc Server
 
-### Msg Server
-
+Timers
+======
 
 Reactor flow control
 ====================
@@ -917,21 +916,14 @@ Reactor flow control
 Internet protocol events
 ========================
 
-
-Timers
-======
-
 Coroutines
 ==========
 
 Tasks
 =====
 
-SSL Clients
-===========
-
-SSL Servers
-===========
+Basic SSL Client/Server Applications
+====================================
 
 Threads
 =======
@@ -947,6 +939,8 @@ Debugging
 
 Tests
 =====
+
+
 
 
 
