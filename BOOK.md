@@ -863,6 +863,18 @@ err value should be in the python module 'errno.errorcode'.
 
 The 'Server' handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
 
+~~~
+
+spin {
+READ -> Server -(Spin:client, int:err)-> {ACCEPT, ACCEPT_ERR}
+
+}
+
+~~~
+
+That means when a server socket got a client connected the 'Server' handle will accept the connection
+then process the ACCEPT event, if it fails then it processes ACCEPT_ERR.
+
 Clients
 =======
 
@@ -905,6 +917,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
