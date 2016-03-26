@@ -13,6 +13,8 @@ def create_connection(addr, port):
     Client(con)
     xmap(con, CONNECT, on_connect, addr, port)
     xmap(con, CONNECT_ERR, on_connect_err, addr, port)
+    xmap(con, CONNECT, lambda con: die())
+    xmap(con, CONNECT_ERR, lambda con, err: die())
     
     con.connect_ex((addr, port))
 
@@ -26,5 +28,6 @@ if __name__ == '__main__':
     create_connection(args.addr, args.port)
     core.gear.mainloop()
     
+
 
 

@@ -937,12 +937,14 @@ Once the handles are implemented, it is time to map the events in the 'create_co
 ~~~python
     xmap(con, CONNECT, on_connect, addr, port)
     xmap(con, CONNECT_ERR, on_connect_err, addr, port)
+    xmap(con, CONNECT, lambda con: die())
+    xmap(con, CONNECT_ERR, lambda con, err: die())
 ~~~
 
 The event CONNNECT only carries one argument that is the 'Spin' instance, at the code above it adds other two arguments
 to be passed to the 'on_connect' handle, the arguments are 'addr' and 'port'. The same occurs with CONNECT_ERR
 event that carries two arguments, they are the 'Spin' instance and the 'err' value that is an integer whose meaning
-is defined in the 'errno' module.
+is defined in the 'errno' module. The 'die' function is used to stop the reactor from processing the file descriptors.
 
 The game is almost won, now! It is time to connect the socket to the addr and port. In the 'create_connection' function
 just add the line.
@@ -990,6 +992,8 @@ def create_connection(addr, port):
     Client(con)
     xmap(con, CONNECT, on_connect, addr, port)
     xmap(con, CONNECT_ERR, on_connect_err, addr, port)
+    xmap(con, CONNECT, lambda con: die())
+    xmap(con, CONNECT_ERR, lambda con, err: die())
     
     con.connect_ex((addr, port))
 
@@ -1070,6 +1074,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
