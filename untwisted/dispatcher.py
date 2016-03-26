@@ -55,6 +55,13 @@ class Dispatcher(object):
             self.base[event] = filter(lambda ind: 
                         ind[0] != handle, self.base[event])
 
+    def install_maps(self, *args):
+        for ind in args:
+            self.add_map(*ind)
+
+    def insert_map(self, index, map):
+        pass
+
     process_static_base = classmethod(process_base)
     add_static_map      = classmethod(add_map)
     del_static_map      = classmethod(del_map)
@@ -68,6 +75,7 @@ class Dispatcher(object):
 xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
 zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
 spawn = lambda dispatcher, *args: dispatcher.drive(*args)
+
 
 
 

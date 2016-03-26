@@ -4,11 +4,9 @@ import errno
 
 def on_connect(con, addr, port):
     print 'Connected to %s:%s !' % (addr, port)
-    die()
 
 def on_connect_err(con, err, addr, port):
     print "Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err]
-    die()
 
 def create_connection(addr, port):
     con = Spin()
@@ -28,3 +26,4 @@ if __name__ == '__main__':
     create_connection(args.addr, args.port)
     core.gear.mainloop()
     
+
