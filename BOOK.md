@@ -883,7 +883,7 @@ Splits
 Basic Client/Server Applications
 ================================
 
-### A simple Client
+### A simple Client (is_up.py)
 
 Let us think of a minimal application that receives from the command line two arguments, TCP server address and port number.
 Once the arguments are provided then the application tries to connect to the server then either notifies success or failure.
@@ -903,12 +903,55 @@ It is now time to import the basic handles and events that will be used in the a
 
 ~~~python
 from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+import errno
 
 ~~~
 
 The 'Client' handle is a class that spawns the events CONNECT and CONNECT_ERR. The 'Client' handle
 will be attached to the 'Spin' instance to process the events to notify other handles of the connection
 status.
+
+Implementing a function named 'create_connection' that will instantiate a 'Spin' instance then
+bind handles on the events.
+
+~~~python
+def create_connection(addr, port):
+    con = Spin()
+    Client(con)
+~~~
+
+The 'Client' handle will process either CONNECT or CONNECT_ERR events that corresponds to the socket status.
+Now, it is time to create the handles for these events.
+
+~~~python
+
+def on_connect(con, addr, port):
+    print 'Connected to %s:%s !' % (addr, port)
+
+def on_connect_err(con, err, addr, port):
+    print "Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err]
+~~~
+
+Once the handles are implemented, it is time to map the events in the 'create_connection' function.
+
+~~~python
+    xmap(con, CONNECT, on_connect, addr, port)
+    xmap(con, CONNECT_ERR, on_connect_err, addr, port)
+~~~
+
+The event CONNNECT only carries one argument that is the 'Spin' instance, at the code above it adds other two arguments
+to be passed to the 'on_connect' handle, the arguments are 'addr' and 'port'. The same occurs with CONNECT_ERR
+event that carries two arguments, they are the 'Spin' instance and the 'err' value that is an integer whose meaning
+is defined in the 'errno' module.
+
+The game is almost won, now! It is time to connect the socket to the addr and port. In the 'create_connection' function
+just add the line.
+
+~~~python
+    con.connect_ex((addr, port))
+~~~
+
+The method 'connect_ex' is used instead of the 'connect'.
 
 Let us implement the code that gets the addr and the port number.
 
@@ -919,7 +962,60 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--addr', help='Address')
     parser.add_argument('-p', '--port', type=int, help='Port')
     args = parser.parse_args()
+    create_connection(args.addr, args.port)
 ~~~
+
+If we run the code it wouldn't work as expected because we need to execute the untwisted mainloop.
+So, we just add the statement below at the bottom of the file.
+
+~~~
+    core.gear.mainloop()
+~~~
+
+The complete source code is listed below.
+
+~~~python
+from untwisted.network import core, Spin, xmap, die
+from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+import errno
+
+def on_connect(con, addr, port):
+    print 'Connected to %s:%s !' % (addr, port)
+
+def on_connect_err(con, err, addr, port):
+    print "Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err]
+
+def create_connection(addr, port):
+    con = Spin()
+    Client(con)
+    xmap(con, CONNECT, on_connect, addr, port)
+    xmap(con, CONNECT_ERR, on_connect_err, addr, port)
+    
+    con.connect_ex((addr, port))
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--addr', help='Address')
+    parser.add_argument('-p', '--port', type=int, help='Port')
+    args = parser.parse_args()
+
+    create_connection(args.addr, args.port)
+    core.gear.mainloop()
+~~~
+
+Saving that as a file named 'is_up.py' and testing we would get.
+
+~~~python
+[tau@lambda extra]$ python2 is_up.py -a www.google.com.br -p 90
+Failed to connect to www.google.com.br:90, errcode  ETIMEDOUT
+[tau@lambda extra]$ python2 is_up.py -a www.google.com.br -p 80
+Connected to www.google.com.br:80 !
+~~~
+
+### Msg Server (msg_server.py)
+
+### Msg Client (msg_client.py)
 
 ~~~
 spin {
@@ -927,13 +1023,10 @@ spin {
     CONNECT ~ (Stdin, Stdout)
     Stdout -(str:data)-> LOAD
 }
-~~~
 
 You don't need to know which events Stdin, Stdout are binded to use the events that it produces.
 
-### Msg Client
-
-### Msg Server
+~~~
 
 ### IRC Client 
 
@@ -977,6 +1070,7 @@ Debugging
 
 Tests
 =====
+
 
 
 

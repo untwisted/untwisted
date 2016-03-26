@@ -144,13 +144,14 @@ class Client(object):
         xmap(spin, WRITE, self.update)
 
     def update(self, spin):
+        zmap(spin, WRITE, self.update)
         err = spin.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
 
         if err != 0:
             spawn(spin, CONNECT_ERR, err)
         else:
-            zmap(spin, WRITE, self.update)
             spawn(spin, CONNECT)
+
 
 class Server(object):
     """
@@ -212,6 +213,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
