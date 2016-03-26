@@ -885,11 +885,49 @@ Basic Client/Server Applications
 
 ### A simple Client
 
+Let us think of a minimal application that receives from the command line two arguments, TCP server address and port number.
+Once the arguments are provided then the application tries to connect to the server then either notifies success or failure.
+
+So, it is time to implement the code to do the basic imports at the beginning of the file.
+
+~~~python
+from untwisted.network import core, Spin, xmap, die
+
+~~~    
+
+That line imports the 'core' module that holds an instance of the 'gear' class that corresponds to untwisted
+reactor.  The 'xmap' function is basically the same as 'Spin.add_map' method.
+The 'die' function stops the reactor from processing file descriptors.
+
+It is now time to import the basic handles and events that will be used in the application.
+
+~~~python
+from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+
+~~~
+
+The 'Client' handle is a class that spawns the events CONNECT and CONNECT_ERR. The 'Client' handle
+will be attached to the 'Spin' instance to process the events to notify other handles of the connection
+status.
+
+Let us implement the code that gets the addr and the port number.
+
+~~~
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--addr', help='Address')
+    parser.add_argument('-p', '--port', type=int, help='Port')
+    args = parser.parse_args()
+~~~
+
+~~~
 spin {
     Client -(:, int:err)-> *{CONNECT, CONNECT_ERR}
     CONNECT ~ (Stdin, Stdout)
     Stdout -(str:data)-> LOAD
 }
+~~~
 
 You don't need to know which events Stdin, Stdout are binded to use the events that it produces.
 
@@ -939,6 +977,8 @@ Debugging
 
 Tests
 =====
+
+
 
 
 
