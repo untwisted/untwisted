@@ -82,6 +82,8 @@ Event1  -> Handle1
 Event2  -> Handle2
 ~~~
 
+### Skeletons
+
 The expression:
 
 ~~~
@@ -1017,6 +1019,17 @@ Failed to connect to www.google.com.br:90, errcode  ETIMEDOUT
 Connected to www.google.com.br:80 !
 ~~~
 
+The program skeleton is approximately:
+
+~~~
+spin {
+    Client => *{CONNECT, CONNECT_ERR}
+    {CONNECT, CONNECT_ERR} -> {die, die}
+    {CONNECT, CONNECT_ERR} -((str:addr, int:port), 
+                             (str:addr, int:port))-> {on_connect, on_connect_err}
+}
+~~~
+
 ### Msg Server (msg_server.py)
 
 ### Msg Client (msg_client.py)
@@ -1074,6 +1087,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
