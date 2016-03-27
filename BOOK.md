@@ -264,11 +264,22 @@ can be processed but just one and just once.
 
 ### Related objects
 
-### Adding dynamically mappings to objects
-
 ### Domain of handles
 
 ### Image of handle events
+
+### Adding dynamically mappings to objects
+
+### Aggregation of mappings
+
+object0 {
+    READ-> LOAD -> (str:data)
+}
+
+object1, object0 {
+    LOAD -(str:data)-> handle
+
+}
 
 Dispatcher class
 ================
@@ -1203,28 +1214,4 @@ Debugging
 
 Tests
 =====
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
