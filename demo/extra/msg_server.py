@@ -17,13 +17,12 @@ if __name__ == '__main__':
                       metavar="string", default='0.0.0.0')
                   
     parser.add_option("-p", "--port", dest="port",
-                      metavar="integer", default=1234)
+                      type="int", default=1234)
 
     parser.add_option("-b", "--backlog", dest="backlog",
-                      metavar="sinteger", default=5)
+                      type="int", default=5)
 
     (opt, args) = parser.parse_args()
-
     sock   = socket(AF_INET, SOCK_STREAM)
     server = Spin(sock) 
     server.bind((opt.addr, opt.port))
@@ -33,6 +32,9 @@ if __name__ == '__main__':
     xmap(server, ACCEPT, setup)
     
     core.gear.mainloop()
+
+
+
 
 
 

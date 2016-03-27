@@ -1032,6 +1032,108 @@ spin {
 
 ### Msg Server (msg_server.py)
 
+It is the implementation of a simple msg server that receives connections then prints
+whatever data the clients send. The application is listed below.
+
+~~~python
+from untwisted.network import xmap, Spin, core
+from untwisted.iostd import Server, Stdout, Stdin, lose, ACCEPT, LOAD, CLOSE
+from socket import socket, AF_INET, SOCK_STREAM
+import sys
+
+def setup(server, con):
+    Stdin(con)
+    Stdout(con)
+    xmap(con, CLOSE, lambda con, err: lose(con))
+    xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
+
+if __name__ == '__main__':    
+    from optparse import OptionParser
+
+    parser   = OptionParser()
+    parser.add_option("-a", "--addr", dest="addr",
+                      metavar="string", default='0.0.0.0')
+                  
+    parser.add_option("-p", "--port", dest="port",
+                      type="int", default=1234)
+
+    parser.add_option("-b", "--backlog", dest="backlog",
+                      type="int", default=5)
+
+    (opt, args) = parser.parse_args()
+    sock   = socket(AF_INET, SOCK_STREAM)
+    server = Spin(sock) 
+    server.bind((opt.addr, opt.port))
+    server.listen(opt.backlog)
+    Server(server)
+    
+    xmap(server, ACCEPT, setup)
+    
+    core.gear.mainloop()
+~~~
+
+The lines listed below are responsible by creating a socket then wrapping it with the 'Spin' class.
+
+~~~python
+    sock   = socket(AF_INET, SOCK_STREAM)
+    server = Spin(sock) 
+~~~
+
+It just calls the method 'bind' and 'listen' as usually it is used when dealing with socket servers.
+
+~~~python
+    server.bind((opt.addr, opt.port))
+    server.listen(opt.backlog)
+~~~
+
+In the code below it installs the handle 'Server' that spawns the eventS ACCEPT, ACCEPT_ERR. The ACCEPT one
+means that a new connection has arrived.
+
+~~~python
+    Server(server)
+    xmap(server, ACCEPT, setup)
+~~~
+
+The 'setup' function is called when a new connection has arrived, it installs the basic built in handles
+'Stdin' and 'Stdout', these deal with sending and receiving data.
+
+
+~~~python
+def setup(server, con):
+    Stdin(con)
+    Stdout(con)
+    xmap(con, CLOSE, lambda con, err: lose(con))
+    xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
+~~~
+
+In the 'setup' the line below maps the event CLOSE to the lambda that calls the function 'lose'. The
+function 'lose' is used to close the connection and unregister the socket from the reactor.
+
+~~~python
+    xmap(con, CLOSE, lambda con, err: lose(con))
+~~~
+
+The line below just maps the event LOAD that is spawned by the handle 'Stdin' to a lambda that writes
+to stdout.
+
+~~~python
+    xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
+~~~
+
+Saving the file as 'msg_server.py' and running it with:
+
+~~~
+python2 msg_server.py -a '0.0.0.0' -p 1235 -b 50
+~~~
+
+Then connecting from a telnet with:
+
+~~~
+telnet localhost 1235
+~~~
+
+You'll get all the text sent from the telnet printed in the msg server window.
+
 ### Msg Client (msg_client.py)
 
 ~~~
@@ -1087,6 +1189,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
