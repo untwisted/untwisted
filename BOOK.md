@@ -827,7 +827,7 @@ The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In
 
 ~~~
 spin {
-WRITE -> Client -(:, int:err)-> *{CONNECT, CONNECT_ERR}
+WRITE -> Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
 }
 ~~~
 
@@ -852,7 +852,7 @@ That is equivalent to:
 
 ~~~
 spin {
-READ -> Stdout -(str:data, int:err)-> {LOAD, **CLOSE}
+READ -> Stdout -(str:data), (int:err)-> {LOAD, **CLOSE}
 }
 ~~~
 
@@ -870,7 +870,7 @@ The 'Server' handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
 ~~~
 
 spin {
-READ -> Server -(Spin:client, int:err)-> {ACCEPT, ACCEPT_ERR}
+READ -> Server -(Spin:client), (int:err)-> {ACCEPT, ACCEPT_ERR}
 
 }
 
@@ -1025,8 +1025,8 @@ The program skeleton is approximately:
 spin {
     Client => *{CONNECT, CONNECT_ERR}
     {CONNECT, CONNECT_ERR} -> {die, die}
-    {CONNECT, CONNECT_ERR} -((str:addr, int:port), 
-                             (str:addr, int:port))-> {on_connect, on_connect_err}
+    {CONNECT, CONNECT_ERR} -(str:addr, int:port), 
+                            (str:addr, int:port)-> {on_connect, on_connect_err}
 }
 ~~~
 
@@ -1132,13 +1132,27 @@ Then connecting from a telnet with:
 telnet localhost 1235
 ~~~
 
-You'll get all the text sent from the telnet printed in the msg server window.
+You'll get all the text that was sent from the telnet printed in the msg server window.
+
+A skeleton for the program would be.
+
+con {
+    Stdin => CLOSE -> lose
+    Stdout => CLOSE -> lose
+    Stdout => LOAD -(str:data)-> print
+}
+
+~~~
+server {
+    Server -(Spin:con), (int:err)-> {ACCEPT, ACCEPT_ERR}
+}
+~~~
 
 ### Msg Client (msg_client.py)
 
 ~~~
 spin {
-    Client -(:, int:err)-> *{CONNECT, CONNECT_ERR}
+    Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
     CONNECT ~ (Stdin, Stdout)
     Stdout -(str:data)-> LOAD
 }
@@ -1189,6 +1203,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
