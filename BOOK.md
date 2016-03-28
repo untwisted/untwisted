@@ -74,15 +74,19 @@ The fact of untwisted being such a powerful approach to implement networking app
 of being possible to have events that are mapped to handles that spawn other events and so on. It may not
 sound obvious at first glance why it turns to be useful but it will make more sense later. 
 
-The diagram below examplifies the scheme:
-    
+
+### Skeletons
+
+The diagrams along this document are a way to express superficially interactions between objects
+that are used to implement networking applications on top of untwisted.
+
+Consider:
+
 ~~~
 Event0  -> Handle0 -> (Event1, Event2)
 Event1  -> Handle1
 Event2  -> Handle2
 ~~~
-
-### Skeletons
 
 The expression:
 
@@ -100,13 +104,6 @@ Note that the expression:
 ~~~
 
 It means that the sequence of events will be processed.
-
-When a given handle is called it will process the event arguments and eventually it may occur an exception inside the handle.
-The event loop can't stop due to that exception being raised because it is advantageous under some perspectives
-to keep the reactor processing other events. There will exist situations that it will not be advantageous to keep
-the reactor processing a given list of handles for a given event, in that case there are specific exceptions
-that can be raised to change the flow of the events it means avoiding some events to occur or having more
-events to occur. So, in untwisted, the flow of the events can be controlled with a set of specific exceptions.
 
 It is necessary to introduce some notation to simplify the exposition of ideas and facts.
 
@@ -268,18 +265,6 @@ can be processed but just one and just once.
 
 ### Image of handle events
 
-### Adding dynamically mappings to objects
-
-### Aggregation of mappings
-
-object0 {
-    READ-> LOAD -> (str:data)
-}
-
-object1, object0 {
-    LOAD -(str:data)-> handle
-
-}
 
 Dispatcher class
 ================
@@ -435,16 +420,6 @@ The code below clarifies better:
 >>> 
 ~~~
 
-The code above corresponds to:
-
-~~~
-dispatcher {
-    LOAD -(data)-> on_load -(args)-> $cmd
-
-}
-~~~
-
-Where $cmd may be any python string that is carried by LOAD and processed by on_load handle.
 Let us drive a LOAD event inside that dispatcher object.  
 
 ~~~python
@@ -458,38 +433,7 @@ Sum: 4
 ~~~
 
 It creates a new handle named 'on_add' and maps it to the event 'add'.
-The dispatcher object with the mappings previously defined should look like.
 
-~~~
-dispatcher {
-    LOAD -(data)-> on_load -(args)-> $cmd
-    $cmd('add') -(args)-> on_add
-~~~
-
-The symbol below means that 'cmd' is an event variable that can assume the value 'add' 
-and when such an event occurs then the handle 'on_add' is processed.
-
-~~~
-$cmd('add') -(args)-> on_add
-~~~
-
-it is interesting notice that the diagram below is equivalent to the above but not describe
-all the system.
-
-~~~
-dispatcher {
-    LOAD -(data)-> on_load -(args)-> $cmd
-    'add' -(args)-> on_add
-~~~
-
-The same occurs with:
-
-~~~
-dispatcher {
-    LOAD -> on_load -> $cmd
-    'add' -> on_add
-}
-~~~
 
 ### Passing additional arguments to handles
 
@@ -556,20 +500,16 @@ LOAD event occured: cd /glau
 The method 'del_map' is used to remove a mapping from a Dispatcher object. In the above code,
 the handle 'on_load' will be processed just once for the event LOAD.
 
-The diagram below is equivalent to the code above.
-
-~~~
-dispatcher {
-    LOAD -(data)-> *on_load
-}
-~~~
-
-The symbol '*' means that 'on_load' will be processed just once when the event LOAD is processed.
-
 ### Exceptions in handles
 
-When handles are processed it might occur exceptions, the way of how untwisted is used to model 
-applications doesn't permit to catch exceptions as it is usually done.
+When a given handle is called it will process the event arguments and eventually it may occur an exception inside the handle.
+The event loop can't stop due to that exception being raised because it is advantageous under some perspectives
+to keep the reactor processing other events. There will exist situations that it will not be advantageous to keep
+the reactor processing a given list of handles for a given event, in that case there are specific exceptions
+that can be raised to change the flow of the events it means avoiding some events to occur or having more
+events to occur. So, in untwisted, the flow of the events can be controlled with a set of specific exceptions.
+
+The way of how untwisted is used to model applications doesn't permit to catch exceptions as it is usually done.
 
 ~~~python
 >>> from untwisted.dispatcher import Dispatcher
@@ -641,6 +581,8 @@ In the code above, the handle 'on_zero_division-error' was defined to catch the 
 could occur inside the 'handle' function that does the division of two numbers when the 'div' event occurs.
 Using this approach it is possible to have one or more handles deciding what to do when an exception occurs at some
 point of the program it increases extensibility and turns modelling of applications more succint and modular.
+
+### The Kill, Root exceptions
 
 ### Handle returns
 
@@ -837,9 +779,7 @@ Untwisted.iostd.Server
 The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In diagram it is equivalent to:
 
 ~~~
-spin {
 WRITE -> Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
-}
 ~~~
 
 That basically means that if CONNECT is processed then CONNECT_ERR will not be processed and that if 
@@ -853,18 +793,7 @@ The 'Stdout' handle spawns the event LOAD that carries the data that was read fr
 spawns CLOSE, RECV_ERR as well.
 
 ~~~
-spin {
-READ -> Stdout =(str:data)=> LOAD
-        Stdout =(int:err)=> **CLOSE
-}
-~~~
-
-That is equivalent to:
-
-~~~
-spin {
 READ -> Stdout -(str:data), (int:err)-> {LOAD, **CLOSE}
-}
 ~~~
 
 The symbols ** at the left of the event CLOSE means that if CLOSE is processed then
@@ -879,11 +808,7 @@ err value should be in the python module 'errno.errorcode'.
 The 'Server' handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
 
 ~~~
-
-spin {
 READ -> Server -(Spin:client), (int:err)-> {ACCEPT, ACCEPT_ERR}
-
-}
 
 ~~~
 
@@ -1030,17 +955,6 @@ Failed to connect to www.google.com.br:90, errcode  ETIMEDOUT
 Connected to www.google.com.br:80 !
 ~~~
 
-The program skeleton is approximately:
-
-~~~
-spin {
-    Client => *{CONNECT, CONNECT_ERR}
-    {CONNECT, CONNECT_ERR} -> {die, die}
-    {CONNECT, CONNECT_ERR} -(str:addr, int:port), 
-                            (str:addr, int:port)-> {on_connect, on_connect_err}
-}
-~~~
-
 ### Msg Server (msg_server.py)
 
 It is the implementation of a simple msg server that receives connections then prints
@@ -1145,32 +1059,7 @@ telnet localhost 1235
 
 You'll get all the text that was sent from the telnet printed in the msg server window.
 
-A skeleton for the program would be.
-
-con {
-    Stdin => CLOSE -> lose
-    Stdout => CLOSE -> lose
-    Stdout => LOAD -(str:data)-> print
-}
-
-~~~
-server {
-    Server -(Spin:con), (int:err)-> {ACCEPT, ACCEPT_ERR}
-}
-~~~
-
 ### Msg Client (msg_client.py)
-
-~~~
-spin {
-    Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
-    CONNECT ~ (Stdin, Stdout)
-    Stdout -(str:data)-> LOAD
-}
-
-You don't need to know which events Stdin, Stdout are binded to use the events that it produces.
-
-~~~
 
 ### IRC Client 
 
@@ -1214,4 +1103,6 @@ Debugging
 
 Tests
 =====
+
+
 
