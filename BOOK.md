@@ -235,9 +235,7 @@ object0 {
 
 ~~~
 
-Using this approach it is possible to describe reasonably well almost all philosophical entities that can be built
-in order to understand the reality surrounding our mind senses. However, we'll be interested in specific objects
-when using untwisted, these are sockets, threads, processes etc. It is interesting notice that handles can be 
+We'll be interested in specific objects when using untwisted, these are sockets, threads, processes etc. It is interesting notice that handles can be 
 seen as events and vice versa. 
 
 Consider the situation in which a handle is processed and a set of possible events might occur but just once.
@@ -815,9 +813,6 @@ READ -> Server -(Spin:client), (int:err)-> {ACCEPT, ACCEPT_ERR}
 That means when a server socket got a client connected the 'Server' handle will accept the connection
 then process the ACCEPT event, if it fails then it processes ACCEPT_ERR.
 
-Splits
-======
-
 Basic Client/Server Applications
 ================================
 
@@ -1161,11 +1156,14 @@ That basically adds a mapping 'LOAD -(str:data)-> print' to the 'con' object tha
 to the new connection. When the event LOAD happens in one of the cliet connections then it dumps back
 the data that was received.
 
-### A Port Scan 
+Splits
+======
 
-### A FTP Client 
+### Internet protocol events
 
-### Calc Server
+### Calc Server (calc_server.py)
+
+### FTP Client (ftp_client.py)
 
 Timers
 ======
@@ -1173,14 +1171,21 @@ Timers
 Reactor flow control
 ====================
 
-Internet protocol events
-========================
+### The Root exception
+
+### The Kill exception
 
 Coroutines
 ==========
 
+### A simple chat server (chat_server.py)
+
 Tasks
 =====
+
+### Task class
+
+### A Port Scan (port_scan.py)
 
 Basic SSL Client/Server Applications
 ====================================
@@ -1188,8 +1193,16 @@ Basic SSL Client/Server Applications
 Threads
 =======
 
+### Job class
+
+### A basic example (sum.py)
+
 Spawning processes
 ==================
+
+### Expect class
+
+### A basic example (spawn_process.py)
 
 The IRC Client plugin
 =====================
@@ -1199,7 +1212,4 @@ Debugging
 
 Tests
 =====
-
-
-
 
