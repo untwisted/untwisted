@@ -1159,7 +1159,26 @@ the data that was received.
 Splits
 ======
 
-### Internet protocol events
+Application layer protocols are mostly based on string tokens, these tokens models the communication between client
+and server applications. An example is the HTTP protocol that uses '\r\n\r\n' to separate HTTP headers from HTTP content
+in a HTTP request.
+
+The fundamental idea of untwisted is providing a set of tools to parse application layer protocols into meaningful
+chunks of data then spawning events. These events can be used to model applications either in the client side or server side
+applications.
+
+### Terminator Split
+
+The 'Terminator' split is a handle that is processed on the LOAD event. It accumulates data that is
+carried with the LOAD event until a specific token appears. When the specified token appears in the data
+then it splits all the data that was accumulated in a list of chunks and it spawns the event Terminator.FOUND
+that carries the list of chunks.
+
+The best way to understand the Terminator handle is testing it in the python interpreter.
+
+~~~
+
+~~~
 
 ### Calc Server (calc_server.py)
 
@@ -1212,4 +1231,6 @@ Debugging
 
 Tests
 =====
+
+
 
