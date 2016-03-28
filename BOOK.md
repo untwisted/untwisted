@@ -1061,13 +1061,80 @@ You'll get all the text that was sent from the telnet printed in the msg server 
 
 ### Msg Client (msg_client.py)
 
-### IRC Client 
+This is the counter part of the msg server application. The program listed below
+is using essentially the basic features of the 'msg_server.py' one.
+
+~~~python
+from untwisted.network import xmap, Spin, core
+from untwisted.iostd import Client, Stdout, Stdin, CONNECT, DUMPED
+from socket import socket, AF_INET, SOCK_STREAM
+from untwisted.core import die
+
+def setup(con, msg):
+    Stdout(con)
+    Stdin(con)
+    con.dump(msg)
+    xmap(con, DUMPED, lambda con: die('Msg dumped!'))
+
+def create_connection(addr, port, msg):
+    sock = socket(AF_INET, SOCK_STREAM)
+    con  = Spin(sock)
+
+    Client(con)
+    con.connect_ex((addr, port))
+    xmap(con, CONNECT, setup, msg)
+
+if __name__ == '__main__':
+    from optparse import OptionParser
+
+    parser   = OptionParser()
+    parser.add_option("-a", "--addr", dest="addr",
+                      metavar="string", default='localhost')
+                  
+    parser.add_option("-p", "--port", dest="port",
+                      type="int", default=1234)
+
+    parser.add_option("-m", "--msg", dest="msg",
+                      metavar="string")
+
+    (opt, args) = parser.parse_args()
+    create_connection(opt.addr, opt.port, opt.msg)
+    core.gear.mainloop()
+~~~
+
+The line below merely dumps the message that was specified by the user through the socket. The 'Stdin'
+handle monkey patch the method 'dump'.
+
+~~~python
+    con.dump(msg)
+~~~
+
+When all the data was sent then 'Stdin' handle spawns the event DUMPED in the Spin instance that it was
+added to.
+
+~~~
+    xmap(con, DUMPED, lambda con: die('Msg dumped!'))
+~~~
+
+When the event dumped happens then it calls die to stop the reactor then prints a msg on the screen.
+
+Place the source code above inside a file named 'msg_client.py' then run the 'msg_server.py' with:
+
+~~~
+python2 msg_server.py -a '0.0.0.0' -p 1235 -b 50
+~~~
+
+It is possible to send messages to the 'msg_server.py' instance by running 'msg_client.py' with.
+
+~~~
+python2 msg_client.py -a 'localhost' -p 1234 -m 'it is gonna be cool'
+~~~
+
+### Echo Server
 
 ### A FTP Client 
 
 ### A Port Scan 
-
-### Echo Server
 
 ### Calc Server
 
@@ -1103,6 +1170,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
