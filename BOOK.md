@@ -1130,11 +1130,40 @@ It is possible to send messages to the 'msg_server.py' instance by running 'msg_
 python2 msg_client.py -a 'localhost' -p 1234 -m 'it is gonna be cool'
 ~~~
 
-### Echo Server
+### Echo Server (echo_server.py)
 
-### A FTP Client 
+The example below shows a simple echo server application that uses the shorthand function 'create_server'.
+Such a function instantiates a 'Spin' instance and installs the basic handles in the server socket
+and in the new incoming connection sockets. 
+
+~~~python
+from untwisted.network import Spin, xmap, core
+from untwisted.iostd import create_server, ACCEPT, LOAD
+
+class EchoServer(object):
+    def __init__(self, server):
+        xmap(server, ACCEPT, lambda server, con: 
+                     xmap(con, LOAD, lambda con, data: con.dump(data)))
+
+if __name__ == '__main__':
+    EchoServer(create_server('0.0.0.0', 1234, 5))
+    core.gear.mainloop()
+~~~
+
+Consider the line:
+
+~~~python
+        xmap(server, ACCEPT, lambda server, con: 
+                     xmap(con, LOAD, lambda con, data: con.dump(data)))
+~~~
+
+That basically adds a mapping 'LOAD -(str:data)-> print' to the 'con' object that corresponds
+to the new connection. When the event LOAD happens in one of the cliet connections then it dumps back
+the data that was received.
 
 ### A Port Scan 
+
+### A FTP Client 
 
 ### Calc Server
 
