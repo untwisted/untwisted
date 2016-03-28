@@ -1171,13 +1171,51 @@ applications.
 
 The 'Terminator' split is a handle that is processed on the LOAD event. It accumulates data that is
 carried with the LOAD event until a specific token appears. When the specified token appears in the data
-then it splits all the data that was accumulated in a list of chunks and it spawns the event Terminator.FOUND
-that carries the list of chunks.
+then it splits all the data that was accumulated into a list of chunks and it spawns the event Terminator.FOUND
+sequentially with each one of the chunks.
 
 The best way to understand the Terminator handle is testing it in the python interpreter.
 
+~~~python
+>>> from untwisted.splits import Terminator
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.event import LOAD
+>>> 
+>>> con = Dispatcher()
+>>> terminator = Terminator(con, delim=',')
+~~~python
+
+The code above instantiates a 'Dispatcher' instance named 'con' that simulates a 'Spin' socket. It installs
+the handle 'Terminator' with the delimiter ','. Whenever the LOAD event happens in the 'con' instance
+it will check for the token ',' if it appears then it splits the data into chunks that are delimited by ',' otherwise
+it accumulates the data.
+
+~~~python
+>>> def on_found(con, data):
+...     print 'msg:', data
+... 
+>>> con.add_map(Terminator.FOUND, on_found)
+>>> 
 ~~~
 
+When the event Terminator.FOUND happens then calls 'on_found' handle with the chunk.
+
+~~~python
+>>> con.drive(LOAD, 'word1,word2,wor')
+msg: word1
+msg: word2
+>>> con.drive(LOAD, 'd3,word4')
+msg: word3
+>>> con.drive(LOAD, ',')
+msg: word4
+>>> 
+~~~
+
+When 'Terminator' is installed in a Spin socket and a READ event is dispatched by the reactor
+then a LOAD event happens and the handle 'Terminator' is processed.
+
+~~~
+READ -> Stdout => LOAD -(str:data)-> Terminator => Terminator.FOUND
 ~~~
 
 ### Calc Server (calc_server.py)
@@ -1231,6 +1269,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
