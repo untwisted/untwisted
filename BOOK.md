@@ -1550,6 +1550,26 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
+When clients connect to the server it asks for a nickname to be sent. The implementation uses untwisted coroutines
+to wait for a Terminator.FOUND event to set the user's nickname to its corresponding 'Spin' instance.
+
+After the nick being set in the user socket instance then it maps the event Terminator.FOUND to the method 'echo_msg'
+that echoes any msg to other users.
+
+**Testing**
+
+Run the chat server with:
+
+~~~
+python chat_server.py
+~~~
+
+Connect from a telnet with:
+
+~~~
+telnet 'localhost' 1234
+~~~
+
 Tasks
 =====
 
@@ -1590,6 +1610,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
