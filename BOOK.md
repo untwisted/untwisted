@@ -1442,15 +1442,76 @@ timer = Sched(inc, handle, arg0, arg1, ...)
 core.gear.mainloop()
 ~~~
 
-Reactor flow control
-====================
-
-### The Root exception
-
-### The Kill exception
-
 Coroutines
 ==========
+
+Untwisted coroutines are used from handles to stop code execution until a given event happens with some 'Dispatcher' instance.
+
+Let us play with untwisted coroutines from the interpreter.
+
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.tools import coroutine
+>>> from untwisted.event import get_event
+>>> 
+>>> @coroutine
+... def handle(dispatcher):
+...     value, = yield dispatcher, 'cond0'
+...     print 'Value:', value
+...     value, = yield dispatcher, 'cond1'
+...     print 'Value:', value
+...     value, = yield dispatcher, 'cond2'
+...     print 'Value:', value
+... 
+>>> 
+>>> dispatcher = Dispatcher()
+>>> handle(dispatcher)
+>>> dispatcher.drive('cond0', 10)
+Value: 10
+>>> dispatcher.drive('cond1', 20)
+Value: 20
+>>> dispatcher.drive('cond2', 30)
+Value: 30
+>>> dispatcher.drive('cond0', 40)
+>>> 
+~~~
+
+The 'handle' function receives a 'dispatcher' instance then uses the 'yield' statement to wait for
+incoming events from the 'dispatcher' instance. When the events occur then the code is processed.
+
+A more complicated example would be:
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.tools import coroutine
+>>> from untwisted.event import LOAD, DUMPED
+>>> 
+>>> @coroutine
+... def handle(dispatcher, number):
+...     print 'coroutine started!'
+...     while True:
+...         value, = yield dispatcher, LOAD
+...         if value > number:
+...             break
+...     print 'number', number
+...     print 'Value:', value
+... 
+>>> dispatcher = Dispatcher()
+>>> dispatcher.add_map(DUMPED, handle)
+>>> dispatcher.drive(DUMPED, 20)
+coroutine started!
+>>> dispatcher.drive(LOAD, 10)
+>>> dispatcher.drive(LOAD, 15)
+>>> dispatcher.drive(LOAD, 30)
+number 20
+Value: 30
+>>> 
+~~~
+
+When the event DUMPED is processed then 'handle' is processed and it waits for the event LOAD
+to happen from the 'dispatcher' instance. When the LOAD happens then it checks whether the value it carried
+matches the condition if it matches then it breaks the while loop.
 
 ### A simple chat server (chat_server.py)
 
@@ -1481,11 +1542,20 @@ Spawning processes
 The IRC Client plugin
 =====================
 
+Reactor flow control
+====================
+
+### The Root exception
+
+### The Kill exception
+
+
 Debugging
 =========
 
 Tests
 =====
+
 
 
 
