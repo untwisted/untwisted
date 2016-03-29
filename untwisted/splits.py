@@ -1,19 +1,6 @@
 from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
 from untwisted.event import LOAD, get_event
-
 import sys
-
-class Breaker(object):
-    def __init__(self, device, delim=' '):
-        self.delim = delim
-        xmap(device, FOUND, self.handle_found)
-
-    def handle_found(self, device, data):
-        tokens = data.split(self.delim, 4)
-        event = tokens[0]
-        del tokens[0]
-        spawn(device, event, *tokens)
-
 
 class Fixed(object):
     """
@@ -21,17 +8,29 @@ class Fixed(object):
     FOUND = get_event()
     def __init__(self, spin, size=4):
         xmap(spin, LOAD, self.update)
-
-        self.box  = ''
+        self.arr  = bytearray()
         self.size = size
 
     def update(self, spin, data):
-        self.box = self.box + data
+        self.arr.extend(data)
 
-        while len(self.box) >= self.size:
-            chunk    = buffer(self.box, 0, 4)
-            self.box = buffer(self.box, 4)
-            spawn(spin, Fixed.FOUND, chunk)
+        for ind in xrange(self.size, len(self.arr) + 1, self.size):
+            chunk = buffer(self.arr, ind - self.size, self.size)
+            spin.drive(Fixed.FOUND, chunk)
+        else:
+            try:
+               del self.arr[:ind]
+            except NameError:
+                pass
+
+class Breaker(object):
+    def __init__(self, device, delim=' '):
+        self.delim = delim
+        xmap(device, Terminator.FOUND, self.handle_found)
+
+    def handle_found(self, device, data):
+        lst = data.split(self.delim)
+        spawn(device, lst.pop(0), *lst)
 
 class Terminator:
     FOUND = get_event()
@@ -53,7 +52,7 @@ class Terminator:
         self.arr.extend(lst.pop(-1))
 
         for ind in lst:
-            spawn(spin, Terminator.FOUND, ind)
+            spin.drive(Terminator.FOUND, ind)
             
 class Accumulator(object):
     """
@@ -88,7 +87,6 @@ class AccUntil(object):
 
 class TmpFile(object):
     DONE = get_event()
-
     def __init__(self, spin, data, max_size, fd):
         self.fd       = fd
         self.max_size = max_size
@@ -126,10 +124,6 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, Terminator.FOUND, log)
-
-
-
-
 
 
 
