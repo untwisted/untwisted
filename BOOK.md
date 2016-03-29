@@ -55,11 +55,11 @@ templates and rapidserv plugins where to look for static files.
 The usage of the decorator **app.request** tells rapidserv to deliver to the handle **send_base** HTTP 
 requests whose method used is 'GET' and the path is '/'. The **send_base** handle is a view function.
 
-**Notice that it is needed to call the method con.done() in order to get the response sent to the
-client.**
+Notice that it is needed to call the method con.done() in order to get the response sent to the
+client.
 
 These lines tells rapidserv to listen for connections on the interface **'0.0.0.0'** at the port **80**.
-The vallue **50** is the backlog.
+The value **50** is the backlog.
 
 ~~~python
     app.bind('0.0.0.0', 80, 50)
@@ -79,21 +79,19 @@ request.query
 request.version
 ~~~
 
-**request.method**
+#### request.method
 
 It holds the HTTP method that was used in the user request.
 
-**request.headers**
+#### request.headers
 
 Obviously, it holds the HTTP headers that were sent by the user.
 
-**request.data**
+#### request.data
 
 That is a **cgi.FieldStorage** instance that holds the body of the request, stuff like files etc.
 
-**See: python cgi module for more information**
-
-**request.query**
+#### request.query
 
 That is a dict instance that holds the query parameters that were sent in the HTTP request.
 
@@ -111,9 +109,9 @@ def path(con, request):
     print request.query['name'][0]
 ~~~
 
-Would print 'iury'.
+Would print **'iury'**.
 
-**request.path**
+#### request.path
 
 In a request like:
 
@@ -121,9 +119,9 @@ In a request like:
 GET /view?name=iury HTTP/1.01
 ~~~
 
-That attribute would hold the string '/view'.
+That attribute would hold the string **'/view'**.
 
-**request.version**
+#### request.version
 
 It contains the HTTP version that was specified in the user request.
 
@@ -186,7 +184,7 @@ The file is listed below.
 
 Now it is time to implement the templates.
 
-**quote-code/templates/show.html**
+#### quote-code/templates/show.html
 
 This template is used to render all the quotes of the database.
 
@@ -211,7 +209,7 @@ This template is used to render all the quotes of the database.
 </html>
 ~~~
 
-**quote-code/templates/view.html**
+#### quote-code/templates/view.html
 
 This file is used to render a quote when the user clicks on the quote ref in the main page.
 
@@ -232,7 +230,7 @@ This file is used to render a quote when the user clicks on the quote ref in the
 </html>
 ~~~
 
-**quote-code/app.py**
+#### quote-code/app.py
 
 It uses sqlite3 to hold the database of quotes. The database initialization could be
 placed in another file for consistency if it were a more complicated application.
@@ -273,7 +271,7 @@ if __name__ == '__main__':
     app.run()
 ~~~
 
-** Running **
+#### Running 
 
 In order to run the app, issue the command below.
 
@@ -282,9 +280,9 @@ python2 app.py --addr '0.0.0.0' --port 1234
 ~~~
 
 
-#### The Rapidserv.route decorator
+### The Rapidserv.route decorator
 
-#### The Rapidserv.accept decorator
+### The Rapidserv.accept decorator
 
 ### Redirects
 
@@ -1856,6 +1854,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
