@@ -18,37 +18,283 @@ some similarities in the design of the applications that are built on top of Rap
 consequently it can scale a lot of connections and it is ideal for some applications. 
 Rapidserv uses jinja2 although it doesn't enforce the usage.
 
+### View functions
+
 ### A simple application
+
+The source code for a basic rapidserv application is listed below.
+
+~~~python
+from untwisted.plugins.rapidserv import RapidServ, core
+
+app = RapidServ(__file__)
+
+@app.request('GET /')
+def send_base(con, request):
+    con.add_data('<html> <body> <p> Rapidserv </p> </body> </html>')
+    con.done()
+
+if __name__ == '__main__':
+    app.bind('0.0.0.0', 80, 50)
+    core.gear.mainloop()
+~~~
+
+**The basic statements**
+
+~~~python
+from untwisted.plugins.rapidserv import RapidServ, core
+app = RapidServ(__file__)
+~~~
+
+The **RapidServ** class is the web server instance that handles the HTTP requests. The core module
+is untwisted module that is used to call the reactor mainloop.
+
+The argument passed to the **RapidServ* constructor tells jinja2 where to look for 
+templates and rapidserv plugins where to look for static files.
+
+The usage of the decorator **app.request** tells rapidserv to deliver to the handle **send_base** HTTP 
+requests whose method used is 'GET' and the path is '/'. The **send_base** handle is a view function.
+
+**Notice that it is needed to call the method con.done() in order to get the response sent to the
+client.**
+
+These lines tells rapidserv to listen for connections on the interface **'0.0.0.0'** at the port **80**.
+The vallue **50** is the backlog.
+
+~~~python
+    app.bind('0.0.0.0', 80, 50)
+    core.gear.mainloop()
+~~~
+
+### The **request** object
+
+The **request** object that is passed to a view function holds a set of attributes that are listed below.
+
+~~~python
+request.method
+request.headers
+request.data
+request.path
+request.query
+request.version
+~~~
+
+**request.method**
+
+It holds the HTTP method that was used in the user request.
+
+**request.headers**
+
+Obviously, it holds the HTTP headers that were sent by the user.
+
+**request.data**
+
+That is a **cgi.FieldStorage** instance that holds the body of the request, stuff like files etc.
+
+**See: python cgi module for more information**
+
+**request.query**
+
+That is a dict instance that holds the query parameters that were sent in the HTTP request.
+
+For example, if the user has sent a request like:
+
+~~~
+GET /path?name=iury HTTP/1.1
+~~~
+
+And there were a view defined like:
+
+~~~python
+@app.request('GET /path')
+def path(con, request):
+    print request.query['name'][0]
+~~~
+
+Would print 'iury'.
+
+**request.path**
+
+In a request like:
+
+~~~
+GET /view?name=iury HTTP/1.01
+~~~
+
+That attribute would hold the string '/view'.
+
+**request.version**
+
+It contains the HTTP version that was specified in the user request.
 
 ### The basic dir structure 
 
-#### Static files
+RapidServ applications are generally built on top of a standard structure of dirs. There is
+a folder named **templates** and a folder named **static* to hold static files.
 
-#### Template files
+~~~
+application/
+    templates/
+    static/
+    app.py
+~~~
 
-### Application setup
+### Quote Application
 
-### View functions
+The Quote application is a simple quote system that permits users to add quotes to a database and view them when
+they access the site base.
+
+Let us create the folders and app.
+
+~~~
+mkdir quote-code
+cd quote-code
+mkdir templates
+mkdir static
+~~~
+
+
+Create a file named **quote-code/static/comment.html**, this file will hold the page
+that is used to add a quote.
+
+The file is listed below.
+
+~~~html
+<html>
+ <body>
+
+ <FORM action="/add_quote" method="get">
+ <table>
+ <tr>
+ <td colspan="2">
+    <textarea style="width:100%;" name="quote" rows="10" id="quote" cols="30"> The cat was playing in the garden. </textarea> 
+ </td>
+ </tr> 
+
+ <tr>
+ <td>
+    <INPUT name="name" id="name" type="text">
+ </td>
+ <td>
+    <INPUT type="submit" value="Post">
+ </td>
+ </tr>
+ </FORM>
+ </body>
+</html>
+~~~
+
+Now it is time to implement the templates.
+
+**quote-code/templates/show.html**
+
+This template is used to render all the quotes of the database.
+
+~~~html
+<html>
+
+<head>
+
+
+</head>
+
+</body>
+<h1> List of quotes. </h1>
+
+ {% for index, name, quote in posts %}
+    <h3><a href="/load_index?index={{index}}"> {{name}} {{quote}}... </a></h3>
+  {% endfor %}
+
+<h1><a href="comment.html"> Add quote </a></h1>
+</body>
+
+</html>
+~~~
+
+**quote-code/templates/view.html**
+
+This file is used to render a quote when the user clicks on the quote ref in the main page.
+
+~~~html
+<html>
+
+<head>
+
+
+</head>
+
+</body>
+<h1> {{name}} </h1> 
+<h3> {{quote}} </h3> 
+
+</body>
+
+</html>
+~~~
+
+**quote-code/app.py**
+
+It uses sqlite3 to hold the database of quotes. The database initialization could be
+placed in another file for consistency if it were a more complicated application.
+
+~~~python
+from untwisted.plugins.rapidserv import RapidServ, make
+import sqlite3
+
+DB_FILENAME = 'DB'
+DB          = sqlite3.connect(make(__file__, DB_FILENAME))
+app         = RapidServ(__file__)
+DB.execute('CREATE TABLE IF NOT EXISTS quotes (id  INTEGER PRIMARY KEY, name TEXT, quote TEXT)')
+DB.commit()
+
+@app.request('GET /')
+def send_base(con, request):
+    rst = DB.execute('SELECT * FROM quotes')
+    con.render('show.jinja', posts = rst.fetchall())
+    con.done()
+
+@app.request('GET /load_index')
+def load_index(con, request):
+    index        = request.query['index']
+    rst          = DB.execute('SELECT name, quote FROM quotes where id=?', index)
+    name, quote  = rst.fetchone()
+    con.render('view.jinja', name=name, quote=quote)
+    con.done()
+
+@app.request('GET /add_quote')
+def add_quote(con, request):
+    name      = request.query['name'][0]
+    quote     = request.query['quote'][0]
+    DB.execute("INSERT INTO quotes (name, quote) VALUES %s" % repr((name, quote)))
+    DB.commit()
+    send_base(con, request)
+
+if __name__ == '__main__':
+    app.run()
+~~~
+
+** Running **
+
+In order to run the app, issue the command below.
+
+~~~
+python2 app.py --addr '0.0.0.0' --port 1234
+~~~
+
 
 #### The Rapidserv.route decorator
 
-#### The Rapidserv.request decorator
-
 #### The Rapidserv.accept decorator
-
-### Responses
 
 ### Redirects
 
 ### Errors
 
-### Rendering templates
-
 ### Sessions
 
 ### Routers
 
-### The quote web app
+### quickserv script
 
 The requests plugin
 ===================
@@ -1610,6 +1856,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
