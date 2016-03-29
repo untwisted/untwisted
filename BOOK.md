@@ -1215,10 +1215,174 @@ When 'Terminator' is installed in a Spin socket and a READ event is dispatched b
 then a LOAD event happens and the handle 'Terminator' is processed.
 
 ~~~
-READ -> Stdout => LOAD -(str:data)-> Terminator => Terminator.FOUND
+READ -> Stdout => LOAD -(str:data)-> Terminator =(str:chk)=> Terminator.FOUND
 ~~~
 
 ### Calc Server (calc_server.py)
+
+This example implements a simple application layer protocol that uses as token '\r\n' to separate meaningful
+chunks of text. Clients would connect to the server by using a telnet then start sending commands to do
+computations.
+
+**Example of commands**
+
+~~~
+add 1 2 3
+sub 0 2
+div 4 2 2 4
+~~~
+
+The complete source code is listed below.
+
+~~~python
+from untwisted.network import core, Spin, xmap, spawn
+from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
+from untwisted.splits import Terminator
+from untwisted.tools import handle_exception
+import operator
+
+class CalcParser(object):
+    def __init__(self, client):
+        xmap(client, Terminator.FOUND, self.handle_found)
+
+    @handle_exception(ValueError)
+    def handle_found(client, data):
+        op, args = data.split(' ', 1)
+        args     = map(float, args.split(' '))
+        spawn(client, op, args)
+
+class CalcServer(object):
+    """ 
+    """
+
+    def __init__(self, server):
+        xmap(server, ACCEPT, self.handle_accept)
+
+    def handle_accept(self, server, client):
+        Stdin(client)
+        Stdout(client)
+        Terminator(client, delim='\r\n')
+        parser = CalcParser(client)
+        
+        xmap(client, 'add', self. on_add)    
+        xmap(client, 'sub', self.on_sub)    
+        xmap(client, 'mul', self.on_mul)    
+        xmap(client, 'div', self.on_div)    
+        xmap(client, (parser.handle_found, ValueError), self.on_error)    
+
+        xmap(client, CLOSE, self.handle_close)
+
+    def on_add(self, client, args):
+        self.send_msg(client, reduce(operator.add, args, 0))
+
+    def on_sub(self, client, args):
+        self.send_msg(client, reduce(operator.sub, args, 0))
+
+    def on_div(self, client, args):
+        self.send_msg(client, reduce(operator.div, args, args.pop(0)))
+
+    def on_mul(self, client, args):
+        self.send_msg(client, reduce(operator.mul, args, args.pop(0)))
+
+    def on_error(self, client, excpt):
+        self.send_msg(client, excpt)
+
+    def handle_close(self, client, err):
+        client.destroy()
+        client.close()
+
+    def send_msg(self, client, msg):
+        client.dump('%s\r\n' % msg)
+
+if __name__ == '__main__':
+    server = Spin()
+    server.bind(('', 1234))
+    server.listen(5)
+
+    Server(server)
+    CalcServer(server)
+    core.gear.mainloop()
+~~~
+
+The code below implements the handle 'CalcParser' that is processed when Terminator.FOUND is processed.
+
+~~~python
+class CalcParser(object):
+    def __init__(self, client):
+        xmap(client, Terminator.FOUND, self.handle_found)
+
+    @handle_exception(ValueError)
+    def handle_found(client, data):
+        op, args = data.split(' ', 1)
+        args     = map(float, args.split(' '))
+        spawn(client, op, args)
+~~~
+
+When one of the clients sends a message like:
+
+~~~
+cmd arg0 arg1 arg2 ...\r\n
+~~~
+
+The Terminator.FOUND event will be processed then 'handle_found' will be processed and it will receive that string.
+The string will be split using ' ' as token and the first chunk will turn into an event, the remaining chunks
+will be converted to float numbers.
+
+So, if one of the clients sends:
+
+~~~
+add 1 2
+~~~
+
+It will occur an event named 'add' and it will carry the arguments (1, 2). Whatever handle that is mapped to the event 'add'
+will be processed. 
+
+The 'handle_exception' decorator is used to get an event-exception like (CalcParser.handle_found, ValueError). If
+one of the clients sends a message like:
+
+~~~
+add 1 2 x
+~~~
+
+It will raise an exception 'ValueError' inside handle_found then it will be turned into an event that can be trigged
+by other handles. In the example, the event (CalcParser.handle_found, ValueError) was mapped to the handle 'on_error'
+that sends back the exception to the client.
+
+The code below is used to destroy the 'Spin' instance then close the underlying socket.
+
+~~~python
+    def handle_close(self, client, err):
+        client.destroy()
+        client.close()
+~~~
+
+Saving the file as 'calc_server.py' and running it with:
+
+~~~
+python2 calc_server.py
+~~~
+
+Then connecting to the server with:
+
+~~~
+tee >(telnet localhost 1234)
+Trying ::1...
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+add 1 2
+3.0
+sub 2 -1
+-1.0
+div 2 2 2
+0.5
+add 2 x 0
+could not convert string to float: x
+add 1 0 2323
+2324.0
+add 2 0 lksjc
+could not convert string to float: lksjc
+~~~
 
 ### FTP Client (ftp_client.py)
 
@@ -1269,6 +1433,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
