@@ -17,13 +17,8 @@ class Breaker(object):
 
 class Fixed(object):
     """
-    A protocol for fixed chunks.
-
-    It spawns BOX when the accumulator hits the specified
-    size in bytes.
     """
     FOUND = get_event()
-
     def __init__(self, spin, size=4):
         xmap(spin, LOAD, self.update)
 
@@ -41,23 +36,24 @@ class Fixed(object):
 class Terminator:
     FOUND = get_event()
     def __init__(self, spin, delim='\r\n'):
-        self.delim = delim
-        self.msg   = bytearray()
+        self.delim  = delim
+        self.arr    = bytearray()
 
         xmap(spin, LOAD, self.update)
 
     def update(self, spin, data):
-        self.msg.extend(data)
+        self.arr.extend(data)
 
         if not self.delim in data:
             return
 
-        chain = self.msg.split(self.delim)
-        self.msg = chain[-1]
-        del chain[-1]
+        data = str(self.arr)
+        lst  = data.split(self.delim)
+        del self.arr[:]
+        self.arr.extend(lst.pop(-1))
 
-        for ind in chain:
-            spawn(spin, Terminator.FOUND, str(ind))
+        for ind in lst:
+            spawn(spin, Terminator.FOUND, ind)
             
 class Accumulator(object):
     """
@@ -130,6 +126,8 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, Terminator.FOUND, log)
+
+
 
 
 
