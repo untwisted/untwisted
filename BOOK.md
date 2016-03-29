@@ -151,11 +151,9 @@ mkdir templates
 mkdir static
 ~~~
 
+#### quote-code/static/comment.html
 
-Create a file named **quote-code/static/comment.html**, this file will hold the page
-that is used to add a quote.
-
-The file is listed below.
+this file will hold the page that is used to add a quote.
 
 ~~~html
 <html>
@@ -165,7 +163,8 @@ The file is listed below.
  <table>
  <tr>
  <td colspan="2">
-    <textarea style="width:100%;" name="quote" rows="10" id="quote" cols="30"> The cat was playing in the garden. </textarea> 
+    <textarea style="width:100%;" name="quote" rows="10" id="quote" cols="30"> 
+        The cat was playing in the garden. </textarea> 
  </td>
  </tr> 
 
