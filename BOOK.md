@@ -1384,10 +1384,63 @@ add 2 0 lksjc
 could not convert string to float: lksjc
 ~~~
 
-### FTP Client (ftp_client.py)
-
 Timers
 ======
+
+Timers are a way to get handles executed after a given interval of time. 
+
+Let us test how it works.
+
+~~~python
+Python 2.7.11 (default, Dec  6 2015, 15:43:46) 
+[GCC 5.2.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from untwisted.timer import Timer
+>>> from untwisted import core
+>>> 
+>>> def handle(msg):
+...     print msg
+... 
+>>> timer = Timer(10, handle, 'hello world')
+>>> core.gear.mainloop()
+hello world
+~~~
+
+The 'Timer' object is used to execute a handle just once. It is possible to cancel the handle call by calling
+the method 'Timer.cancel'.
+
+The 'Sched' object is used to get a handle execute periodically.
+
+~~~python
+>>> from untwisted.timer import Sched
+>>> from untwisted import core
+>>> 
+>>> def handle(msg):
+...     print msg
+... 
+>>> timer = Sched(2, handle, 'hello world')
+>>> core.gear.mainloop()
+hello world
+hello world
+hello world
+hello world
+hello world
+~~~
+
+The exception 'CancelCall' that is defined in the 'untwisted.timer' module can be raised
+in order to get the handle call canceled.
+
+~~~python
+from untwisted.timer import Sched, CancelCall
+from untwisted import core
+
+def handle(*args):
+    if some_condition:
+        raise CancelCall
+    
+timer = Sched(inc, handle, arg0, arg1, ...)
+core.gear.mainloop()
+~~~
 
 Reactor flow control
 ====================
