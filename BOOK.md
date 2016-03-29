@@ -1006,7 +1006,7 @@ It just calls the method 'bind' and 'listen' as usually it is used when dealing 
     server.listen(opt.backlog)
 ~~~
 
-In the code below it installs the handle 'Server' that spawns the eventS ACCEPT, ACCEPT_ERR. The ACCEPT one
+In the code below it installs the handle 'Server' that spawns the events ACCEPT, ACCEPT_ERR. The ACCEPT one
 means that a new connection has arrived.
 
 ~~~python
