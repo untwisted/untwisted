@@ -156,10 +156,11 @@ A chess interface to fics with support for stockfish to analyze moves.
 Support
 =======
 
-**Freenode**
+#### Freenode
 
-Address: irc.freenode.org
-Channel: #untwisted
+**Address:** irc.freenode.org
+
+**Channel:** #untwisted
  
 
 
