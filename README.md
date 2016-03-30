@@ -138,6 +138,20 @@ The Untwisted Book
 
 [BOOK.md](BOOK.md)
 
+Applications using Untwisted
+============================
+
+#### [Vy](https://github.com/iogf/vy)
+
+A vim-like in python made from scratch.
+
+#### [Ameliabot](https://github.com/iogf/ameliabot)
+
+A flexible ircbot written on top of untwisted framework.
+
+#### [Steinitz](https://github.com/iogf/steinitz)
+
+A chess interface to fics with support for stockfish to analyze moves.
 
 Support
 =======
@@ -147,6 +161,7 @@ Support
 Address: irc.freenode.org
 Channel: #untwisted
  
+
 
 
 
