@@ -1,14 +1,15 @@
-Untwisted Framework
-===================
-
 What can i create with untwisted?
 =================================
+
+Untwisted permits the implementation of networking applications, spawning processes, threads. It is possible
+to implement web crawlers, web applications, irc clients, irc servers, ftp clients, ftp servers, talk to processes.
 
 Untwisted plugins
 =================
 
-How to read this book?
-======================
+Untwisted is an event driven lib that offers ways to implement networking applications using a non blocking design.
+It is possible to implement abstractions for application layer protocols and use these abstractions in the implementation
+of networking applications that run on top of such internet layer protocols.
 
 The rapidserv plugin
 ====================
@@ -17,8 +18,6 @@ Rapidserv is a micro web framework that is built on top of a powerful asynchrono
 some similarities in the design of the applications that are built on top of Rapidserv. Rapidserv is non blocking network I/O
 consequently it can scale a lot of connections and it is ideal for some applications. 
 Rapidserv uses jinja2 although it doesn't enforce the usage.
-
-### View functions
 
 ### A simple application
 
@@ -145,91 +144,91 @@ they access the site base.
 Let us create the folders and app.
 
 ~~~
-mkdir quote-code
-cd quote-code
+mkdir quote
+cd quote
 mkdir templates
 mkdir static
 ~~~
 
-#### quote-code/static/comment.html
+#### quote/static/comment.html
 
 this file will hold the page that is used to add a quote.
 
 ~~~html
-<html>
- <body>
-
- <FORM action="/add_quote" method="get">
- <table>
- <tr>
- <td colspan="2">
-    <textarea style="width:100%;" name="quote" rows="10" id="quote" cols="30"> 
-        The cat was playing in the garden. </textarea> 
- </td>
- </tr> 
-
- <tr>
- <td>
-    <INPUT name="name" id="name" type="text">
- </td>
- <td>
-    <INPUT type="submit" value="Post">
- </td>
- </tr>
- </FORM>
- </body>
-</html>
+    <html>
+     <body>
+    
+     <FORM action="/add_quote" method="get">
+     <table>
+     <tr>
+     <td colspan="2">
+        <textarea style="width:100%;" name="quote" rows="10" id="quote" cols="30"> 
+            The cat was playing in the garden. </textarea> 
+     </td>
+     </tr> 
+    
+     <tr>
+     <td>
+        <INPUT name="name" id="name" type="text">
+     </td>
+     <td>
+        <INPUT type="submit" value="Post">
+     </td>
+     </tr>
+     </FORM>
+     </body>
+    </html>
 ~~~
 
 Now it is time to implement the templates.
 
-#### quote-code/templates/show.html
+#### quote/templates/show.html
 
 This template is used to render all the quotes of the database.
 
 ~~~html
-<html>
-
-<head>
-
-
-</head>
-
-</body>
-<h1> List of quotes. </h1>
-
- {% for index, name, quote in posts %}
-    <h3><a href="/load_index?index={{index}}"> {{name}} {{quote}}... </a></h3>
-  {% endfor %}
-
-<h1><a href="comment.html"> Add quote </a></h1>
-</body>
-
-</html>
+    <html>
+    
+    <head>
+    
+    
+    </head>
+    
+    </body>
+    <h1> List of quotes. </h1>
+    
+     {% for index, name, quote in posts %}
+        <h3><a href="/load_index?index={{index}}"> {{name}} {{quote}}... </a></h3>
+      {% endfor %}
+    
+    <h1><a href="comment.html"> Add quote </a></h1>
+    </body>
+    
+    </html>
 ~~~
 
-#### quote-code/templates/view.html
+#### quote/templates/view.html
 
 This file is used to render a quote when the user clicks on the quote ref in the main page.
 
 ~~~html
-<html>
-
-<head>
-
-
-</head>
-
-</body>
-<h1> {{name}} </h1> 
-<h3> {{quote}} </h3> 
-
-</body>
-
-</html>
+    <html>
+    
+    <head>
+    
+    
+    </head>
+    
+    </body>
+    <h1> {{name}} </h1> 
+    <h3> {{quote}} </h3> 
+    
+    </body>
+    
+    </html>
 ~~~
 
-#### quote-code/app.py
+#### quote/app.py
 
 It uses sqlite3 to hold the database of quotes. The database initialization could be
 placed in another file for consistency if it were a more complicated application.
@@ -270,6 +269,7 @@ if __name__ == '__main__':
     app.run()
 ~~~
 
+
 #### Running 
 
 In order to run the app, issue the command below.
@@ -278,18 +278,170 @@ In order to run the app, issue the command below.
 python2 app.py --addr '0.0.0.0' --port 1234
 ~~~
 
+### Imup Applicaiton
 
-### The Rapidserv.route decorator
+Imup is a simple application to upload images into a shelve database. It shows the usage of the decorator
+**app.route** that is used a shorthand to access query parameters from the request.
 
-### The Rapidserv.accept decorator
+First of all it is needed to create the application folder.
 
-### Redirects
+~~~
+mkdir imup
+cd imup
+mkdir templates
+~~~
 
-### Errors
+Let us implement the template.
 
-### Sessions
+#### imup/templates/view.jinja
 
-### Routers
+~~~html
+    <!DOCTYPE HTML>
+    <html>
+    <head>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    
+    <title>
+    imup
+    </title>
+    
+    </head>
+    
+    <body>
+    <b> Max Image Size 1024 * 5024 bytes </b>
+    <br>
+    
+    <br> <h1> Upload image </h1>
+    <form action="/add_image" method="post" enctype="multipart/form-data">
+    <input name="file" type="file"> <br> <br>
+    <input type="submit" value="Send">
+    </form>
+    
+    <br>
+    
+    <br>
+    
+    <h1> Images </h1>
+     {% for index in posts %}
+         <h3> {{index}} </h3>
+        <img src="/load_index?index={{index}}"/>
+      {% endfor %}
+    
+    
+    </body>
+    </html>
+~~~
+
+The template above will be loaded when the user access the base site **/**.
+
+The code below is used to add a image to the database by using the method **post**
+
+~~~html
+    <br> <h1> Upload image </h1>
+    <form action="/add_image" method="post" enctype="multipart/form-data">
+    <input name="file" type="file"> <br> <br>
+    <input type="submit" value="Send">
+    </form>
+~~~
+
+This code is used to send a query string to the **/load_index** view to get the image data based on an index.
+
+~~~html
+<h1> Images </h1>
+ {% for index in posts %}
+     <h3> {{index}} </h3>
+    <img src="/load_index?index={{index}}"/>
+  {% endfor %}
+~~~
+
+The implementation of the app is straightforward now. 
+
+#### imup/app.py
+
+~~~python
+from untwisted.plugins.rapidserv import RapidServ, make, HttpRequestHandle
+import shelve
+
+DB_FILENAME = 'DB'
+DB          = shelve.open(make(__file__, DB_FILENAME))
+HttpRequestHandle.MAX_SIZE = 1024 * 1024 * 3
+app    = RapidServ(__file__)
+
+@app.overflow
+def response(con, request):
+    con.set_response('HTTP/1.1 400 Bad request')
+    HTML = '<html> <body> <h1> Bad request </h1> </body> </html>'
+    con.add_data(HTML)
+    con.done()
+
+@app.route('GET /')
+def index(con):
+    con.render('view.jinja', posts = DB.iterkeys())
+    con.done()
+
+@app.route('GET /load_index')
+def load_index(con, index):
+    con.add_data(DB[index[0]], mimetype='image/jpeg')
+    con.done()
+
+@app.route('POST /add_image')
+def add_image(con, file):
+    DB[file.filename] = file.file.read()
+    index(con)
+
+if __name__ == '__main__':
+    app.run()
+~~~
+
+It sets the max size for images being uploaded.
+
+~~~python
+HttpRequestHandle.MAX_SIZE = 1024 * 1024 * 3
+~~~
+
+If an user attempts to upload an image that is larger than the specified then this view is called.
+
+~~~python
+@app.overflow
+def response(con, request):
+    con.set_response('HTTP/1.1 400 Bad request')
+    HTML = '<html> <body> <h1> Bad request </h1> </body> </html>'
+    con.add_data(HTML)
+    con.done()
+~~~
+
+When the user sends a request like:
+
+~~~
+GET /load_index?index=10
+~~~
+
+Then the view below is called.
+
+~~~python
+@app.route('GET /load_index')
+def load_index(con, index):
+    con.add_data(DB[index[0]], mimetype='image/jpeg')
+    con.done()
+~~~
+
+The **index** variable will hold **10**
+
+This handle is used to store the image into the database.
+
+~~~python
+@app.route('POST /add_image')
+def add_image(con, file):
+    DB[file.filename] = file.file.read()
+    index(con)
+~~~
+
+The file variable holds a **cgi.FieldStorage** instance, notice that the name **file** was used when implementing
+the template **imup/templates/view.jinja**
+
+~~~html
+    <input name="file" type="file">
+~~~
 
 ### quickserv script
 
@@ -1853,6 +2005,8 @@ Debugging
 
 Tests
 =====
+
+
 
 
 
