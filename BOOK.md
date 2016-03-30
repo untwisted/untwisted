@@ -1578,7 +1578,7 @@ The best way to understand the Terminator handle is testing it in the python int
 >>> 
 >>> con = Dispatcher()
 >>> terminator = Terminator(con, delim=',')
-~~~python
+~~~
 
 The code above instantiates a 'Dispatcher' instance named 'con' that simulates a 'Spin' socket. It installs
 the handle 'Terminator' with the delimiter ','. Whenever the LOAD event happens in the 'con' instance
@@ -2005,6 +2005,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
