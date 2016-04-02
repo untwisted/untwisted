@@ -22,10 +22,10 @@ class Waker(object):
         self.lock       = Lock()
 
     def wake_up(self):
-        self.lock.acquire()
-        self.con.send(' ')
-        self.lock.release()
+        with self.lock:
+            self.con.send(' ')
     
 waker = Waker()
+
 
 

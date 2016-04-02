@@ -1965,6 +1965,52 @@ Connect from a telnet with:
 telnet 'localhost' 1234
 ~~~
 
+Threads
+=======
+
+Untwisted reactor is implemented on top of a non blocking design that uses  select, poll 
+functions to wait for I/O completion. The code that is being executed in the untwisted reactor thread can't
+hang otherwise the reactor scales poorly. In situations where heavy computations need to be done it is
+needed to use threads.
+
+### Job class
+
+The job class constructor takes two functions one is executed inside a new thread the other one
+is called in the reactor thread when the other one has returned.
+
+~~~python
+class Job(Thread):
+    def __init__(self, handle, func, *args, **kwargs):
+~~~
+
+The **handle** function is called when **func** is processed with **args** and **kwargs**.
+
+### A basic example (sum.py)
+
+The example below spawns some threads that perform simple calculations.
+
+~~~python
+from untwisted.network import core
+from untwisted.job import Job
+import time
+
+def sum(x, y):
+    time.sleep(3)
+    return x + y
+
+def show(result):
+    print result
+
+for ind in xrange(100):
+    job = Job(show, sum, ind, 1000)
+
+core.gear.mainloop()
+
+~~~
+
+The function **sum** is called with two arguments then processed in a new thread when it returns the **show** function
+is called with the **sum** return value.
+
 Tasks
 =====
 
@@ -1974,13 +2020,6 @@ Tasks
 
 Basic SSL Client/Server Applications
 ====================================
-
-Threads
-=======
-
-### Job class
-
-### A basic example (sum.py)
 
 Spawning processes
 ==================
@@ -2005,6 +2044,7 @@ Debugging
 
 Tests
 =====
+
 
 
 

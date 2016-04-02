@@ -1,20 +1,17 @@
-from untwisted.job import Job, DONE
-from untwisted.network import core, xmap
+from untwisted.network import core
+from untwisted.job import Job
 import time
 
 def sum(x, y):
     time.sleep(3)
     return x + y
 
-def show(job, result):
+def show(result):
     print result
 
 for ind in xrange(100):
-    job = Job(sum, ind, 1000)
-    xmap(job, DONE, show)
+    job = Job(show, sum, ind, 1000)
 
 core.gear.mainloop()
-
-
 
 
