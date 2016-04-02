@@ -17,7 +17,7 @@ class Job(Thread, Dispatcher):
         self.lock         = Lock()
 
         core.gear.pool.append(self)
-        Thread.start(self)
+        self.start()
 
     def run(self):
         try:
@@ -42,6 +42,7 @@ class Job(Thread, Dispatcher):
         else:
             self.drive(DONE, self.data)
         core.gear.pool.remove(self)
+
 
 
 
