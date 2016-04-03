@@ -648,16 +648,42 @@ can be processed but just one and just once.
 
 **These diagrams will be used sometimes to explain some untwisted workings.**
 
+### Image of objects/handles
+
+When a handle that is associated with an object is processed then a set of events may happen, this set
+of possible events is the handle image. 
+
+~~~
+handle -> {event0, event1, ...}
+~~~
+
+When an object is processed then a set of possible events may happen, such a set is the image of the object.
+
+~~~
+object -> {event0, event1, ....}
+~~~
+
 ### The symbol **
 
-### A word on argument types of events
+Consider a socket connection to a web server, the socket server can be associated to a set of events, let us consider
+for simplicity it is associated with three events. When the server sends data then the socket server will spawn **LOAD**,
+when it is possible to write data back to the server then it spawns **WRITE**, if the server closes the socket then
+it happens the event **CLOSE**. After that event there will occur no more events because the connection is down.
 
-### Related objects
+~~~
+server -> {LOAD, WRITE, **CLOSE}
+~~~
 
-### Domain of handles
+The event **CLOSE** that is associated with the socket server connection if it happens just once then
+no more events will be processed for that object.
 
-### Image of handle events
+### Event arguments
 
+Events can carry information that better characterizes the event. The notation to express that is shown below.
+
+~~~
+LOAD -(str:data)-> handle
+~~~
 
 Dispatcher class
 ================
@@ -2064,6 +2090,8 @@ Debugging
 
 Tests
 =====
+
+
 
 
 
