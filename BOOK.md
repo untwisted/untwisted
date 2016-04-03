@@ -2003,6 +2003,41 @@ core.gear.mainloop()
 The function **sum** is called with two arguments then processed in a new thread when it returns the **show** function
 is called with the **sum** return value and the **Job** instance.
 
+Spawning processes
+==================
+
+Processes are created with the **Expect** class it uses threads to read and write to the process.
+
+
+### Expect class
+
+The expect class takes the name of the process and arguments it should be started witn. It inherits from **Dispatcher**
+as well.
+
+~~~python
+expect = Expect('process_name', 'arg0', 'arg1', ...)
+~~~
+
+### A basic example (spawn_process.py)
+
+~~~python
+from untwisted.expect import Expect, LOAD, CLOSE
+from untwisted.network import core, xmap, die
+
+def handle(expect, data):
+    print data
+
+expect = Expect('python', '-i', '-u')
+xmap(expect, LOAD, handle)
+xmap(expect, CLOSE, lambda expect: die())
+expect.send('print "hello world"\nquit()\n')
+core.gear.mainloop()
+~~~
+
+Whenever the event **LOAD** happens it means that the process has output then **handle** is called with
+the available data. If the process dies then the event **CLOSE** happens and the reactor is stopped
+through the function **die**.
+
 Tasks
 =====
 
@@ -2012,13 +2047,6 @@ Tasks
 
 Basic SSL Client/Server Applications
 ====================================
-
-Spawning processes
-==================
-
-### Expect class
-
-### A basic example (spawn_process.py)
 
 The IRC Client plugin
 =====================
@@ -2036,6 +2064,7 @@ Debugging
 
 Tests
 =====
+
 
 
 

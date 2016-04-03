@@ -33,7 +33,6 @@ class Expect(Thread, Dispatcher):
         """
         """
 
-        data = data.encode('utf-8')
         self.stdin.write(data)
 
     def run(self):
@@ -71,6 +70,8 @@ class Expect(Thread, Dispatcher):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
+
 
 
 
