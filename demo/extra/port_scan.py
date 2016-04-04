@@ -29,13 +29,15 @@ if __name__ == '__main__':
     from optparse import OptionParser
     parser   = OptionParser()
     parser.add_option("-a", "--addr", dest="addr", metavar="string", default='localhost')
-    parser.add_option("-x", "--max", dest="max", metavar="integer", default=2)
-    parser.add_option("-n", "--min", dest="min", metavar="integer", default=9999)
+    parser.add_option("-x", "--max", dest="max", metavar="integer", default=9999)
+    parser.add_option("-n", "--min", dest="min", metavar="integer", default=70)
 
     (opt, args) = parser.parse_args()
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
+
+
 
 
 

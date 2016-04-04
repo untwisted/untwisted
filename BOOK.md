@@ -2067,9 +2067,122 @@ through the function die.
 Tasks
 =====
 
+When dealing with socket events it may be needed to have a handle called when a given set of events occurs.
+Untwisted implements the Task class to handle situations like that.
+
+~~~
+{event0, event1, event2, ... } -> *handle
+~~~
+
+That means when one of the events described in the set is processed then handle is called just once.
+
 ### Task class
 
+The Task class inherits from Dispatcher class and implements a method named add. The method add receives
+a Dispatcher instance and a sequence of events. The sequence of events specifies which events when processed 
+it should get the handle processed.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> from untwisted.task import Task, DONE
+>>> 
+>>> def on_done(task):
+...     print 'it is done.'
+... 
+>>> 
+>>> dispatcher = Dispatcher()
+>>> task       = Task()
+>>> task.add(dispatcher, 'event0', 'event1', 'event2')
+>>> task.add_map(DONE, on_done)
+>>> task.count
+1
+>>> dispatcher.drive('event4')
+>>> dispatcher.drive('event0')
+it is done.
+>>> dispatcher.drive('event1')
+>>> dispatcher.drive('event2')
+>>> 
+~~~
+
+When the event 'event4' is processed then nothing is happens, when the event 'event0' is processed
+then the handle on_done is called. If the events 'event1', 'event2' had been processed then on_done
+would be called as well.
+
+Let us try something new.
+
+~~~python
+>>> def on_done(task):
+...     print 'DONE'
+... 
+>>> sock0 = Dispatcher()
+>>> sock1 = Dispatcher()
+>>> task  = Task()
+>>> task.add(sock0, 'load', 'close')
+>>> task.add(sock1, 'load', 'close')
+>>> task.add_map(DONE, on_done)
+>>> task.count
+2
+>>> sock0.drive('load')
+>>> task.count
+1
+>>> sock1.drive('close')
+DONE
+>>> task.count
+0
+>>> 
+~~~
+
 ### A Port Scan (port_scan.py)
+
+The example below implements a port scan.
+
+~~~python
+from untwisted.network import core, Spin, xmap
+from untwisted.iostd import Client, lose, CONNECT, CONNECT_ERR
+from untwisted.task import Task, DONE
+from untwisted.network import die
+from socket import *
+
+def is_open(spin, port):
+    print 'Port %s is open.' % port
+
+def create_connection(addr, port):
+    sock = socket(AF_INET, SOCK_STREAM)
+    spin = Spin(sock)
+    Client(spin)
+    xmap(spin, CONNECT, is_open, port)
+    spin.connect_ex((addr, port))
+    return spin
+
+def scan(addr, min, max):
+    task = Task()
+    for ind in xrange(min, max):
+        task.add(create_connection(addr, ind), CONNECT, CONNECT_ERR)
+    
+    xmap(task, DONE, lambda task: die())
+
+if __name__ == '__main__':
+    from optparse import OptionParser
+    parser   = OptionParser()
+    parser.add_option("-a", "--addr", dest="addr", metavar="string", default='localhost')
+    parser.add_option("-x", "--max", dest="max", metavar="integer", default=9999)
+    parser.add_option("-n", "--min", dest="min", metavar="integer", default=70)
+
+    (opt, args) = parser.parse_args()
+    scan(opt.addr, int(opt.min), int(opt.max))
+    core.gear.mainloop()
+~~~
+
+It uses the Task class to determine when all the opened connections spawned either CONNECT or CONNECT_ERR.
+When all the opened connections spawned one of the two events then it is time to stop the reactor with the function die.
+
+**Running**
+
+~~~
+python2 portscan.py -a www.google.com -x 90 -n 70
+~~~
+
+The command above would scan the range of ports from 70 to 90.
 
 Basic SSL Client/Server Applications
 ====================================
@@ -2090,6 +2203,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
