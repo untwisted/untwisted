@@ -45,29 +45,29 @@ from untwisted.plugins.rapidserv import RapidServ, core
 app = RapidServ(__file__)
 ~~~
 
-The **RapidServ** class is the web server instance that handles the HTTP requests. The core module
+The RapidServ class is the web server instance that handles the HTTP requests. The core module
 is untwisted module that is used to call the reactor mainloop.
 
-The argument passed to the **RapidServ* constructor tells jinja2 where to look for 
+The argument passed to the RapidServ constructor tells jinja2 where to look for 
 templates and rapidserv plugins where to look for static files.
 
-The usage of the decorator **app.request** tells rapidserv to deliver to the handle **send_base** HTTP 
-requests whose method used is 'GET' and the path is '/'. The **send_base** handle is a view function.
+The usage of the decorator app.request tells rapidserv to deliver to the handle send_base HTTP 
+requests whose method used is 'GET' and the path is '/'. The send_base handle is a view function.
 
 Notice that it is needed to call the method con.done() in order to get the response sent to the
 client.
 
-These lines tells rapidserv to listen for connections on the interface **'0.0.0.0'** at the port **80**.
-The value **50** is the backlog.
+These lines tells rapidserv to listen for connections on the interface '0.0.0.0' at the port 80.
+The value 50 is the backlog.
 
 ~~~python
     app.bind('0.0.0.0', 80, 50)
     core.gear.mainloop()
 ~~~
 
-### The **request** object
+### The request object
 
-The **request** object that is passed to a view function holds a set of attributes that are listed below.
+The request object that is passed to a view function holds a set of attributes that are listed below.
 
 ~~~python
 request.method
@@ -88,7 +88,7 @@ Obviously, it holds the HTTP headers that were sent by the user.
 
 #### request.data
 
-That is a **cgi.FieldStorage** instance that holds the body of the request, stuff like files etc.
+That is a cgi.FieldStorage instance that holds the body of the request, stuff like files etc.
 
 #### request.query
 
@@ -108,7 +108,7 @@ def path(con, request):
     print request.query['name'][0]
 ~~~
 
-Would print **'iury'**.
+Would print 'iury'.
 
 #### request.path
 
@@ -118,7 +118,7 @@ In a request like:
 GET /view?name=iury HTTP/1.01
 ~~~
 
-That attribute would hold the string **'/view'**.
+That attribute would hold the string '/view'.
 
 #### request.version
 
@@ -127,7 +127,7 @@ It contains the HTTP version that was specified in the user request.
 ### The basic dir structure 
 
 RapidServ applications are generally built on top of a standard structure of dirs. There is
-a folder named **templates** and a folder named **static* to hold static files.
+a folder named templates and a folder named static* to hold static files.
 
 ~~~
 application/
@@ -281,7 +281,7 @@ python2 app.py --addr '0.0.0.0' --port 1234
 ### Imup Applicaiton
 
 Imup is a simple application to upload images into a shelve database. It shows the usage of the decorator
-**app.route** that is used a shorthand to access query parameters from the request.
+app.route that is used a shorthand to access query parameters from the request.
 
 First of all it is needed to create the application folder.
 
@@ -332,9 +332,9 @@ Let us implement the template.
     </html>
 ~~~
 
-The template above will be loaded when the user access the base site **/**.
+The template above will be loaded when the user access the base site /.
 
-The code below is used to add a image to the database by using the method **post**
+The code below is used to add a image to the database by using the method post
 
 ~~~html
     <br> <h1> Upload image </h1>
@@ -344,7 +344,7 @@ The code below is used to add a image to the database by using the method **post
     </form>
 ~~~
 
-This code is used to send a query string to the **/load_index** view to get the image data based on an index.
+This code is used to send a query string to the /load_index view to get the image data based on an index.
 
 ~~~html
 <h1> Images </h1>
@@ -425,7 +425,7 @@ def load_index(con, index):
     con.done()
 ~~~
 
-The **index** variable will hold **10**
+The index variable will hold 10
 
 This handle is used to store the image into the database.
 
@@ -436,8 +436,8 @@ def add_image(con, file):
     index(con)
 ~~~
 
-The file variable holds a **cgi.FieldStorage** instance, notice that the name **file** was used when implementing
-the template **imup/templates/view.jinja**
+The file variable holds a cgi.FieldStorage instance, notice that the name file was used when implementing
+the template imup/templates/view.jinja
 
 ~~~html
     <input name="file" type="file">
@@ -666,15 +666,15 @@ object -> {event0, event1, ....}
 ### The symbol **
 
 Consider a socket connection to a web server, the socket server can be associated to a set of events, let us consider
-for simplicity it is associated with three events. When the server sends data then the socket server will spawn **LOAD**,
-when it is possible to write data back to the server then it spawns **WRITE**, if the server closes the socket then
-it happens the event **CLOSE**. After that event there will occur no more events because the connection is down.
+for simplicity it is associated with three events. When the server sends data then the socket server will spawn LOAD,
+when it is possible to write data back to the server then it spawns WRITE, if the server closes the socket then
+it happens the event CLOSE. After that event there will occur no more events because the connection is down.
 
 ~~~
 server -> {LOAD, WRITE, **CLOSE}
 ~~~
 
-The event **CLOSE** that is associated with the socket server connection if it happens just once then
+The event CLOSE that is associated with the socket server connection if it happens just once then
 no more events will be processed for that object.
 
 ### Event arguments
@@ -2026,18 +2026,18 @@ for ind in xrange(100):
 core.gear.mainloop()
 ~~~
 
-The function **sum** is called with two arguments then processed in a new thread when it returns the **show** function
-is called with the **sum** return value and the **Job** instance.
+The function sum is called with two arguments then processed in a new thread when it returns the show function
+is called with the sum return value and the Job instance.
 
 Spawning processes
 ==================
 
-Processes are created with the **Expect** class it uses threads to read and write to the process.
+Processes are created with the Expect class it uses threads to read and write to the process.
 
 
 ### Expect class
 
-The expect class takes the name of the process and arguments it should be started witn. It inherits from **Dispatcher**
+The expect class takes the name of the process and arguments it should be started witn. It inherits from Dispatcher
 as well.
 
 ~~~python
@@ -2060,9 +2060,9 @@ expect.send('print "hello world"\nquit()\n')
 core.gear.mainloop()
 ~~~
 
-Whenever the event **LOAD** happens it means that the process has output then **handle** is called with
-the available data. If the process dies then the event **CLOSE** happens and the reactor is stopped
-through the function **die**.
+Whenever the event LOAD happens it means that the process has output then handle is called with
+the available data. If the process dies then the event CLOSE happens and the reactor is stopped
+through the function die.
 
 Tasks
 =====
@@ -2090,6 +2090,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
