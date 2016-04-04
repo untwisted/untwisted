@@ -720,14 +720,14 @@ The best way to grasp the behavior of Dispatcher objects is testing them in the 
 'drive', 'pool', 'process_base']
 ~~~
 
-The methods 'add_map' and 'del_handle' are the most used ones. These methods are used to bind handles to events that
+The methods add_map and del_handle are the most used ones. These methods are used to bind handles to events that
 are related to the given Dispatcher object. 
 
 As handles and events are related to objects, objects may be related between each other in some way. A given object
-may change the state of other object then an event happens. The method 'drive' of the Dispatcher class is used
+may change the state of other object then an event happens. The method drive of the Dispatcher class is used
 to fire an event in the Dispatcher object. Once an event is fired in a given Dispatcher object then all handles associated
 with that event will be processed. As mentioned before, events can carry arguments that better characterize the event,
-the 'drive' method permits to fire events with a given set of arguments associated to the event.
+the drive method permits to fire events with a given set of arguments associated to the event.
 
 ~~~python
 >>> dispatcher.drive('RAINING', 'Brasil', 'Rio de Janeiro', 'Rio das ostras')
@@ -746,7 +746,7 @@ callable.
 >>> dispatcher.add_map('RAINING', handle0)
 ~~~
 
-The above code adds a mapping between the event 'RAINING' and the callback 'handle0'. Now if the event 'RAINING'
+The above code adds a mapping between the event 'RAINING' and the callback handle0. Now if the event 'RAINING'
 occurs then the callback will be called with the arguments.
 
 ~~~python
@@ -774,7 +774,7 @@ It is raining in hell
 ~~~
 
 There is other way to add a mapping between an event and a handle to a Dispatcher object it is
-using the xmap function. This function is merely a synonymous for 'add_map'.
+using the xmap function. This function is merely a synonymous for add_map.
 
 ~~~python
 >>> from untwisted.dispatcher import Dispatcher, xmap, spawn
@@ -787,7 +787,7 @@ using the xmap function. This function is merely a synonymous for 'add_map'.
 >>> 
 ~~~
 
-The reasons to use 'xmap' function instead of add_map are aestheticals. 
+The reasons to use xmap function instead of add_map are aestheticals. 
 The same occurs when firing events.
 
 ~~~python
@@ -800,7 +800,7 @@ Event ALPHA occured
 ### Event creation
 
 Events can be any kind of python objects but it is interesting to have a reliable scheme 
-to define new events. Untwisted implements the 'get_event' function that returns a unique event.
+to define new events. Untwisted implements the get_event function that returns a unique event.
 
 ~~~python
 >>> from untwisted.event import get_event
@@ -851,7 +851,7 @@ Let us drive a LOAD event inside that dispatcher object.
 Sum: 4
 ~~~
 
-It creates a new handle named 'on_add' and maps it to the event 'add'.
+It creates a new handle named on_add and maps it to the event 'add'.
 
 
 ### Passing additional arguments to handles
@@ -916,8 +916,8 @@ LOAD event occured: cd /glau
 >>> 
 ~~~
 
-The method 'del_map' is used to remove a mapping from a Dispatcher object. In the above code,
-the handle 'on_load' will be processed just once for the event LOAD.
+The method del_map is used to remove a mapping from a Dispatcher object. In the above code,
+the handle on_load will be processed just once for the event LOAD.
 
 ### Exceptions in handles
 
@@ -956,7 +956,7 @@ ZeroDivisionError: integer division or modulo by zero
 
 When we call a function or class method that could throw an exception it is natural to use a try/except block
 to catch the exceptioin then decide what to do based on the exception type. When modelling applications using
-untwisted one would use the decorator 'handle_exception' to catch exceptions that might happen from handle calls.
+untwisted one would use the decorator handle_exception to catch exceptions that might happen from handle calls.
 
 ~~~python
 >>> from untwisted.dispatcher import Dispatcher
@@ -972,7 +972,7 @@ untwisted one would use the decorator 'handle_exception' to catch exceptions tha
 >>> 
 ~~~
 
-The decorator 'handle_exception' solves the problem of the unhandled exception. When spawning the 'div' event
+The decorator handle_exception solves the problem of the unhandled exception. When spawning the 'div' event
 with values that could cause an exception it will not be printed.
 
 ~~~python
@@ -983,7 +983,7 @@ with values that could cause an exception it will not be printed.
 ~~~
 
 However, it is not the case that avoiding the exception of being printed is enough, it is important to have
-other parts of the code being noticed of the exception. The decorator 'handle_exception' turns an exception
+other parts of the code being noticed of the exception. The decorator handle_exception turns an exception
 that occured inside a handle into an event of the type (handle, exception).
 
 ~~~python
@@ -996,8 +996,8 @@ that occured inside a handle into an event of the type (handle, exception).
 The exception was thrown: integer division or modulo by zero
 ~~~
 
-In the code above, the handle 'on_zero_division-error' was defined to catch the exception 'ZeroDivisionError' that
-could occur inside the 'handle' function that does the division of two numbers when the 'div' event occurs.
+In the code above, the handle on_zero_division_error was defined to catch the exception ZeroDivisionError that
+could occur inside the handle function that does the division of two numbers when the 'div' event occurs.
 Using this approach it is possible to have one or more handles deciding what to do when an exception occurs at some
 point of the program it increases extensibility and turns modelling of applications more succint and modular.
 
@@ -1006,7 +1006,7 @@ point of the program it increases extensibility and turns modelling of applicati
 ### Handle returns
 
 When handles are called on events, they aren't supposed to return a value that is advantaged by other parts
-of the program unless it is explicitly defined using the 'mapcall' decorator.
+of the program unless it is explicitly defined using the mapcall decorator.
 
 Consider the example below:
 
@@ -1023,11 +1023,11 @@ Consider the example below:
 >>> 
 ~~~
 
-Nothing happened as expected. It is possible to turn handle into an event by using the 'mapcall' decorator.
+Nothing happened as expected. It is possible to turn handle into an event by using the mapcall decorator.
 So, when handle is processed then an event is processed which corresponds to the handle function. The
 event carries the return value of the function handle. 
 
-Using 'mapcall' in the code above:
+Using mapcall in the code above:
 
 ~~~python
 >>> from untwisted.dispatcher import Dispatcher
@@ -1051,16 +1051,16 @@ Div: 2
 >>> 
 ~~~
 
-The mapcall decorator receives arguments that correspond to exceptions that could be raised by the 'handle' function.
-The 'handle' function is mapped to the event 'div', when 'div' happens handle is processed and its return value
-is carried into an event whose value is the 'handle' function. The code below maps the 'handle' function that turned
-into an event to the 'on_handle' function.
+The mapcall decorator receives arguments that correspond to exceptions that could be raised by the handle function.
+The handle function is mapped to the event 'div', when 'div' happens handle is processed and its return value
+is carried into an event whose value is the handle function. The code below maps the handle function that turned
+into an event to the on_handle function.
 
 ~~~python
 >>> dispatcher.add_map(handle, on_handle)
 ~~~
 
-What about if an exception occurs inside 'handle' function? 
+What about if an exception occurs inside handle function? 
 
 ~~~python
 >>> dispatcher.drive('div', 1, 0)
@@ -1074,7 +1074,7 @@ Well, the exception is automatically handled and turned into an event of the typ
 ~~~
 
 Whose argment carried is a ZeroDivisionError instance. it is possible to define a handle to deal
-with the exception that occured like it would be done using 'handle_exception' decorator.
+with the exception that occured like it would be done using handle_exception decorator.
 
 ~~~python
 >>> def on_zero_division_error(dispatcher, excpt):
@@ -1088,10 +1088,10 @@ The exception was thrown: integer division or modulo by zero
 >>> 
 ~~~
 
-When using the 'mapcall' decorator and an exception occurs inside a handle then there is no event that corresponds
+When using the mapcall decorator and an exception occurs inside a handle then there is no event that corresponds
 to the handle return value but an event that corresponds to the exception that was raised.
 
-It is interesting to notice that when using 'handle_exception' or 'mapcall' it could be possible to pass a set of
+It is interesting to notice that when using handle_exception or mapcall it could be possible to pass a set of
 exceptions like:
 
 ~~~python
@@ -1100,7 +1100,7 @@ def handle(dispatcher):
     raise ValueError
 ~~~
 
-The example below would turn into events all possible exceptions that occured inside 'handle'.
+The example below would turn into events all possible exceptions that occured inside handle.
 
 ~~~python
 @mapcall(Exception):
@@ -1145,21 +1145,21 @@ Super socket class
 
 As objects can be associated with events and handles as seen previously, it is elegant and useful to think of
 a socket as an object that can throw events. The basic events associated to a socket are READ and WRITE.
-So, why not having a 'socket' class that has the features of the 'Dispatcher' class? That is what 
-the class defined in 'untwisted.network.SuperSocket' is. The 'SuperSocket' class abstracts the behavior of
-other classes. The 'SuperSocket' class holds a file descriptor that is associated with objects that can
-be associated with a file descriptor. When a 'SuperSocket' instance is created it registers itself
+So, why not having a socket class that has the features of the Dispatcher class? That is what 
+the class defined in untwisted.network.SuperSocket is. The SuperSocket class abstracts the behavior of
+other classes. The SuperSocket class holds a file descriptor that is associated with objects that can
+be associated with a file descriptor. When a SuperSocket instance is created it registers itself
 in the untwisted reactor. 
 
 Spin class
 ==========
 
-The Spin class is a 'socket' class that inherits from 'Dispatcher' class. The untwisted reactor scales
-which file descriptors are ready for reading or writting then notifies the 'Spin' instances of such
-events. The basic two events that can occur in the 'Spin' class are READ and WRITE. Every other event
-that can happen and is associated with a 'Spin' instance is generated from these two ones.
+The Spin class is a socket class that inherits from Dispatcher class. The untwisted reactor scales
+which file descriptors are ready for reading or writting then notifies the Spin instances of such
+events. The basic two events that can occur in the Spin class are READ and WRITE. Every other event
+that can happen and is associated with a Spin instance is generated from these two ones.
 
-When a 'Spin' class is created and handles are mapped to events it is needed to call the method 'mainloop'
+When a Spin class is created and handles are mapped to events it is needed to call the method mainloop
 of the reactor in order to get events being processed for the file descriptors.
 
 ~~~python
@@ -1173,7 +1173,7 @@ sock = Spin()
 core.gear.mainloop()
 ~~~
 
-The method 'core.gear.mainloop' is used to process the events, after such a method being called
+The method core.gear.mainloop is used to process the events, after such a method being called
 the program will be listening for events that are related to the file descriptors.
 
 A word on handles
@@ -1182,7 +1182,7 @@ A word on handles
 Basic built-in handles
 ======================
 
-It is needed some built-in handles to get the usefulness of the 'Spin' instances, these handles are responsible
+It is needed some built-in handles to get the usefulness of the Spin instances, these handles are responsible
 by spawning more specific events. The reactor spawns just two events READ and WRITE, the remaining ones
 that correspond to CLOSE, CONNECT_ERR, CLOSE_ERR, ACCEPT, ACCEPT_ERR are spawned by these built-in handles.
 
@@ -1195,7 +1195,7 @@ untwisted.iostd.Stdout
 Untwisted.iostd.Server
 ~~~
 
-The 'Client' class is a handle that spawns the events CONNECT or CONNECT_ERR. In diagram it is equivalent to:
+The Client class is a handle that spawns the events CONNECT or CONNECT_ERR. In diagram it is equivalent to:
 
 ~~~
 WRITE -> Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
@@ -1204,11 +1204,11 @@ WRITE -> Client -(), (int:err)-> *{CONNECT, CONNECT_ERR}
 That basically means that if CONNECT is processed then CONNECT_ERR will not be processed and that if 
 CONNECT_ERR then CONNECT will not be processed and that CONNECT or CONNECT_ERR will be processed just once.
 
-The 'Stdin' handle is used to send data through a socket asynchronously. It basically monkey patch
-a method in a given 'Spin' instance that is used to send data through the socket. The 'Stdin'
+The Stdin handle is used to send data through a socket asynchronously. It basically monkey patch
+a method in a given Spin instance that is used to send data through the socket. The Stdin
 handle can spawn the event CLOSE as well.
 
-The 'Stdout' handle spawns the event LOAD that carries the data that was read from the socket. It may
+The Stdout handle spawns the event LOAD that carries the data that was read from the socket. It may
 spawns CLOSE, RECV_ERR as well.
 
 ~~~
@@ -1219,19 +1219,19 @@ The symbols ** at the left of the event CLOSE means that if CLOSE is processed t
 the handle Stdout will no more process other events. So, once CLOSE is processed the event LOAD
 will no more be processed.
 
-That basically means that when the handle 'Stdout' is processed then the event LOAD may be processed
-and it carries the data that was read from the 'Spin' instance that is a socket. If the CLOSE event
+That basically means that when the handle Stdout is processed then the event LOAD may be processed
+and it carries the data that was read from the Spin instance that is a socket. If the CLOSE event
 occurs it means the connection is down and the value err corresponds to the error that occured. The
-err value should be in the python module 'errno.errorcode'.
+err value should be in the python module errno.errorcode.
 
-The 'Server' handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
+The Server handle is responsible by spawning the events ACCEPT or ACCEPT_ERR
 
 ~~~
 READ -> Server -(Spin:client), (int:err)-> {ACCEPT, ACCEPT_ERR}
 
 ~~~
 
-That means when a server socket got a client connected the 'Server' handle will accept the connection
+That means when a server socket got a client connected the Server handle will accept the connection
 then process the ACCEPT event, if it fails then it processes ACCEPT_ERR.
 
 Basic Client/Server Applications
@@ -1249,9 +1249,9 @@ from untwisted.network import core, Spin, xmap, die
 
 ~~~    
 
-That line imports the 'core' module that holds an instance of the 'gear' class that corresponds to untwisted
-reactor.  The 'xmap' function is basically the same as 'Spin.add_map' method.
-The 'die' function stops the reactor from processing file descriptors.
+That line imports the core module that holds an instance of the gear class that corresponds to untwisted
+reactor.  The xmap function is basically the same as Spin.add_map method.
+The die function stops the reactor from processing file descriptors.
 
 It is now time to import the basic handles and events that will be used in the application.
 
@@ -1261,11 +1261,11 @@ import errno
 
 ~~~
 
-The 'Client' handle is a class that spawns the events CONNECT and CONNECT_ERR. The 'Client' handle
-will be attached to the 'Spin' instance to process the events to notify other handles of the connection
+The Client handle is a class that spawns the events CONNECT and CONNECT_ERR. The Client handle
+will be attached to the Spin instance to process the events to notify other handles of the connection
 status.
 
-Implementing a function named 'create_connection' that will instantiate a 'Spin' instance then
+Implementing a function named create_connection that will instantiate a Spin instance then
 bind handles on the events.
 
 ~~~python
@@ -1274,7 +1274,7 @@ def create_connection(addr, port):
     Client(con)
 ~~~
 
-The 'Client' handle will process either CONNECT or CONNECT_ERR events that corresponds to the socket status.
+The Client handle will process either CONNECT or CONNECT_ERR events that corresponds to the socket status.
 Now, it is time to create the handles for these events.
 
 ~~~python
@@ -1286,7 +1286,7 @@ def on_connect_err(con, err, addr, port):
     print "Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err]
 ~~~
 
-Once the handles are implemented, it is time to map the events in the 'create_connection' function.
+Once the handles are implemented, it is time to map the events in the create_connection function.
 
 ~~~python
     xmap(con, CONNECT, on_connect, addr, port)
@@ -1295,19 +1295,19 @@ Once the handles are implemented, it is time to map the events in the 'create_co
     xmap(con, CONNECT_ERR, lambda con, err: die())
 ~~~
 
-The event CONNNECT only carries one argument that is the 'Spin' instance, at the code above it adds other two arguments
-to be passed to the 'on_connect' handle, the arguments are 'addr' and 'port'. The same occurs with CONNECT_ERR
-event that carries two arguments, they are the 'Spin' instance and the 'err' value that is an integer whose meaning
-is defined in the 'errno' module. The 'die' function is used to stop the reactor from processing the file descriptors.
+The event CONNNECT only carries one argument that is the Spin instance, at the code above it adds other two arguments
+to be passed to the on_connect handle, the arguments are addr and port. The same occurs with CONNECT_ERR
+event that carries two arguments, they are the Spin instance and the err value that is an integer whose meaning
+is defined in the errno module. The die function is used to stop the reactor from processing the file descriptors.
 
-The game is almost won, now! It is time to connect the socket to the addr and port. In the 'create_connection' function
+The game is almost won, now! It is time to connect the socket to the addr and port. In the create_connection function
 just add the line.
 
 ~~~python
     con.connect_ex((addr, port))
 ~~~
 
-The method 'connect_ex' is used instead of the 'connect'.
+The method connect_ex is used instead of the connect.
 
 Let us implement the code that gets the addr and the port number.
 
@@ -1362,7 +1362,7 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
-Saving that as a file named 'is_up.py' and testing we would get.
+Saving that as a file named is_up.py and testing we would get.
 
 ~~~python
 [tau@lambda extra]$ python2 is_up.py -a www.google.com.br -p 90
@@ -1413,21 +1413,21 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
-The lines listed below are responsible by creating a socket then wrapping it with the 'Spin' class.
+The lines listed below are responsible by creating a socket then wrapping it with the Spin class.
 
 ~~~python
     sock   = socket(AF_INET, SOCK_STREAM)
     server = Spin(sock) 
 ~~~
 
-It just calls the method 'bind' and 'listen' as usually it is used when dealing with socket servers.
+It just calls the method bind and listen as usually it is used when dealing with socket servers.
 
 ~~~python
     server.bind((opt.addr, opt.port))
     server.listen(opt.backlog)
 ~~~
 
-In the code below it installs the handle 'Server' that spawns the events ACCEPT, ACCEPT_ERR. The ACCEPT one
+In the code below it installs the handle Server that spawns the events ACCEPT, ACCEPT_ERR. The ACCEPT one
 means that a new connection has arrived.
 
 ~~~python
@@ -1435,8 +1435,8 @@ means that a new connection has arrived.
     xmap(server, ACCEPT, setup)
 ~~~
 
-The 'setup' function is called when a new connection has arrived, it installs the basic built in handles
-'Stdin' and 'Stdout', these deal with sending and receiving data.
+The setup function is called when a new connection has arrived, it installs the basic built in handles
+Stdin and Stdout, these deal with sending and receiving data.
 
 
 ~~~python
@@ -1447,21 +1447,21 @@ def setup(server, con):
     xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
 ~~~
 
-In the 'setup' the line below maps the event CLOSE to the lambda that calls the function 'lose'. The
-function 'lose' is used to close the connection and unregister the socket from the reactor.
+In the setup the line below maps the event CLOSE to the lambda that calls the function lose. The
+function lose is used to close the connection and unregister the socket from the reactor.
 
 ~~~python
     xmap(con, CLOSE, lambda con, err: lose(con))
 ~~~
 
-The line below just maps the event LOAD that is spawned by the handle 'Stdin' to a lambda that writes
+The line below just maps the event LOAD that is spawned by the handle Stdin to a lambda that writes
 to stdout.
 
 ~~~python
     xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
 ~~~
 
-Saving the file as 'msg_server.py' and running it with:
+Saving the file as msg_server.py and running it with:
 
 ~~~
 python2 msg_server.py -a '0.0.0.0' -p 1235 -b 50
@@ -1478,7 +1478,7 @@ You'll get all the text that was sent from the telnet printed in the msg server 
 ### Msg Client (msg_client.py)
 
 This is the counter part of the msg server application. The program listed below
-is using essentially the basic features of the 'msg_server.py' one.
+is using essentially the basic features of the msg_server.py one.
 
 ~~~python
 from untwisted.network import xmap, Spin, core
@@ -1518,14 +1518,14 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
-The line below merely dumps the message that was specified by the user through the socket. The 'Stdin'
-handle monkey patch the method 'dump'.
+The line below merely dumps the message that was specified by the user through the socket. The Stdin
+handle monkey patch the method dump.
 
 ~~~python
     con.dump(msg)
 ~~~
 
-When all the data was sent then 'Stdin' handle spawns the event DUMPED in the Spin instance that it was
+When all the data was sent then Stdin handle spawns the event DUMPED in the Spin instance that it was
 added to.
 
 ~~~
@@ -1534,13 +1534,13 @@ added to.
 
 When the event dumped happens then it calls die to stop the reactor then prints a msg on the screen.
 
-Place the source code above inside a file named 'msg_client.py' then run the 'msg_server.py' with:
+Place the source code above inside a file named msg_client.py then run the msg_server.py with:
 
 ~~~
 python2 msg_server.py -a '0.0.0.0' -p 1235 -b 50
 ~~~
 
-It is possible to send messages to the 'msg_server.py' instance by running 'msg_client.py' with.
+It is possible to send messages to the msg_server.py instance by running msg_client.py with.
 
 ~~~
 python2 msg_client.py -a 'localhost' -p 1234 -m 'it is gonna be cool'
@@ -1548,8 +1548,8 @@ python2 msg_client.py -a 'localhost' -p 1234 -m 'it is gonna be cool'
 
 ### Echo Server (echo_server.py)
 
-The example below shows a simple echo server application that uses the shorthand function 'create_server'.
-Such a function instantiates a 'Spin' instance and installs the basic handles in the server socket
+The example below shows a simple echo server application that uses the shorthand function create_server.
+Such a function instantiates a Spin instance and installs the basic handles in the server socket
 and in the new incoming connection sockets. 
 
 ~~~python
@@ -1573,7 +1573,7 @@ Consider the line:
                      xmap(con, LOAD, lambda con, data: con.dump(data)))
 ~~~
 
-That basically adds a mapping 'LOAD -(str:data)-> print' to the 'con' object that corresponds
+That basically adds a mapping LOAD -(str:data)-> print to the con object that corresponds
 to the new connection. When the event LOAD happens in one of the cliet connections then it dumps back
 the data that was received.
 
@@ -1590,7 +1590,7 @@ applications.
 
 ### Terminator Split
 
-The 'Terminator' split is a handle that is processed on the LOAD event. It accumulates data that is
+The Terminator split is a handle that is processed on the LOAD event. It accumulates data that is
 carried with the LOAD event until a specific token appears. When the specified token appears in the data
 then it splits all the data that was accumulated into a list of chunks and it spawns the event Terminator.FOUND
 sequentially with each one of the chunks.
@@ -1606,8 +1606,8 @@ The best way to understand the Terminator handle is testing it in the python int
 >>> terminator = Terminator(con, delim=',')
 ~~~
 
-The code above instantiates a 'Dispatcher' instance named 'con' that simulates a 'Spin' socket. It installs
-the handle 'Terminator' with the delimiter ','. Whenever the LOAD event happens in the 'con' instance
+The code above instantiates a Dispatcher instance named con that simulates a Spin socket. It installs
+the handle Terminator with the delimiter ','. Whenever the LOAD event happens in the con instance
 it will check for the token ',' if it appears then it splits the data into chunks that are delimited by ',' otherwise
 it accumulates the data.
 
@@ -1619,7 +1619,7 @@ it accumulates the data.
 >>> 
 ~~~
 
-When the event Terminator.FOUND happens then calls 'on_found' handle with the chunk.
+When the event Terminator.FOUND happens then calls on_found handle with the chunk.
 
 ~~~python
 >>> con.drive(LOAD, 'word1,word2,wor')
@@ -1632,8 +1632,8 @@ msg: word4
 >>> 
 ~~~
 
-When 'Terminator' is installed in a Spin socket and a READ event is dispatched by the reactor
-then a LOAD event happens and the handle 'Terminator' is processed.
+When Terminator is installed in a Spin socket and a READ event is dispatched by the reactor
+then a LOAD event happens and the handle Terminator is processed.
 
 ~~~
 READ -> Stdout => LOAD -(str:data)-> Terminator =(str:chk)=> Terminator.FOUND
@@ -1725,7 +1725,7 @@ if __name__ == '__main__':
     core.gear.mainloop()
 ~~~
 
-The code below implements the handle 'CalcParser' that is processed when Terminator.FOUND is processed.
+The code below implements the handle CalcParser that is processed when Terminator.FOUND is processed.
 
 ~~~python
 class CalcParser(object):
@@ -1745,7 +1745,7 @@ When one of the clients sends a message like:
 cmd arg0 arg1 arg2 ...\r\n
 ~~~
 
-The Terminator.FOUND event will be processed then 'handle_found' will be processed and it will receive that string.
+The Terminator.FOUND event will be processed then handle_found will be processed and it will receive that string.
 The string will be split using ' ' as token and the first chunk will turn into an event, the remaining chunks
 will be converted to float numbers.
 
@@ -1758,18 +1758,18 @@ add 1 2
 It will occur an event named 'add' and it will carry the arguments (1, 2). Whatever handle that is mapped to the event 'add'
 will be processed. 
 
-The 'handle_exception' decorator is used to get an event-exception like (CalcParser.handle_found, ValueError). If
+The handle_exception decorator is used to get an event-exception like (CalcParser.handle_found, ValueError). If
 one of the clients sends a message like:
 
 ~~~
 add 1 2 x
 ~~~
 
-It will raise an exception 'ValueError' inside handle_found then it will be turned into an event that can be trigged
-by other handles. In the example, the event (CalcParser.handle_found, ValueError) was mapped to the handle 'on_error'
+It will raise an exception ValueError inside handle_found then it will be turned into an event that can be trigged
+by other handles. In the example, the event (CalcParser.handle_found, ValueError) was mapped to the handle on_error
 that sends back the exception to the client.
 
-The code below is used to destroy the 'Spin' instance then close the underlying socket.
+The code below is used to destroy the Spin instance then close the underlying socket.
 
 ~~~python
     def handle_close(self, client, err):
@@ -1777,7 +1777,7 @@ The code below is used to destroy the 'Spin' instance then close the underlying 
         client.close()
 ~~~
 
-Saving the file as 'calc_server.py' and running it with:
+Saving the file as calc_server.py and running it with:
 
 ~~~
 python2 calc_server.py
@@ -1827,10 +1827,10 @@ Type "help", "copyright", "credits" or "license" for more information.
 hello world
 ~~~
 
-The 'Timer' object is used to execute a handle just once. It is possible to cancel the handle call by calling
-the method 'Timer.cancel'.
+The Timer object is used to execute a handle just once. It is possible to cancel the handle call by calling
+the method Timer.cancel.
 
-The 'Sched' object is used to get a handle executed periodically.
+The Sched object is used to get a handle executed periodically.
 
 ~~~python
 >>> from untwisted.timer import Sched
@@ -1848,7 +1848,7 @@ hello world
 hello world
 ~~~
 
-The exception 'CancelCall' that is defined in the 'untwisted.timer' module can be raised
+The exception CancelCall that is defined in the untwisted.timer module can be raised
 in order to get the handle call canceled.
 
 ~~~python
@@ -1866,7 +1866,7 @@ core.gear.mainloop()
 Coroutines
 ==========
 
-Untwisted coroutines are used from handles to stop code execution until a given event happens with some 'Dispatcher' instance.
+Untwisted coroutines are used from handles to stop code execution until a given event happens with some Dispatcher instance.
 
 Let us play with untwisted coroutines from the interpreter.
 
@@ -1898,8 +1898,8 @@ Value: 30
 >>> 
 ~~~
 
-The 'handle' function receives a 'dispatcher' instance then uses the 'yield' statement to wait for
-incoming events from the 'dispatcher' instance. When the events occur then the code is processed.
+The handle function receives a dispatcher instance then uses the yield statement to wait for
+incoming events from the dispatcher instance. When the events occur then the code is processed.
 
 A more complicated example would be:
 
@@ -1930,8 +1930,8 @@ Value: 30
 >>> 
 ~~~
 
-When the event DUMPED is processed then 'handle' is processed and it waits for the event LOAD
-to happen from the 'dispatcher' instance. When the LOAD happens then it checks whether the value it carried
+When the event DUMPED is processed then handle is processed and it waits for the event LOAD
+to happen from the dispatcher instance. When the LOAD happens then it checks whether the value it carried
 matches the condition if it matches then it breaks the while loop.
 
 ### A simple chat server (chat_server.py)
@@ -1972,9 +1972,9 @@ if __name__ == '__main__':
 ~~~
 
 When clients connect to the server it asks for a nickname to be sent. The implementation uses untwisted coroutines
-to wait for a Terminator.FOUND event to set the user's nickname to its corresponding 'Spin' instance.
+to wait for a Terminator.FOUND event to set the user's nickname to its corresponding Spin instance.
 
-After the nick being set in the user socket instance then it maps the event Terminator.FOUND to the method 'echo_msg'
+After the nick being set in the user socket instance then it maps the event Terminator.FOUND to the method echo_msg
 that echoes any msg to other users.
 
 **Testing**
@@ -2090,6 +2090,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
