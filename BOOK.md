@@ -127,7 +127,7 @@ It contains the HTTP version that was specified in the user request.
 ### The basic dir structure 
 
 RapidServ applications are generally built on top of a standard structure of dirs. There is
-a folder named templates and a folder named static* to hold static files.
+a folder named templates and a folder named static to hold static files.
 
 ~~~
 application/
@@ -2090,6 +2090,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
