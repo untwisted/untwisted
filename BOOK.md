@@ -2182,7 +2182,7 @@ it is done.
 >>> 
 ~~~
 
-When the event 'event4' is processed then nothing is happens, when the event 'event0' is processed
+When the event 'event4' is processed then nothing happens, when the event 'event0' is processed
 then the handle on_done is called. If the events 'event1', 'event2' had been processed then on_done
 would be called as well.
 
@@ -2281,6 +2281,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
