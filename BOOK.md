@@ -1,89 +1,11 @@
-Table of Contents
-=================
-
-  * [What can i create with untwisted?](#what-can-i-create-with-untwisted)
-  * [Untwisted plugins](#untwisted-plugins)
-  * [The rapidserv plugin](#the-rapidserv-plugin)
-      * [A simple application](#a-simple-application)
-      * [The request object](#the-request-object)
-        * [request\.method](#requestmethod)
-        * [request\.headers](#requestheaders)
-        * [request\.data](#requestdata)
-        * [request\.query](#requestquery)
-        * [request\.path](#requestpath)
-        * [request\.version](#requestversion)
-      * [The basic dir structure](#the-basic-dir-structure)
-      * [Quote Application](#quote-application)
-        * [quote/static/comment\.html](#quotestaticcommenthtml)
-        * [quote/templates/show\.html](#quotetemplatesshowhtml)
-        * [quote/templates/view\.html](#quotetemplatesviewhtml)
-        * [quote/app\.py](#quoteapppy)
-        * [Running](#running)
-      * [Imup Applicaiton](#imup-applicaiton)
-        * [imup/templates/view\.jinja](#imuptemplatesviewjinja)
-        * [imup/app\.py](#imupapppy)
-      * [quickserv script](#quickserv-script)
-  * [The requests plugin](#the-requests-plugin)
-  * [The event\-driven paradigm](#the-event-driven-paradigm)
-      * [Skeletons](#skeletons)
-      * [Image of objects/handles](#image-of-objectshandles)
-      * [The symbol \*\*](#the-symbol-)
-      * [Event arguments](#event-arguments)
-  * [Dispatcher class](#dispatcher-class)
-      * [Event creation](#event-creation)
-      * [Spawning events from handles](#spawning-events-from-handles)
-      * [Passing additional arguments to handles](#passing-additional-arguments-to-handles)
-      * [Unbinding handles](#unbinding-handles)
-      * [Exceptions in handles](#exceptions-in-handles)
-      * [The Kill, Root exceptions](#the-kill-root-exceptions)
-      * [Handle returns](#handle-returns)
-      * [Handles that are mapped upon events and produce events\.](#handles-that-are-mapped-upon-events-and-produce-events)
-      * [Dispatcher flow control](#dispatcher-flow-control)
-      * [Static handles](#static-handles)
-      * [binding static handles to events](#binding-static-handles-to-events)
-      * [Unbinding static handles to events](#unbinding-static-handles-to-events)
-  * [Reactors](#reactors)
-  * [Super socket class](#super-socket-class)
-  * [Spin class](#spin-class)
-  * [A word on handles](#a-word-on-handles)
-  * [Basic built\-in handles](#basic-built-in-handles)
-  * [Basic Client/Server Applications](#basic-clientserver-applications)
-      * [A simple Client (is\_up\.py)](#a-simple-client-is_uppy)
-      * [Msg Server (msg\_server\.py)](#msg-server-msg_serverpy)
-      * [Msg Client (msg\_client\.py)](#msg-client-msg_clientpy)
-      * [Echo Server (echo\_server\.py)](#echo-server-echo_serverpy)
-  * [Splits](#splits)
-      * [Terminator Split](#terminator-split)
-      * [Calc Server (calc\_server\.py)](#calc-server-calc_serverpy)
-  * [Timers](#timers)
-  * [Coroutines](#coroutines)
-      * [A simple chat server (chat\_server\.py)](#a-simple-chat-server-chat_serverpy)
-  * [Threads](#threads)
-      * [Job class](#job-class)
-      * [A basic example (sum\.py)](#a-basic-example-sumpy)
-  * [Spawning processes](#spawning-processes)
-      * [Expect class](#expect-class)
-      * [A basic example (spawn\_process\.py)](#a-basic-example-spawn_processpy)
-  * [Tasks](#tasks)
-      * [Task class](#task-class)
-      * [A Port Scan (port\_scan\.py)](#a-port-scan-port_scanpy)
-  * [Basic SSL Client/Server Applications](#basic-ssl-clientserver-applications)
-  * [The IRC Client plugin](#the-irc-client-plugin)
-  * [Reactor flow control](#reactor-flow-control)
-      * [The Root exception](#the-root-exception)
-      * [The Kill exception](#the-kill-exception)
-  * [Debugging](#debugging)
-  * [Tests](#tests)
-
-
 What can i create with untwisted?
 =================================
 
 Untwisted permits the implementation of networking applications, spawning processes, threads. It is possible
 to implement web crawlers, web applications, irc clients, irc servers, ftp clients, ftp servers, talk to processes.
 
-Untwisted plugins
-=================
+Introduction
+============
 
 Untwisted is an event driven lib that offers ways to implement networking applications using a non blocking design.
 It is possible to implement abstractions for application layer protocols and use these abstractions in the implementation
@@ -156,19 +78,19 @@ request.query
 request.version
 ~~~
 
-#### request.method
+**request.method**
 
 It holds the HTTP method that was used in the user request.
 
-#### request.headers
+**request.headers**
 
 Obviously, it holds the HTTP headers that were sent by the user.
 
-#### request.data
+**request.data**
 
 That is a cgi.FieldStorage instance that holds the body of the request, stuff like files etc.
 
-#### request.query
+**request.query**
 
 That is a dict instance that holds the query parameters that were sent in the HTTP request.
 
@@ -188,7 +110,7 @@ def path(con, request):
 
 Would print 'iury'.
 
-#### request.path
+**request.path**
 
 In a request like:
 
@@ -198,7 +120,7 @@ GET /view?name=iury HTTP/1.01
 
 That attribute would hold the string '/view'.
 
-#### request.version
+**request.version**
 
 It contains the HTTP version that was specified in the user request.
 
@@ -875,7 +797,7 @@ Event ALPHA occured
 >>> 
 ~~~
 
-### Event creation
+### Event types
 
 Events can be any kind of python objects but it is interesting to have a reliable scheme 
 to define new events. Untwisted implements the get_event function that returns a unique event.
@@ -1081,7 +1003,7 @@ point of the program it increases extensibility and turns modelling of applicati
 
 ### The Kill, Root exceptions
 
-### Handle returns
+### Handle return values
 
 When handles are called on events, they aren't supposed to return a value that is advantaged by other parts
 of the program unless it is explicitly defined using the mapcall decorator.
@@ -1187,7 +1109,32 @@ def handle(dispatcher):
 
 ~~~
 
-### Handles that are mapped upon events and produce events.
+### Handle execution order
+
+Consider the code below, when handle0 is processed it binds handle1 to the event named 'event' but handle1 will be processed
+just when 'event' happens again.
+
+~~~python
+>>> from untwisted.dispatcher import Dispatcher
+>>> dispatcher = Dispatcher()
+>>> from untwisted.dispatcher import Dispatcher
+>>> 
+>>> def handle1(dispatcher):    
+...     print 'handle1'
+... 
+>>> def handle0(dispatcher):
+...     dispatcher.add_map('event', handle1)
+...     print 'handle0'
+... 
+>>> dispatcher = Dispatcher()
+>>> dispatcher.add_map('event', handle0)
+>>> dispatcher.drive('event')
+handle0
+>>> dispatcher.drive('event')
+handle0
+handle1
+>>> 
+~~~
 
 ### Dispatcher flow control
 
@@ -1253,9 +1200,6 @@ core.gear.mainloop()
 
 The method core.gear.mainloop is used to process the events, after such a method being called
 the program will be listening for events that are related to the file descriptors.
-
-A word on handles
-=================
 
 Basic built-in handles
 ======================
@@ -2281,6 +2225,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
