@@ -76,6 +76,17 @@ xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
 zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
 spawn = lambda dispatcher, *args: dispatcher.drive(*args)
 
+def once(spin, event, handle, *args):
+    def shell(*args):
+        try:
+            handle(*args)
+        except Exception as e:
+            pass
+        finally:
+            spin.del_map(event, handle, *args)
+            raise e
+    spin.add_map(event, handle, *args)
+
 
 
 
