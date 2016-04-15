@@ -1,6 +1,8 @@
 include README.md
+include BOOK.md
 include LICENSE
 recursive-include demo *
-recursive-include unit *
+recursive-include tests *
+
 
 
