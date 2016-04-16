@@ -12,8 +12,8 @@ def on_done(spin, response):
 if __name__ == '__main__':
     parser= argparse.ArgumentParser()
     parser.add_argument('-f', '--filename',  default='0.0.0.0', help='filename')
-    parser.add_argument('-t', '--type',  default='Plain Text', help='type')
-    parser.add_argument('-r', '--run',  default=False, type=bool, help='run')
+    parser.add_argument('-t', '--type',  default='Plain Text', help='Type should be Python, Haskell, etc..')
+    parser.add_argument('-r', '--run',  action='store_true', help='run')
     args = parser.parse_args()
 
     fd   = open(args.filename, 'r')
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     payload = {
                     'code':code,
-                    'lang':args.type,
+                    'lang':' '.join(map(lambda ind: ind.capitalize(), args.type.split(' '))),
                     'submit':'Submit',
                     'run': args.run
               }
@@ -30,6 +30,7 @@ if __name__ == '__main__':
     con = post('codepad.org', 80, '/', payload)
     xmap(con, HttpResponseHandle.HTTP_RESPONSE, on_done)
     core.gear.mainloop()
+
 
 
 

@@ -20,6 +20,12 @@ from os.path import isfile, join, abspath, basename, dirname
 from jinja2 import Template, FileSystemLoader, Environment
 import argparse
 
+class Headers(dict):
+    def __init__(self, data):
+        for ind in data:
+            field, sep, value = ind.partition(':')
+            self[field.lower()] = value
+
 class Spin(network.Spin):
     def __init__(self, sock, app):
         network.Spin.__init__(self, sock)
@@ -157,7 +163,7 @@ class Request(object):
         headers                              = data.split('\r\n')
         request                              = headers.pop(0)
         self.method, self.path, self.version = request.split(' ')
-        self.headers                         = dict(map(self.split_field, headers))
+        self.headers                         = Headers(headers)
         self.fd                              = tmpfile('a+')
         self.data                            = None
         self.path, sep, self.query           = self.path.partition('?')
@@ -166,10 +172,6 @@ class Request(object):
     def build_data(self):
         self.fd.seek(0)
         self.data = FieldStorage(fp=self.fd, environ=get_env(self.headers))
-
-    def split_field(self, data):
-        field, sep, value = data.partition(':')
-        return field.lower(), value
 
 class HttpTransferHandle(object):
     HTTP_TRANSFER = get_event()
@@ -327,6 +329,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 

@@ -8,6 +8,8 @@ def send_base(con, request):
     con.done()
 
 if __name__ == '__main__':
-    app.bind('0.0.0.0', 80, 50)
+    app.bind('0.0.0.0', 8000, 50)
     core.gear.mainloop()
+
+
 

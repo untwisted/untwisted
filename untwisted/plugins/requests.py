@@ -7,19 +7,18 @@ from untwisted.plugins import rapidserv
 from tempfile import TemporaryFile as tmpfile
 
 DEFAULT_HEADERS = {
-    'user-agent':"uxreq/1.0", 
+    'user-agent':"Untwisted-requests/1.0.0", 
     'accept-charset':'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
     'connection':'close',
     }
 
-class Response(rapidserv.Request):
+class Response(object):
     def __init__(self, data):
         headers                              = data.split('\r\n')
         response                             = headers.pop(0)
         self.version, self.code, self.reason = response.split(' ', 2)
-        self.headers                         = dict(map(self.split_field, headers))
+        self.headers                         = rapidserv.Headers(headers)
         self.fd                              = tmpfile('a+')
-        # self.data                            = None
 
 class HttpTransferHandle(rapidserv.HttpTransferHandle):
     def process_request(self, spin, response, data):
@@ -34,7 +33,7 @@ class HttpResponseHandle(rapidserv.HttpRequestHandle):
 
 class HttpCode(object):
     def __init__(self, spin):
-        xmap(spin, HttpResponseHandle.HTTP_RESPONSE, self.spawn_method)
+        xmap(spin, HttpResponseHandle.HTTP_RESPONSE, self.process)
 
     def process(self, spin, response):
         pass
@@ -96,4 +95,5 @@ def auth(username, password):
     base = encodestring('%s:%s' % (username, password))
     base = base.replace('\n', '')
     return "Basic %s" % base
+
 
