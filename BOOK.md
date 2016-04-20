@@ -17,7 +17,6 @@ Table of Contents
         * [imup/templates/view\.jinja](#imuptemplatesviewjinja)
         * [imup/app\.py](#imupapppy)
       * [quickserv script](#quickserv-script)
-  * [The requests plugin](#the-requests-plugin)
   * [The event\-driven paradigm](#the-event-driven-paradigm)
       * [Skeletons](#skeletons)
       * [Image of objects/handles](#image-of-objectshandles)
@@ -65,6 +64,7 @@ Table of Contents
   * [Reactor flow control](#reactor-flow-control)
       * [The Root exception](#the-root-exception)
       * [The Kill exception](#the-kill-exception)
+  * [The requests plugin](#the-requests-plugin)
   * [Debugging](#debugging)
   * [Tests](#tests)
 
@@ -516,8 +516,6 @@ the template imup/templates/view.jinja
 
 ### quickserv script
 
-The requests plugin
-===================
 
 The event-driven paradigm
 =========================
@@ -2290,35 +2288,53 @@ Reactor flow control
 
 ### The Kill exception
 
+The requests plugin
+===================
+
+The requests plugin is an implementation of the HTTP protocol over the client side perspective. It is possible
+to spawn multiple requests asynchronously.
+
+### HTTP GET 
+
+Untwisted requests plugin uses its get function to perform a HTTP GET request. The example below
+examplifies:
+
+#### Basic HTTP GET example (snake.py)
+
+~~~python
+from untwisted.plugins.requests import get, HttpResponseHandle
+from untwisted.network import xmap, core
+
+def on_done(con, response):
+    print response.headers
+    print response.code
+    print response.version
+    print response.reason 
+    print response.fd.read()
+
+if __name__ == '__main__':
+    urls = ['www.bol.uol.com.br', 'www.google.com']
+    
+    for ind in urls:
+        con = get(ind, 80, '/')
+        xmap(con, HttpResponseHandle.HTTP_RESPONSE, on_done)
+    core.gear.mainloop()
+
+~~~
+
+The get function returns a Spin object that corresponds to the web server connection. When the response
+has arrived then an event HttpResponseHandle.HTTP_RESPONSE happens in the Spin object that was returned by
+the get function.
+
+### HTTP POST
+
+### Basic authentication
+
 
 Debugging
 =========
 
 Tests
 =====
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

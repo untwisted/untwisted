@@ -9,12 +9,13 @@ def on_done(con, response):
     print response.fd.read()
 
 if __name__ == '__main__':
-    urls = ['www.bol.uol.com.br', 'www.arcamens.com']
+    urls = ['www.bol.uol.com.br', 'www.google.com']
     
     for ind in urls:
         con = get(ind, 80, '/')
         xmap(con, HttpResponseHandle.HTTP_RESPONSE, on_done)
     core.gear.mainloop()
+
 
 
 
