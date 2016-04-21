@@ -2326,7 +2326,50 @@ The get function returns a Spin object that corresponds to the web server connec
 has arrived then an event HttpResponseHandle.HTTP_RESPONSE happens in the Spin object that was returned by
 the get function.
 
-### HTTP POST
+### HTTP POST (codepad.py)
+
+The next example shows how to perform a HTTP POST request using untwisted requests plugin. The implementation
+is trivial.
+
+~~~python
+from untwisted.plugins.requests import HttpResponseHandle, post
+from untwisted.network import Spin, xmap, core, die
+import argparse
+
+def on_done(spin, response):
+    print 'URL:%s' % response.headers['location']
+    die()
+
+if __name__ == '__main__':
+    parser= argparse.ArgumentParser()
+    parser.add_argument('-f', '--filename',  default='0.0.0.0', help='filename')
+    parser.add_argument('-t', '--type',  default='Plain Text', help='Type should be Python, Haskell, etc..')
+    parser.add_argument('-r', '--run',  action='store_true', help='run')
+    args = parser.parse_args()
+
+    fd   = open(args.filename, 'r')
+    code = fd.read()
+    fd.close()
+
+    payload = {
+                    'code':code,
+                    'lang':' '.join(map(lambda ind: ind.capitalize(), args.type.split(' '))),
+                    'submit':'Submit',
+                    'run': args.run
+              }
+    
+    con = post('codepad.org', 80, '/', payload)
+    xmap(con, HttpResponseHandle.HTTP_RESPONSE, on_done)
+    core.gear.mainloop()
+~~~
+
+**Example:**
+
+~~~
+[tau@lambda requests]$ python2 codepad.py -f snake.py -t python --run
+URL: http://codepad.org/HfJoaeJn
+
+~~~
 
 ### Basic authentication
 
@@ -2336,5 +2379,6 @@ Debugging
 
 Tests
 =====
+
 
 
