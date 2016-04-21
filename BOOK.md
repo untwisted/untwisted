@@ -2343,7 +2343,8 @@ def on_done(spin, response):
 if __name__ == '__main__':
     parser= argparse.ArgumentParser()
     parser.add_argument('-f', '--filename',  default='0.0.0.0', help='filename')
-    parser.add_argument('-t', '--type',  default='Plain Text', help='Type should be Python, Haskell, etc..')
+    parser.add_argument('-t', '--type',  default='Plain Text', 
+                                help='Type should be Python, Haskell, etc..')
     parser.add_argument('-r', '--run',  action='store_true', help='run')
     args = parser.parse_args()
 
@@ -2353,7 +2354,8 @@ if __name__ == '__main__':
 
     payload = {
                     'code':code,
-                    'lang':' '.join(map(lambda ind: ind.capitalize(), args.type.split(' '))),
+                    'lang':' '.join(map(lambda ind: ind.capitalize(), 
+                                        args.type.split(' '))),
                     'submit':'Submit',
                     'run': args.run
               }
@@ -2379,6 +2381,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
