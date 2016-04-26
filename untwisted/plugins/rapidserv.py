@@ -82,10 +82,10 @@ class RapidServ(object):
         self.template_dir = template_dir
         self.loader       = FileSystemLoader(searchpath = join(self.app_dir, self.template_dir))
         self.env          = Environment(loader=self.loader, auto_reload=auto_reload)
-        self.cli          = argparse.ArgumentParser()
         sock              = socket(AF_INET, SOCK_STREAM)
         self.local        = network.Spin(sock)
         self.local.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+
 
     def bind(self, addr, port, backlog):
         Server(self.local, lambda sock: Spin(sock, self)) 
@@ -95,10 +95,12 @@ class RapidServ(object):
         xmap(self.local, ACCEPT, self.handle_accept)
 
     def run(self):
-        self.cli.add_argument('-a', '--addr',  default='0.0.0.0', help='Address')
-        self.cli.add_argument('-p', '--port', type=int, default=80, help='Port')
-        self.cli.add_argument('-b', '--backlog',  type=int, default=50, help='Port')
-        args = self.cli.parse_args()
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-a', '--addr',  default='0.0.0.0', help='Address')
+        parser.add_argument('-p', '--port', type=int, default=80, help='Port')
+        parser.add_argument('-b', '--backlog',  type=int, default=50, help='Port')
+        args = parser.parse_args()
+
         self.bind(args.addr, args.port, args.backlog)
         core.gear.mainloop()
 
@@ -276,7 +278,6 @@ class Locate(object):
 
     def locate(self, spin, request):
         path = join(spin.app.app_dir, spin.app.static_dir, basename(request.path))
-
         if not isfile(path):
             return
 
@@ -329,6 +330,7 @@ def make(searchpath, folder):
     from os.path import join, abspath, dirname
     searchpath = join(dirname(abspath(searchpath)), folder)
     return searchpath
+
 
 
 

@@ -519,6 +519,19 @@ the template imup/templates/view.jinja
 
 ### quickserv script
 
+The quickserv script is used to serve content over http.
+
+~~~
+
+quickserv -p port -b backlog -a addr -f folder
+~~~
+
+The command below would permit users to access the content of the ~/Downloads folder through http requests.
+
+~~~
+quickserv -p 1024 -f ~/Downloads
+~~~
+
 
 The event-driven paradigm
 =========================
@@ -2763,6 +2776,7 @@ on_ping (None, 'tepper.freenode.net')
 ~~~
 
 IRC messages are turned into events that carry arguments. The arguments are passed to the handles in the exact order that they appear in the messages.
+
 
 
 

@@ -2,32 +2,27 @@
 
 if __name__ == '__main__':
     from untwisted.plugins.rapidserv import RapidServ, DebugRequest
-    from untwisted.network import xmap
+    from untwisted.network import xmap, core
     from untwisted.iostd import ACCEPT
-    from optparse import OptionParser
+    import argparse
     import os
 
-    parser   = OptionParser()
-    parser.add_option("-a", "--addr", dest="addr",
-                      metavar="string", default='0.0.0.0')
-                  
-    parser.add_option("-p", "--port", dest="port",
-                      metavar="integer", default=80)
 
-    parser.add_option("-b", "--backlog", dest="backlog",
-                      metavar="integer", default=50)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--addr',  default='0.0.0.0', help='Address')
+    parser.add_argument('-p', '--port', type=int, default=80, help='Port')
+    parser.add_argument('-b', '--backlog',  type=int, default=50, help='Port')
+    parser.add_argument('-f', '--folder',  default=os.getcwd(), help='Folder')
 
-    parser.add_option("-f", "--folder", dest="folder",
-                      metavar="string", default=os.getcwd())
-
-    (opt, args) = parser.parse_args()
-    app = RapidServ(opt.folder, os.path.basename(opt.folder))
+    args = parser.parse_args()
+    app  = RapidServ(args.folder, os.path.basename(args.folder))
 
     def setup(local, con):
         DebugRequest(con)
 
     xmap(app.local, ACCEPT, setup)
-    app.run(opt.addr, opt.port, opt.backlog)
+    app.bind(args.addr, args.port, args.backlog)
+    core.gear.mainloop()
 
 
 
