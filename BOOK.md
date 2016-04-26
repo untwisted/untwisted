@@ -352,7 +352,7 @@ In order to run the app, issue the command below.
 python2 app.py --addr '0.0.0.0' --port 1234
 ~~~
 
-### Imup Applicaiton
+### Imup Application
 
 Imup is a simple application to upload images into a shelve database. It shows the usage of the decorator
 app.route that is used a shorthand to access query parameters from the request.
@@ -2776,6 +2776,7 @@ on_ping (None, 'tepper.freenode.net')
 ~~~
 
 IRC messages are turned into events that carry arguments. The arguments are passed to the handles in the exact order that they appear in the messages.
+
 
 
 
