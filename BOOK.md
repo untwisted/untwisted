@@ -65,6 +65,10 @@ Table of Contents
       * [The Root exception](#the-root-exception)
       * [The Kill exception](#the-kill-exception)
   * [The requests plugin](#the-requests-plugin)
+      * [HTTP GET](#http-get)
+        * [Basic HTTP GET example (snake\.py)](#basic-http-get-example-snakepy)
+      * [HTTP POST (codepad\.py)](#http-post-codepadpy)
+      * [Basic authentication](#basic-authentication)
   * [Debugging](#debugging)
   * [Tests](#tests)
 
@@ -2381,6 +2385,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
