@@ -67,10 +67,14 @@ Table of Contents
   * [The requests plugin](#the-requests-plugin)
       * [HTTP GET](#http-get)
         * [Basic HTTP GET example (snake\.py)](#basic-http-get-example-snakepy)
-      * [HTTP POST (codepad\.py)](#http-post-codepadpy)
+      * [HTTP POST](#http-post)
+        * [Basic HTTP POST example (codepad\.py)](#basic-http-post-example-codepadpy)
       * [Basic authentication](#basic-authentication)
   * [Debugging](#debugging)
   * [Tests](#tests)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc.go)
+
 
 
 What can i create with untwisted?
@@ -2330,10 +2334,12 @@ The get function returns a Spin object that corresponds to the web server connec
 has arrived then an event HttpResponseHandle.HTTP_RESPONSE happens in the Spin object that was returned by
 the get function.
 
-### HTTP POST (codepad.py)
+### HTTP POST 
 
 The next example shows how to perform a HTTP POST request using untwisted requests plugin. The implementation
 is trivial.
+
+#### Basic HTTP POST example (codepad.py)
 
 ~~~python
 from untwisted.plugins.requests import HttpResponseHandle, post
@@ -2385,6 +2391,7 @@ Debugging
 
 Tests
 =====
+
 
 
 
