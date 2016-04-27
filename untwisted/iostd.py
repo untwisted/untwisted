@@ -59,6 +59,15 @@ class DumpFile(DumpStr):
         
 class Stdin:
     """ 
+    Stdin is a handle used to send data through Spin connections.
+
+    Methods:
+        dump     - Send data through the Spin instance.
+
+        dumpfile - Dump a file through the Spin instance.
+
+    Diagram:
+        WRITE -> Stdin -(int:err, int:err, ())-> {**CLOSE, SEND_ERR, DUMPED}
     """
 
     def __init__(self, spin):
@@ -95,17 +104,30 @@ class Stdin:
             xmap(self.spin, WRITE, self.update)
 
     def dump(self, data):
+        """ 
+        Send data through a Spin instance. 
+        """
+
         self.start()
         dump = DumpStr(data)
         self.queue.append(dump)
 
     def dumpfile(self, fd):
+        """ 
+        Dump a file through a Spin instance. 
+        """
+
         self.start()
         dump = DumpFile(fd)
         self.queue.append(dump)
 
 class Stdout(object):
     """
+    Used to read data through a Spin instance.
+
+    Diagram:
+    
+        READ -> Stdout -(int:err, int:err, str:data)-> {**CLOSE, RECV_ERR, LOAD}
     """
     
     SIZE = 1024 * 124
@@ -138,6 +160,11 @@ class Stdout(object):
 
 class Client(object):
     """
+    Used to set up TCP clients.
+
+    Diagram:
+    
+        WRITE -> Client -((), int:err)-> {**CONNECT, **CONNECT_ERR}
     """
 
     def __init__(self, spin):
@@ -155,6 +182,9 @@ class Client(object):
 
 class Server(object):
     """
+    Used to set up TCP servers.
+
+    READ -> Server -(Spin:client, int:err)-> {ACCEPT, ACCEPT_ERR}
     """
 
     def __init__(self, spin, wrap = lambda sock: Spin(sock)):
@@ -174,6 +204,15 @@ class Server(object):
                     break
 
 def lose(spin):
+    """
+    It is used to close TCP connection and unregister
+    the Spin instance from untwisted reactor.
+
+    Diagram:
+
+        lose -> (int:err | socket.error:err) -> CLOSE_ERR
+    """
+
     try:
         spin.destroy()
     except Exception as err:
@@ -186,9 +225,28 @@ def lose(spin):
         spawn(spin, CLOSE_ERR, err)
 
 def put(spin, data):
+    """
+    A handle used to serialize arguments of events.
+    
+        xmap(con, LOAD, put)
+    """
     print data
 
 def create_server(addr, port, backlog):
+    """
+    Set up a TCP server and installs the basic handles Stdin, Stdout in the
+    clients.
+
+    Example:    
+
+        def send_data(server, client):
+            # No need to install Stdin or Stdout.
+            client.dump('foo bar!')
+
+        server = create_server('0.0.0.0', 1024, 50)
+        xmap(server, on_accept, send_data)
+    """
+
     server = Spin()
     server.bind(('', 1234))
     server.listen(200)
@@ -206,6 +264,14 @@ def install_basic_handles(spin):
 
 def create_client(addr, port):
     """
+    Set up a TCP client and installs the basic handles Stdin, Stdout.
+
+    def send_data(client):
+        client.dump('GET / HTTP/1.1\r\n')
+        xmap(client, LOAD, iostd.put)
+
+    client = create_client('www.google.com.br', 80)
+    xmap(client, CONNECT, send_data)
     """
 
     spin = Spin()
@@ -213,6 +279,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
