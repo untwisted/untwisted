@@ -8,6 +8,15 @@ from untwisted.event import LOAD, CLOSE
 from untwisted.waker import waker
 
 class Expect(Thread, Dispatcher):
+    """
+    This class is used to spawn processes.
+
+    python = Expect('python2.7', '-i')
+    python.send('print "hello world"')
+    python.terminate()
+    python.destroy()
+    """
+
     SIZE = 1024 * 124
 
     def __init__(self, *args):
@@ -31,6 +40,7 @@ class Expect(Thread, Dispatcher):
 
     def send(self, data):
         """
+        Send data to the child process through.
         """
 
         self.stdin.write(data)
@@ -67,11 +77,11 @@ class Expect(Thread, Dispatcher):
 
     def destroy(self):
         """
+        Unregister up from untwisted reactor. It is needed
+        to call self.terminate() first to kill the process.
         """
         core.gear.pool.remove(self)    
         self.base.clear()
-
-
 
 
 
