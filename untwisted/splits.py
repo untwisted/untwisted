@@ -4,7 +4,17 @@ import sys
 
 class Fixed(object):
     """
+    A handle for application layers that demand fixed chunk transmission of data.
+
+    def on_found(spin, data):
+        print data
+
+    Fixed(spin, size=4)
+    xmap(spin, FOUND, on_found)
+
+    If it arises a chunk of size equal or greater than 4 then FOUND is processed.
     """
+
     FOUND = get_event()
     def __init__(self, spin, size=4):
         xmap(spin, LOAD, self.update)
@@ -24,6 +34,23 @@ class Fixed(object):
                 pass
 
 class Breaker(object):
+    """
+    A handle for application layer protocols follows a command scheme pattern.
+
+    def on_add(spin, *args):
+        print args
+
+    Breaker(spin)
+    xmap(spin, 'add', on_add)
+
+    If it arises the sequence of data defined below then on_add is processed and its
+    arguments will be ('1', '2', '3').
+
+        'add 1 2 3'
+
+    
+    """
+
     def __init__(self, device, delim=' '):
         self.delim = delim
         xmap(device, Terminator.FOUND, self.handle_found)
@@ -33,6 +60,20 @@ class Breaker(object):
         spawn(device, lst.pop(0), *lst)
 
 class Terminator:
+    """
+    A handle for application layer protocols that use '\r\n' as token.
+
+    def on_found(spin, data):
+        print data
+
+    Terminator(spin, delim='\r\n')
+    xmap(spin, FOUND, on_found)
+
+    If it arises the sequence below then on_found is processed.
+
+        'some-data\r\n'
+    """
+
     FOUND = get_event()
     def __init__(self, spin, delim='\r\n'):
         self.delim  = delim
@@ -124,6 +165,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     xmap(spin, Terminator.FOUND, log)
+
 
 
 
