@@ -5,6 +5,22 @@ from untwisted.event import DONE, ERROR
 from untwisted.dispatcher import Dispatcher
 
 class Job(Thread, Dispatcher):
+    """
+    This class is used to execute a function inside a thread.
+
+        def func(a, b):
+            return a + b
+    
+        def on_done(job, sum):
+            print sum
+    
+        job = Job(func, 1, 2)
+        xmap(job, DONE, on_done)
+    
+    In case of an exception occuring inside func then the event 
+    ERROR happens instead of the DONE event which carries the exception thrown.    
+    """
+
     def __init__(self, func, *args, **kwargs):
         Thread.__init__(self)
         Dispatcher.__init__(self)
@@ -42,11 +58,6 @@ class Job(Thread, Dispatcher):
         else:
             self.drive(DONE, self.data)
         core.gear.pool.remove(self)
-
-
-
-
-
 
 
 
