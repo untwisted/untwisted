@@ -1,6 +1,6 @@
 from untwisted.network import xmap, spawn
 from untwisted import iostd
-from untwisted.event import CLOSE, LOAD
+from untwisted.event import CLOSE, LOAD, DUMPED
 import os
 
 class DumpStr(iostd.DumpStr):
@@ -16,6 +16,19 @@ class DumpFile(DumpStr, iostd.DumpFile):
     pass
 
 class Stdin(iostd.Stdin):
+    """
+    Used to dump data through a file descriptor.
+
+    Methods:
+        dump     - Send data through the Spin instance.
+
+        dumpfile - Dump a file through the Spin instance.
+
+    Diagram:
+        WRITE -> Stdin -(int:err, int:err, ())-> {**CLOSE, DUMPED}
+
+    """
+
     def dump(self, data):
         self.start()
         data = DumpStr(data)
@@ -27,6 +40,14 @@ class Stdin(iostd.Stdin):
         self.queue.append(fd)
 
 class Stdout(iostd.Stdout):
+    """
+    Used to read data from a file descriptor.
+
+    Diagram:
+    
+        READ -> Stdout -(int:err, int:err, str:data)-> {**CLOSE, RECV_ERR, LOAD}
+    """
+
     def update(self, dev):
         try:
             self.process_data(dev)
@@ -46,10 +67,6 @@ def lose(device):
     """
     device.destroy()
     device.close()
-
-
-
-
 
 
 
