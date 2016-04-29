@@ -17,15 +17,15 @@ class DumpFile(DumpStr, iostd.DumpFile):
 
 class Stdin(iostd.Stdin):
     """
-    Used to dump data through a file descriptor.
+    Used to dump data through a Device instance.
 
     Methods:
-        dump     - Send data through the Spin instance.
+        dump     - Send data through a Device instance.
 
-        dumpfile - Dump a file through the Spin instance.
+        dumpfile - Dump a file through a Device instance.
 
     Diagram:
-        WRITE -> Stdin -(int:err, int:err, ())-> {**CLOSE, DUMPED}
+        WRITE -> Stdin -(int:err, ())-> {**CLOSE, DUMPED}
 
     """
 
@@ -41,7 +41,7 @@ class Stdin(iostd.Stdin):
 
 class Stdout(iostd.Stdout):
     """
-    Used to read data from a file descriptor.
+    Used to read data from a Device instance.
 
     Diagram:
     
@@ -67,6 +67,8 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
+
 
 
 
