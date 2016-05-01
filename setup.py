@@ -6,8 +6,10 @@ setup(name="untwisted",
       packages=["untwisted", 
                 "untwisted.utils",
                 "untwisted.plugins"],
+      scripts=['quickserv'],
       author="Iury O. G. Figueiredo",
       author_email="ioliveira@id.uff.br")
+
 
 
 
