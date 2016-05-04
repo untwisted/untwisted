@@ -13,7 +13,7 @@ Table of Contents
         * [quote/templates/view\.html](#quotetemplatesviewhtml)
         * [quote/app\.py](#quoteapppy)
         * [Running](#running)
-      * [Imup Applicaiton](#imup-applicaiton)
+      * [Imup Application](#imup-application)
         * [imup/templates/view\.jinja](#imuptemplatesviewjinja)
         * [imup/app\.py](#imupapppy)
       * [quickserv script](#quickserv-script)
@@ -28,13 +28,8 @@ Table of Contents
       * [Passing additional arguments to handles](#passing-additional-arguments-to-handles)
       * [Unbinding handles](#unbinding-handles)
       * [Exceptions in handles](#exceptions-in-handles)
-      * [The Kill, Root exceptions](#the-kill-root-exceptions)
       * [Handle return values](#handle-return-values)
       * [Handle execution order](#handle-execution-order)
-      * [Dispatcher flow control](#dispatcher-flow-control)
-      * [Static handles](#static-handles)
-      * [binding static handles to events](#binding-static-handles-to-events)
-      * [Unbinding static handles to events](#unbinding-static-handles-to-events)
   * [Reactors](#reactors)
   * [Super socket class](#super-socket-class)
   * [Spin class](#spin-class)
@@ -1086,8 +1081,6 @@ could occur inside the handle function that does the division of two numbers whe
 Using this approach it is possible to have one or more handles deciding what to do when an exception occurs at some
 point of the program it increases extensibility and turns modelling of applications more succint and modular.
 
-### The Kill, Root exceptions
-
 ### Handle return values
 
 When handles are called on events, they aren't supposed to return a value that is advantaged by other parts
@@ -1220,14 +1213,6 @@ handle0
 handle1
 >>> 
 ~~~
-
-### Dispatcher flow control
-
-### Static handles
-
-### binding static handles to events
-
-### Unbinding static handles to events
 
 Reactors
 ========
@@ -2776,6 +2761,7 @@ on_ping (None, 'tepper.freenode.net')
 ~~~
 
 IRC messages are turned into events that carry arguments. The arguments are passed to the handles in the exact order that they appear in the messages.
+
 
 
 
