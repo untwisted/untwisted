@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 setup(name="untwisted",
-      version="1.0.0",
+      version="1.0.1",
       packages=["untwisted", 
                 "untwisted.plugins"],
       scripts=['quickserv'],
@@ -13,6 +13,7 @@ setup(name="untwisted",
       keywords=['asynchronous', 'programming', 'twisted', 'untwisted', 'library', 'framework', 'networking', 'protocols', 'rapidserv', 'irc', 'requests'],
       classifiers=[],
       description="A library for asynchronous programming in python.",)
+
 
 
 
