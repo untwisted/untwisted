@@ -97,7 +97,6 @@ class Dispatcher(object):
         """
         Remove a mapping like event -(arg0, arg1, arg2, ...)-> handle.
         """
-
         if args:
             self.base[event].remove((handle, args))
         else:
@@ -141,21 +140,22 @@ xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
 zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
 spawn = lambda dispatcher, *args: dispatcher.drive(*args)
 
-def once(spin, event, handle, *args):
+def once(dispatcher, event, handle, *args):
     """
     Used to do a mapping like event -> handle
     but handle is called just once upon event.
     """
 
-    def shell(*args):
+    def shell(dispatcher, *args):
         try:
-            handle(*args)
+            handle(dispatcher, *args)
         except Exception as e:
-            pass
-        finally:
-            spin.del_map(event, handle, *args)
             raise e
-    spin.add_map(event, handle, *args)
+        finally:
+            dispatcher.del_map(event, shell)
+    dispatcher.add_map(event, shell, *args)
+
+
 
 
 
