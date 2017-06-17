@@ -107,13 +107,14 @@ Install
 
 Untwisted depends on python2.
 
-    pip install jinja2
     pip install untwisted
 
-The Untwisted Book
-==================
 
-[BOOK.md](BOOK.md)
+Documentation
+=============
+
+[Wiki](https://github.com/iogf/untwisted/wiki)
+
 
 Applications using Untwisted
 ============================
@@ -139,6 +140,7 @@ Support
 
 **Channel:** #untwisted
  
+
 
 
 
