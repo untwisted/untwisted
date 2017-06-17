@@ -62,9 +62,6 @@ Table of Contents
         * [Basic HTTP GET example (snake\.py)](#basic-http-get-example-snakepy)
       * [HTTP POST](#http-post)
         * [Basic HTTP POST example (codepad\.py)](#basic-http-post-example-codepadpy)
-  * [The IRC Client plugin](#the-irc-client-plugin)
-      * [IRC Events](#irc-events)
-      * [A basic example (funbot\.py)](#a-basic-example-funbotpy)
 
 
 What can i create with untwisted?
