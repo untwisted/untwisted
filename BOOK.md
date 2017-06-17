@@ -57,12 +57,6 @@ Table of Contents
   * [Reactor flow control](#reactor-flow-control)
       * [The Root exception](#the-root-exception)
       * [The Kill exception](#the-kill-exception)
-  * [The requests plugin](#the-requests-plugin)
-      * [HTTP GET](#http-get)
-        * [Basic HTTP GET example (snake\.py)](#basic-http-get-example-snakepy)
-      * [HTTP POST](#http-post)
-        * [Basic HTTP POST example (codepad\.py)](#basic-http-post-example-codepadpy)
-
 
 What can i create with untwisted?
 =================================
