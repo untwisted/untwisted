@@ -1,4 +1,4 @@
-from untwisted.network import xmap, zmap, spawn, Erase
+from untwisted.network import SSL, xmap, zmap, spawn, Erase
 from untwisted import iostd
 from untwisted.event import get_event
 from untwisted.event import WRITE, READ, CONNECT, CONNECT_ERR, CLOSE,      \
@@ -79,10 +79,26 @@ class Server(iostd.Server):
     def update(self, spin):
         pass
 
-def create_ssl_server():
-    pass
+def install_ssl_handles(con):
+    Stdin(con)
+    Stdout(con)
+    xmap(con, CLOSE, lambda con, err: iostd.lose(con))
 
-def create_ssl_client(addr, port):
+def create_client_ssl(addr, port):
+    sock    = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    context = ssl.create_default_context()
+    con     = SSL(context.wrap_socket(sock, 
+    do_handshake_on_connect=False, server_hostname=addr))
+
+    con.connect_ex((addr, port))
+
+    Client(con)
+    xmap(con, SSL_CONNECT, install_ssl_handles)
+    xmap(con, SSL_CONNECT_ERR, lambda con, err: iostd.lose(err))
+    xmap(con, SSL_CERTIFICATE_ERR, lambda con, err: iostd.lose(err))
+    return con
+
+def create_server_ssl():
     pass
 
 
