@@ -18,7 +18,7 @@ class DumpStrSSL(DumpStr):
         else:
             self.data = buffer(self.data, size)
 
-class DumpFileSSL(DumpFile):
+class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
 
 class StdinSSL(Stdin):
