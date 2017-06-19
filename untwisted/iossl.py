@@ -1,5 +1,5 @@
 from untwisted.network import SSL, xmap, zmap, spawn, Erase
-from untwisted import iostd
+from untwisted.iostd import DumpStr, DumpFile, Stdout, Stdin, Client, Server, lose
 from untwisted.event import get_event
 from untwisted.event import WRITE, READ, CONNECT, CONNECT_ERR, CLOSE,      \
 SEND_ERR, RECV_ERR, LOAD, SSL_SEND_ERR, SSL_RECV_ERR, SSL_CERTIFICATE_ERR, \
@@ -7,7 +7,7 @@ SSL_CONNECT_ERR, SSL_CONNECT
 import socket
 import ssl
 
-class DumpStr(iostd.DumpStr):
+class DumpStrSSL(DumpStr):
     def process(self, spin):
         try:
             size = spin.send(self.data)  
@@ -18,10 +18,10 @@ class DumpStr(iostd.DumpStr):
         else:
             self.data = buffer(self.data, size)
 
-class DumpFile(DumpStr, iostd.DumpFile):
+class DumpFileSSL(DumpFile):
     pass
 
-class Stdin(iostd.Stdin):
+class StdinSSL(Stdin):
     def dump(self, data):
         self.start()
         data = DumpStr(data)
@@ -32,7 +32,7 @@ class Stdin(iostd.Stdin):
         fd = DumpFile(fd)
         self.queue.append(fd)
 
-class Stdout(iostd.Stdout):
+class StdoutSSL(Stdout):
     def update(self, spin):
         try:
             while True:
@@ -67,12 +67,12 @@ class Handshake(object):
             spawn(spin, SSL_CONNECT)
             raise Erase
 
-class Client(iostd.Client):
+class ClientSSL(Client):
     def update(self, spin):
-        iostd.Client.update(self, spin)
+        Client.update(self, spin)
         Handshake(spin)
 
-class Server(iostd.Server):
+class ServerSSL(Server):
     def __init__(self, spin):
         xmap(spin, READ, self.update)
 
@@ -80,9 +80,9 @@ class Server(iostd.Server):
         pass
 
 def install_ssl_handles(con):
-    Stdin(con)
-    Stdout(con)
-    xmap(con, CLOSE, lambda con, err: iostd.lose(con))
+    StdinSSL(con)
+    StdoutSSL(con)
+    xmap(con, CLOSE, lambda con, err: lose(con))
 
 def create_client_ssl(addr, port):
     sock    = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -92,10 +92,10 @@ def create_client_ssl(addr, port):
 
     con.connect_ex((addr, port))
 
-    Client(con)
+    ClientSSL(con)
     xmap(con, SSL_CONNECT, install_ssl_handles)
-    xmap(con, SSL_CONNECT_ERR, lambda con, err: iostd.lose(err))
-    xmap(con, SSL_CERTIFICATE_ERR, lambda con, err: iostd.lose(err))
+    xmap(con, SSL_CONNECT_ERR, lambda con, err: lose(err))
+    xmap(con, SSL_CERTIFICATE_ERR, lambda con, err: lose(err))
     return con
 
 def create_server_ssl():
