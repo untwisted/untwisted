@@ -23,9 +23,9 @@ class SuperSocket(Dispatcher):
         core.gear.scale(self)
 
     def destroy(self):
-        self.base.clear()
-        SSL.base.clear()
-        del self.pool[:]
+        # self.base.clear()
+        # SSL.base.clear()
+        # del self.pool[:]
         core.gear.unregister(self)
 
 class SSL(SuperSocket):
@@ -65,6 +65,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
