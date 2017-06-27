@@ -8,7 +8,7 @@ import ssl
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, EINVAL, \
 ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN 
 
-CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF)
+CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF, '')
 ACCEPT_ERR_CODE  = (EWOULDBLOCK, ECONNABORTED, EAGAIN)
 
 class Dump(object):
@@ -147,10 +147,11 @@ class Stdout(object):
     def process_data(self, spin):
         data = spin.recv(self.SIZE)
 
-        if not data: 
-            spawn(spin, CLOSE, '') 
-        else: 
-            spawn(spin, LOAD, data)
+        # It has to raise the error here
+        # otherwise it CLOSE gets spawned
+        # twice from SSLStdout.
+        if not data: raise socket.error('')
+        spawn(spin, LOAD, data)
 
     def process_error(self, spin, err):
         if err in CLOSE_ERR_CODE: 
@@ -279,6 +280,7 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
 
