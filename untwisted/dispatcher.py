@@ -1,7 +1,7 @@
 from traceback import print_exc 
 from untwisted.core import Kill, Root
 from untwisted.exceptions import Stop, Erase
-from wrappers import once, xmap, zmap, spawn
+from untwisted.wrappers import once, xmap, zmap, spawn
 import sys
 
 class Dispatcher(object):
@@ -21,7 +21,7 @@ class Dispatcher(object):
 
         maps = self.base.get(event, self.step)
         for handle, data in maps[:]:
-            params = data + args
+            params = args + data
             try:
                 handle(self, *params)
             except Stop:
