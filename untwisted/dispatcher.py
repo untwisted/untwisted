@@ -1,78 +1,29 @@
 from traceback import print_exc as debug
 from untwisted.core import Kill, Root
-import inspect
-
-class Stop(Exception):
-    """
-    This exception is used to avoid remaining handles being
-    processed for a given event.
-
-    from untwisted.dispatcher import Dispatcher, Stop
-    
-    def handle0(dispatcher):
-        raise Stop
-    
-    def handle1(dispatcher):
-        print 'it will not be processed!'
-    
-    dispatcher = Dispatcher()
-    dispatcher.add_map('alpha', handle0)
-    dispatcher.add_map('alpha', handle1)
-    dispatcher.drive('alpha')
-    """
-    pass
-
-class Erase(Exception):
-    """
-    When this exception is thrown from a handle it avoids such a handle
-    being processed again upon its event.
-
-    from untwisted.dispatcher import Dispatcher, Erase
-    
-    def handle(dispatcher):
-        print 'It will be called just once!'
-        raise Erase
-    
-    dispatcher = Dispatcher()
-    dispatcher.add_map('alpha', handle)
-    dispatcher.drive('alpha')
-    dispatcher.drive('alpha')
-    """
-
-    pass
+from untwisted.exceptions import Stop, Erase
+from wrappers import once, xmap, zmap, spawn
+import sys
 
 class Dispatcher(object):
     """
     The event dispatcher class.
     """
 
-    base = dict()
     def __init__(self):
         self.base = dict()
         self.pool = list()
+        self.step = list()
 
     def drive(self, event, *args):
         """
         Used to dispatch events.
         """
 
-        try:
-            self.process_base(event, args)
-        except KeyError:
-            pass
-
-        try:
-            self.process_static_base(event, args)
-        except KeyError:
-            pass
-
-        for handle in self.pool:
-            handle(self, event, args)
-
-    def process_base(self, event, args):
-        for handle, data in self.base[event][:]:
+        maps = self.base.get(event, self.step)
+        for handle, data in maps[:]:
+            parems = data + args
             try:
-                seq = handle(self, *(args + data))
+                handle(self, *parems)
             except Stop:
                 break
             except StopIteration:
@@ -80,10 +31,17 @@ class Dispatcher(object):
             except Kill, Root:
                 raise
             except Erase:
-                self.base[event].remove((handle, data))
+                maps.remove((handle, data))
             except Exception as e:
-                debug()
-                self.drive(Exception, handle, e)
+                self.debug(event, e, params)
+
+        for handle in self.pool:
+            handle(self, event, args)
+
+    def debug(self, event, excpt, params):
+        print 'Event:%s' % event
+        print 'Exception:%s' % excpt
+        print 'Args:%s' % params
 
     def add_map(self, event, handle, *args):
         """
@@ -118,10 +76,6 @@ class Dispatcher(object):
 
         pass
 
-    process_static_base = classmethod(process_base)
-    add_static_map      = classmethod(add_map)
-    del_static_map      = classmethod(del_map)
-
     def add_handle(self, handle):
         """
         Whenever an event occurs then handle is processed.
@@ -136,29 +90,17 @@ class Dispatcher(object):
 
         self.pool.remove(handle)
 
-xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
-zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
-spawn = lambda dispatcher, *args: dispatcher.drive(*args)
+    def del_step(self, handle):
+        """
+        """
 
-def once(dispatcher, event, handle, *args):
-    """
-    Used to do a mapping like event -> handle
-    but handle is called just once upon event.
-    """
+        self.step.remove(handle)
 
-    def shell(dispatcher, *args):
-        try:
-            handle(dispatcher, *args)
-        except Exception as e:
-            raise e
-        finally:
-            dispatcher.del_map(event, shell)
-    dispatcher.add_map(event, shell, *args)
+    def add_step(self, handle):
+        """
+        """
 
-
-
-
-
+        self.step.append(handle)
 
 
 
