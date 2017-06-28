@@ -3,7 +3,7 @@ from untwisted.client import Client
 from untwisted.exceptions import Erase
 from untwisted.event import WRITE, SSL_CERTIFICATE_ERR, \
 SSL_CONNECT_ERR, SSL_CONNECT
-
+import socket
 import ssl
 
 class Handshake(object):
@@ -35,5 +35,6 @@ class ClientSSL(Client):
     def update(self, spin):
         Client.update(self, spin)
         Handshake(spin)
+
 
 

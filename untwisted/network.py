@@ -35,6 +35,7 @@ class SSL(SuperSocket):
     def __init__(self, sock):
         self.sock = sock
         SuperSocket.__init__(self, sock.fileno())
+        self.sock.setblocking(0) 
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
@@ -65,6 +66,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
