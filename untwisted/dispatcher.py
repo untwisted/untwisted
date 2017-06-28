@@ -1,4 +1,4 @@
-from traceback import print_exc as debug
+from traceback import print_exc 
 from untwisted.core import Kill, Root
 from untwisted.exceptions import Stop, Erase
 from wrappers import once, xmap, zmap, spawn
@@ -33,15 +33,15 @@ class Dispatcher(object):
             except Erase:
                 maps.remove((handle, data))
             except Exception as e:
-                self.debug(event, e, params)
+                self.debug(event, params)
 
         for handle in self.pool:
             handle(self, event, args)
 
-    def debug(self, event, excpt, params):
+    def debug(self, event, params):
         print 'Event:%s' % event
-        print 'Exception:%s' % excpt
         print 'Args:%s' % str(params)
+        print_exc()
 
     def add_map(self, event, handle, *args):
         """
@@ -101,6 +101,7 @@ class Dispatcher(object):
         """
 
         self.step.append(handle)
+
 
 
 
