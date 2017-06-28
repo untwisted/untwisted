@@ -21,9 +21,9 @@ class Dispatcher(object):
 
         maps = self.base.get(event, self.step)
         for handle, data in maps[:]:
-            parems = data + args
+            params = data + args
             try:
-                handle(self, *parems)
+                handle(self, *params)
             except Stop:
                 break
             except StopIteration:
@@ -41,7 +41,7 @@ class Dispatcher(object):
     def debug(self, event, excpt, params):
         print 'Event:%s' % event
         print 'Exception:%s' % excpt
-        print 'Args:%s' % params
+        print 'Args:%s' % str(params)
 
     def add_map(self, event, handle, *args):
         """
@@ -101,6 +101,7 @@ class Dispatcher(object):
         """
 
         self.step.append(handle)
+
 
 
 

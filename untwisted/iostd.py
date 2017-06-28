@@ -1,208 +1,11 @@
-from untwisted.network import Spin, spawn, xmap, zmap
-from traceback import print_exc as debug
-from untwisted.event import *
-from collections import deque
-import socket
-import ssl
+from untwisted.network import Spin
 
-from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, EINVAL, \
-ENOTCONN, ESHUTDOWN, EINTR, EISCONN, EBADF, ECONNABORTED, EPIPE, EAGAIN 
-
-CLOSE_ERR_CODE   = (ECONNRESET, ENOTCONN, ESHUTDOWN, ECONNABORTED, EPIPE, EBADF, '')
-ACCEPT_ERR_CODE  = (EWOULDBLOCK, ECONNABORTED, EAGAIN)
-
-class Dump(object):
-    def process_error(self, spin, err):
-        if err in CLOSE_ERR_CODE: 
-            spawn(spin, CLOSE, err)
-        else: 
-            spawn(spin, SEND_ERR, err)
-
-class DumpStr(Dump):
-    __slots__ = 'data'
-
-    def __init__(self, data=''):
-        self.data = buffer(data)
-
-    def process(self, spin):
-        try:
-            size = spin.send(self.data)  
-        except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
-        else:
-            self.data = buffer(self.data, size)
-
-    def __nonzero__(self):
-        return bool(self.data)
-
-class DumpFile(DumpStr):
-    __slots__ = 'fd'
-    BLOCK     = 1024 * 124
-
-    def __init__(self, fd):
-        self.fd   = fd
-        DumpStr.__init__(self)
-        self.process_file()
-
-    def process(self, spin):
-        DumpStr.process(self, spin)
-        if not self.data:
-            self.process_file()
-
-    def process_file(self):
-        try:
-            data = self.fd.read(DumpFile.BLOCK)
-        except IOError as excpt:
-            spawn(spin, READ_ERR, excpt)
-        else:
-            self.data = buffer(data)
-        
-class Stdin:
-    """ 
-    Stdin is a handle used to send data through Spin connections.
-
-    Methods:
-        dump     - Send data through the Spin instance.
-
-        dumpfile - Dump a file through the Spin instance.
-
-    Diagram:
-        WRITE -> Stdin -(int:err, int:err, ())-> {**CLOSE, SEND_ERR, DUMPED}
-    """
-
-    def __init__(self, spin):
-        """ 
-        """
-
-        self.queue    = deque()
-        self.data     = None
-        spin.dump     = self.dump
-        spin.dumpfile = self.dumpfile
-        self.spin     = spin
-
-    def update(self, spin):
-        """
-        """
-        
-        if not self.data: 
-            self.process_queue(spin)
-
-        self.data.process(spin)
-
-    def process_queue(self, spin):
-        try:
-            self.data = self.queue.popleft()
-        except IndexError: 
-            self.stop()
-
-    def stop(self):
-        zmap(self.spin, WRITE, self.update)
-        spawn(self.spin, DUMPED)
-
-    def start(self):
-        if not self.queue: 
-            xmap(self.spin, WRITE, self.update)
-
-    def dump(self, data):
-        """ 
-        Send data through a Spin instance. 
-        """
-
-        self.start()
-        dump = DumpStr(data)
-        self.queue.append(dump)
-
-    def dumpfile(self, fd):
-        """ 
-        Dump a file through a Spin instance. 
-        """
-
-        self.start()
-        dump = DumpFile(fd)
-        self.queue.append(dump)
-
-class Stdout(object):
-    """
-    Used to read data through a Spin instance.
-
-    Diagram:
-    
-        READ -> Stdout -(int:err, int:err, str:data)-> {**CLOSE, RECV_ERR, LOAD}
-    """
-    
-    SIZE = 1024 * 124
-
-    def __init__(self, spin):
-        xmap(spin, READ, self.update)
-
-    def update(self, spin):
-        """
-        """
-
-        try:
-            self.process_data(spin)
-        except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
-
-    def process_data(self, spin):
-        data = spin.recv(self.SIZE)
-
-        # It has to raise the error here
-        # otherwise it CLOSE gets spawned
-        # twice from SSLStdout.
-        if not data: raise socket.error('')
-        spawn(spin, LOAD, data)
-
-    def process_error(self, spin, err):
-        if err in CLOSE_ERR_CODE: 
-            spawn(spin, CLOSE, err)
-        else: 
-            spawn(spin, RECV_ERR, err)
-
-class Client(object):
-    """
-    Used to set up TCP clients.
-
-    Diagram:
-    
-        WRITE -> Client -((), int:err)-> {**CONNECT, **CONNECT_ERR}
-    """
-
-    def __init__(self, spin):
-        xmap(spin, WRITE, self.update)
-
-    def update(self, spin):
-        zmap(spin, WRITE, self.update)
-        err = spin.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-
-        if err != 0:
-            spawn(spin, CONNECT_ERR, err)
-        else:
-            spawn(spin, CONNECT)
-
-
-class Server(object):
-    """
-    Used to set up TCP servers.
-
-    READ -> Server -(Spin:client, int:err)-> {ACCEPT, ACCEPT_ERR}
-    """
-
-    def __init__(self, spin, wrap = lambda sock: Spin(sock)):
-        xmap(spin, READ, self.update)
-        self.wrap = wrap
-
-    def update(self, spin):
-        while True:
-            try:
-                sock, addr = spin.accept()
-                spawn(spin, ACCEPT, self.wrap(sock))
-            except socket.error as excpt:
-                err = excpt.args[0]
-                if not err in ACCEPT_ERR_CODE:
-                    spawn(spin, ACCEPT_ERR, err)
-                else:
-                    break
+# ammend
+from untwisted.client import *
+from untwisted.stdin import *
+from untwisted.stdout import *
+from untwisted.server import *
+from untwisted.event import CLOSE_ERR
 
 def lose(spin):
     """
@@ -211,7 +14,7 @@ def lose(spin):
 
     Diagram:
 
-        lose -> (int:err | socket.error:err) -> CLOSE_ERR
+    lose -> (int:err | socket.error:err) -> CLOSE_ERR
     """
 
     try:
@@ -229,7 +32,7 @@ def put(spin, data):
     """
     A handle used to serialize arguments of events.
     
-        xmap(con, LOAD, put)
+    xmap(con, LOAD, put)
     """
     print data
 
@@ -240,12 +43,12 @@ def create_server(addr, port, backlog):
 
     Example:    
 
-        def send_data(server, client):
-            # No need to install Stdin or Stdout.
-            client.dump('foo bar!')
+    def send_data(server, client):
+        # No need to install Stdin or Stdout.
+        client.dump('foo bar!')
 
-        server = create_server('0.0.0.0', 1024, 50)
-        xmap(server, on_accept, send_data)
+    server = create_server('0.0.0.0', 1024, 50)
+    xmap(server, on_accept, send_data)
     """
 
     server = Spin()
@@ -280,10 +83,5 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
-
-
-
-
-
 
 
