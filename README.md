@@ -137,6 +137,8 @@ Asynchronous web requests in python.
 
 #### [Rapidserv](https://github.com/iogf/rapidserv)
 
+A non-blocking Flask-like Web Framework in python.
+
 Support
 =======
 
