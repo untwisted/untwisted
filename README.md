@@ -131,6 +131,12 @@ A flexible ircbot written on top of untwisted framework.
 
 A chess interface to fics with support for stockfish to analyze moves.
 
+#### [Websnake](https://github.com/iogf/websnake)
+
+Asynchronous web requests in python.
+
+#### [Rapidserv](https://github.com/iogf/rapidserv)
+
 Support
 =======
 
@@ -140,7 +146,5 @@ Support
 
 **Channel:** #untwisted
  
-
-
 
 
