@@ -1,6 +1,7 @@
 from untwisted.wrappers import spawn, xmap, zmap
 from untwisted.network import Spin
 from untwisted.event import CONNECT, CONNECT_ERR, WRITE
+from untwisted import core
 import socket
 
 class Client(object):
@@ -23,5 +24,6 @@ class Client(object):
             spawn(spin, CONNECT_ERR, err)
         else:
             spawn(spin, CONNECT)
+
 
 

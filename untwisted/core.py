@@ -119,8 +119,14 @@ class Select(Gear):
         self.process_reactor()
 
     def process_reactor(self):
-        rsock, wsock, xsock = select(self.rsock , self.wsock , 
-                                            self.xsock, self.timeout)
+        """
+        """
+
+        for ind in self.base: 
+            self.scale(ind)
+
+        rsock, wsock, xsock = select(self.rsock , 
+        self.wsock, self.xsock, self.timeout)
 
         for ind in wsock:
             try:
@@ -135,6 +141,9 @@ class Select(Gear):
                 pass
 
     def register(self, spin):
+        """
+        """
+
         self.base.append(spin)
 
     def unregister(self, spin):
@@ -231,6 +240,9 @@ class Epoll(Gear):
         """
         """
 
+        for ind in self.base.itervalues():
+            self.scale(ind)
+
         events = self.pollster.poll(self.timeout) 
         for fd, event in events:
             try:
@@ -249,12 +261,21 @@ class Epoll(Gear):
         """
         """
 
-        try:
-            del self.base[spin.fd]
-        except KeyError:
-            pass
-        else:
-            self.pollster.unregister(spin.fd)
+        # It is needed to make sure the spin instance is in fact the one
+        # that has to be removed since when creating new Spin instances it may 
+        # occur the following happening:
+        # spin0 = Spin()
+        # fd0   = spin0.fileno()
+        # spin0.destroy()
+        # spin1 = Spin()
+        # fd1   = spin1.fileno()
+        # fd1 == fd0 -> True
+        # 
+        peer = self.base.get(spin.fd)
+        if not peer is spin: return
+
+        del self.base[spin.fd]
+        self.pollster.unregister(spin.fd)
 
     def scale(self, spin):
         """
@@ -304,17 +325,6 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
-
-
-
-
-
-
-
-
-
-
-
 
 
 
