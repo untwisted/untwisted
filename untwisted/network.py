@@ -16,11 +16,11 @@ class SuperSocket(Dispatcher):
 
     def add_map(self, event, handle, *args):
         Dispatcher.add_map(self, event, handle, *args)
-        # core.gear.scale(self)
+        core.gear.scale(self)
 
     def del_map(self, event, handle, *args):
         Dispatcher.del_map(self, event, handle, *args)
-        # core.gear.scale(self)
+        core.gear.scale(self)
 
     def destroy(self):
         # self.base.clear()
@@ -39,6 +39,9 @@ class SSL(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
+
+    def destroy(self):
+        core.gear.unregister(self)
 
 class Spin(socket, SuperSocket):
     """
@@ -66,6 +69,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 

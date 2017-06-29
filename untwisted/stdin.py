@@ -44,13 +44,11 @@ class Stdin:
 
     def stop(self):
         zmap(self.spin, WRITE, self.update)
-        core.gear.scale(self.spin)
         spawn(self.spin, DUMPED)
 
     def start(self):
-        if self.queue: return
-        xmap(self.spin, WRITE, self.update)
-        core.gear.scale(self.spin)
+        if not self.queue: 
+            xmap(self.spin, WRITE, self.update)
 
     def dump(self, data):
         """ 
@@ -69,5 +67,6 @@ class Stdin:
         self.start()
         dump = DumpFile(fd)
         self.queue.append(dump)
+
 
 

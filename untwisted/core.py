@@ -138,7 +138,14 @@ class Select(Gear):
         self.base.append(spin)
 
     def unregister(self, spin):
-        self.base.remove(spin)
+        """
+        """
+
+        try:
+            self.base.remove(spin)
+        except ValueError:
+            pass
+
         self.del_rsock(spin)
         self.del_wsock(spin)
 
@@ -242,8 +249,12 @@ class Epoll(Gear):
         """
         """
 
-        del self.base[spin.fd]
-        self.pollster.unregister(spin.fd)
+        try:
+            del self.base[spin.fd]
+        except KeyError:
+            pass
+        else:
+            self.pollster.unregister(spin.fd)
 
     def scale(self, spin):
         """
@@ -293,6 +304,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

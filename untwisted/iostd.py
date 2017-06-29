@@ -18,15 +18,12 @@ def lose(spin):
     """
 
     try:
-        spin.destroy()
-    except Exception as err:
-        spawn(spin, CLOSE_ERR, err)
-
-    try:
         spin.close()
     except Exception as excpt:
         err = excpt.args[0]
         spawn(spin, CLOSE_ERR, err)
+    finally:
+        spin.destroy()
 
 def put(spin, data):
     """
@@ -83,5 +80,6 @@ def create_client(addr, port):
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
     return spin
+
 
 
