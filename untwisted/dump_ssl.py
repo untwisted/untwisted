@@ -1,5 +1,6 @@
 from untwisted.event import SSL_SEND_ERR
-from untwisted.dump import Dumpfile
+from untwisted.dump import DumpStr, DumpFile
+from untwisted.wrappers import spawn
 import socket
 import ssl
 
@@ -16,4 +17,5 @@ class DumpStrSSL(DumpStr):
 
 class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
+
 
