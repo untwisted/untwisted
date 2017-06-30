@@ -1,6 +1,5 @@
 from untwisted.network import Spin
 
-# ammend
 from untwisted.client import *
 from untwisted.stdin import *
 from untwisted.stdout import *
@@ -79,7 +78,9 @@ def create_client(addr, port):
     Client(spin)
     spin.connect_ex((addr, port))
     xmap(spin, CONNECT, install_basic_handles)
+    xmap(spin, CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 

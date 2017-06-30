@@ -1,7 +1,7 @@
 from untwisted.wrappers import xmap, zmap, spawn
 from untwisted.network import SSL
 from untwisted.event import CLOSE, SSL_CERTIFICATE_ERR, \
-SSL_CONNECT_ERR, SSL_CONNECT
+SSL_CONNECT_ERR, SSL_CONNECT, CONNECT_ERR
 
 from untwisted.client_ssl import *
 from untwisted.stdin_ssl import *
@@ -26,11 +26,13 @@ def create_client_ssl(addr, port):
     ClientSSL(con)
     xmap(con, SSL_CONNECT, install_ssl_handles)
     xmap(con, SSL_CONNECT_ERR, lambda con, err: lose(con))
+    xmap(con, CONNECT_ERR, lambda con, err: lose(con))
     xmap(con, SSL_CERTIFICATE_ERR, lambda con, err: lose(con))
     return con
 
 def create_server_ssl():
     pass
+
 
 
 
