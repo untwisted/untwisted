@@ -20,7 +20,7 @@ def lose(spin):
         spin.close()
     except Exception as excpt:
         err = excpt.args[0]
-        spawn(spin, CLOSE_ERR, err)
+        spin.drive(CLOSE_ERR, err)
     finally:
         spin.destroy()
 
@@ -51,7 +51,7 @@ def create_server(addr, port, backlog):
     server.bind(('', 1234))
     server.listen(200)
     Server(server)
-    xmap(server, ACCEPT, lambda server, spin: install_basic_handles(spin))
+    server.add_map(ACCEPT, lambda server, spin: install_basic_handles(spin))
     return server
 
 def install_basic_handles(spin):
@@ -60,7 +60,7 @@ def install_basic_handles(spin):
 
     Stdin(spin)
     Stdout(spin)
-    xmap(spin, CLOSE, lambda spin, err: lose(spin))
+    spin.add_map(CLOSE, lambda spin, err: lose(spin))
 
 def create_client(addr, port):
     """
@@ -77,9 +77,10 @@ def create_client(addr, port):
     spin = Spin()
     Client(spin)
     spin.connect_ex((addr, port))
-    xmap(spin, CONNECT, install_basic_handles)
-    xmap(spin, CONNECT_ERR, lambda con, err: lose(con))
+    spin.add_map(CONNECT, install_basic_handles)
+    spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 

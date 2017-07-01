@@ -1,5 +1,4 @@
-from untwisted.network import core, xmap, zmap, READ, WRITE, spawn
-from untwisted.event import LOAD, get_event
+from untwisted.event import LOAD, READ, WRITE, get_event
 import sys
 
 class Fixed(object):
@@ -17,7 +16,7 @@ class Fixed(object):
 
     FOUND = get_event()
     def __init__(self, spin, size=4):
-        xmap(spin, LOAD, self.update)
+        spin.add_map(LOAD, self.update)
         self.arr  = bytearray()
         self.size = size
 
@@ -53,11 +52,11 @@ class Breaker(object):
 
     def __init__(self, device, delim=' '):
         self.delim = delim
-        xmap(device, Terminator.FOUND, self.handle_found)
+        device.add_map(Terminator.FOUND, self.handle_found)
 
     def handle_found(self, device, data):
         lst = data.split(self.delim)
-        spawn(device, lst.pop(0), *lst)
+        device.drive(lst.pop(0), *lst)
 
 class Terminator:
     """
@@ -79,7 +78,7 @@ class Terminator:
         self.delim  = delim
         self.arr    = bytearray()
 
-        xmap(spin, LOAD, self.update)
+        spin.add_map(LOAD, self.update)
 
     def update(self, spin, data):
         self.arr.extend(data)
@@ -100,7 +99,7 @@ class Accumulator(object):
     Just an accumulator on LOAD.
     """
     def __init__(self, spin):
-        xmap(spin, LOAD, self.update)
+        spin.add_map(LOAD, self.update)
         spin.accumulator  = self
         self.data = ''
 
@@ -113,7 +112,7 @@ class AccUntil(object):
         self.delim = delim
         self.arr   = bytearray()
         self.spin  = spin
-        xmap(spin, LOAD, self.update)
+        spin.add_map(LOAD, self.update)
         self.update(spin, data)
 
     def update(self, spin, data):
@@ -122,16 +121,16 @@ class AccUntil(object):
             self.process(spin)
 
     def process(self, spin):
-        zmap(spin, LOAD, self.update)
+        spin.del_map(LOAD, self.update)
         a, b = self.arr.split(self.delim, 1)
-        spawn(spin, AccUntil.DONE, str(a), str(b))
+        spin.drive(AccUntil.DONE, str(a), str(b))
 
 class TmpFile(object):
     DONE = get_event()
     def __init__(self, spin, data, max_size, fd):
         self.fd       = fd
         self.max_size = max_size
-        xmap(spin, LOAD, self.update)
+        spin.add_map(LOAD, self.update)
 
         self.update(spin, data)
 
@@ -143,8 +142,8 @@ class TmpFile(object):
         if len(data) < count: 
             return
 
-        zmap(spin, LOAD, self.update)
-        spawn(spin, TmpFile.DONE, self.fd, data[count:])
+        spin.del_map(LOAD, self.update)
+        spin.drive(TmpFile.DONE, self.fd, data[count:])
 
 # class AccAck(object):
     # DONE = get_event()
@@ -164,7 +163,8 @@ class TmpFile(object):
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
-    xmap(spin, Terminator.FOUND, log)
+    spin.add_map(Terminator.FOUND, log)
+
 
 
 
