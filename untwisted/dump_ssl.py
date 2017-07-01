@@ -1,6 +1,5 @@
 from untwisted.event import SSL_SEND_ERR
 from untwisted.dump import DumpStr, DumpFile
-from untwisted.wrappers import spawn
 import socket
 import ssl
 
@@ -9,7 +8,7 @@ class DumpStrSSL(DumpStr):
         try:
             size = spin.send(self.data)  
         except ssl.SSLError as excpt:
-            spawn(spin, SSL_SEND_ERR, excpt)
+            spin.drive(SSL_SEND_ERR, excpt)
         except socket.error as excpt:
             self.process_error(spin, excpt.args[0])
         else:
@@ -17,5 +16,6 @@ class DumpStrSSL(DumpStr):
 
 class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
+
 
 

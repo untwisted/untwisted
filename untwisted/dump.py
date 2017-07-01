@@ -1,4 +1,3 @@
-from untwisted.wrappers import spawn
 from untwisted.errors import CLOSE_ERR_CODE
 from untwisted.event import CLOSE, SEND_ERR
 import socket
@@ -6,9 +5,9 @@ import socket
 class Dump(object):
     def process_error(self, spin, err):
         if err in CLOSE_ERR_CODE: 
-            spawn(spin, CLOSE, err)
+            spin.drive(CLOSE, err)
         else: 
-            spawn(spin, SEND_ERR, err)
+            spin.drive(SEND_ERR, err)
 
 class DumpStr(Dump):
     __slots__ = 'data'
@@ -45,9 +44,10 @@ class DumpFile(DumpStr):
         try:
             data = self.fd.read(DumpFile.BLOCK)
         except IOError as e:
-            spawn(spin, READ_ERR, e)
+            spin.drive(READ_ERR, e)
         else:
             self.data = buffer(data)
+
 
 
 
