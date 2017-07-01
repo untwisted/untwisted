@@ -1,4 +1,3 @@
-from untwisted.network import xmap, spawn
 from untwisted import iostd
 from untwisted.event import CLOSE, LOAD, DUMPED
 import os
@@ -57,9 +56,9 @@ class Stdout(iostd.Stdout):
     def process_data(self, dev):
         data = os.read(dev.fd, self.SIZE)
         if not data: 
-            spawn(dev, CLOSE, '') 
+            dev.drive(CLOSE, '') 
         else: 
-            spawn(dev, LOAD, data)
+            dev.drive(LOAD, data)
 
 def lose(device):
     """
@@ -67,6 +66,7 @@ def lose(device):
     """
     device.destroy()
     device.close()
+
 
 
 
