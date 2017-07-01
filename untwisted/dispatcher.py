@@ -1,8 +1,6 @@
 from traceback import print_exc 
 from untwisted.core import Kill, Root
 from untwisted.exceptions import Stop, Erase
-from untwisted.wrappers import once, xmap, zmap, spawn
-import sys
 
 class Dispatcher(object):
     """
@@ -101,8 +99,6 @@ class Dispatcher(object):
         """
 
         self.step.append(handle)
-
-
 
 
 

@@ -1,4 +1,4 @@
-from untwisted.dispatcher import Erase
+from untwisted.exceptions import Erase
 
 class Hold(object):
     def __init__(self, seq):
@@ -49,5 +49,6 @@ def coroutine(handle):
     def start(*args, **kwargs):
         hold = Hold(handle(*args, **kwargs))
     return start
+
 
 

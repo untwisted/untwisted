@@ -1,4 +1,3 @@
-from untwisted.wrappers import spawn, xmap, zmap
 from untwisted.event import CLOSE, RECV_ERR, READ, LOAD
 from untwisted.errors import CLOSE_ERR_CODE
 import socket
@@ -15,7 +14,7 @@ class Stdout(object):
     SIZE = 1024 * 124
 
     def __init__(self, spin):
-        xmap(spin, READ, self.update)
+        spin.add_map(READ, self.update)
 
     def update(self, spin):
         """
@@ -33,11 +32,12 @@ class Stdout(object):
         # otherwise it CLOSE gets spawned
         # twice from SSLStdout.
         if not data: raise socket.error('')
-        spawn(spin, LOAD, data)
+        spin.drive(LOAD, data)
 
     def process_error(self, spin, err):
         if err in CLOSE_ERR_CODE: 
-            spawn(spin, CLOSE, err)
+            spin.drive(CLOSE, err)
         else: 
-            spawn(spin, RECV_ERR, err)
+            spin.drive(RECV_ERR, err)
+
 

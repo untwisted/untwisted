@@ -1,6 +1,8 @@
-xmap  = lambda dispatcher, *args: dispatcher.add_map(*args)
-zmap  = lambda dispatcher, *args: dispatcher.del_map(*args)
-spawn = lambda dispatcher, *args: dispatcher.drive(*args)
+from untwisted.dispatcher import Dispatcher
+
+xmap  = Dispatcher.add_map
+zmap  = Dispatcher.del_map
+spawn = Dispatcher.drive
 
 def once(dispatcher, event, handle, *args):
     """
@@ -16,4 +18,5 @@ def once(dispatcher, event, handle, *args):
         finally:
             dispatcher.del_map(event, shell)
     dispatcher.add_map(event, shell, *args)
+
 

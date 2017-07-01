@@ -1,4 +1,3 @@
-from untwisted.wrappers import spawn, xmap, zmap
 from collections import deque
 from untwisted.event import DUMPED, WRITE
 from untwisted.dump import DumpStr, DumpFile
@@ -43,12 +42,12 @@ class Stdin:
             self.stop()
 
     def stop(self):
-        zmap(self.spin, WRITE, self.update)
-        spawn(self.spin, DUMPED)
+        self.spin.del_map(WRITE, self.update)
+        self.spin.drive(DUMPED)
 
     def start(self):
         if not self.queue: 
-            xmap(self.spin, WRITE, self.update)
+            self.spin.add_map(WRITE, self.update)
 
     def dump(self, data):
         """ 
@@ -67,6 +66,7 @@ class Stdin:
         self.start()
         dump = DumpFile(fd)
         self.queue.append(dump)
+
 
 
 

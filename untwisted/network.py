@@ -3,6 +3,7 @@ from untwisted.event import READ, WRITE, EXPT, ERROR
 from untwisted.dispatcher import *
 from untwisted.core import die
 from untwisted import core
+from untwisted.wrappers import *
 
 class SuperSocket(Dispatcher):
     """
@@ -13,20 +14,11 @@ class SuperSocket(Dispatcher):
         Dispatcher.__init__(self)
         self.fd = fd
         core.gear.register(self)
-
-    def add_map(self, event, handle, *args):
-        Dispatcher.add_map(self, event, handle, *args)
-        # core.gear.scale(self)
-
-    def del_map(self, event, handle, *args):
-        Dispatcher.del_map(self, event, handle, *args)
-        # core.gear.scale(self)
+        self.dead = False
 
     def destroy(self):
-        # self.base.clear()
-        # SSL.base.clear()
-        # del self.pool[:]
         core.gear.unregister(self)
+        self.dead = True
 
 class SSL(SuperSocket):
     """
@@ -39,9 +31,6 @@ class SSL(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
-
-    def destroy(self):
-        core.gear.unregister(self)
 
 class Spin(socket, SuperSocket):
     """
@@ -69,6 +58,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
