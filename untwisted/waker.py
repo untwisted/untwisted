@@ -1,5 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.network import Spin, xmap
+from untwisted.network import Spin
 from untwisted.event import READ
 from threading import Lock
 
@@ -16,7 +16,7 @@ class Waker(object):
         def consume(spin):
             spin.recv(self.MAX_SIZE)
 
-        xmap(client, READ, consume)
+        client.add_map(READ, consume)
 
         self.con, addr  = server.accept()
         self.lock       = Lock()
@@ -26,6 +26,7 @@ class Waker(object):
             self.con.send(' ')
     
 waker = Waker()
+
 
 
 
