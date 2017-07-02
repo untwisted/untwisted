@@ -28,6 +28,7 @@ WRITE            = get_event()
 EXPT             = get_event()
 ERROR            = get_event()
 DESTROY          = get_event()
+LOST             = get_event()
 CLOSE            = get_event()
 ACCEPT           = get_event()
 CONNECT          = get_event()
@@ -47,6 +48,7 @@ SSL_RECV_ERR        = get_event()
 SSL_CERTIFICATE_ERR = get_event()
 SSL_CONNECT_ERR     = get_event()
 SSL_CONNECT         = get_event()
+
 
 
 

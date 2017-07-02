@@ -18,10 +18,8 @@ class SuperSocket(Dispatcher):
     def destroy(self):
         # If it is already dead then does nothing.
         # It warrants DESTROY is spawned just once.
-        if self.dead: return
         core.gear.unregister(self)
         self.dead = True
-        self.drive(DESTROY)
 
 class SSL(SuperSocket):
     """

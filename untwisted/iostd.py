@@ -4,7 +4,7 @@ from untwisted.client import *
 from untwisted.stdin import *
 from untwisted.stdout import *
 from untwisted.server import *
-from untwisted.event import CLOSE_ERR
+from untwisted.event import CLOSE_ERR, LOST
 
 def lose(spin):
     """
@@ -23,6 +23,7 @@ def lose(spin):
         spin.drive(CLOSE_ERR, err)
     finally:
         spin.destroy()
+        spin.drive(LOST)
 
 def put(spin, data):
     """
@@ -80,6 +81,7 @@ def create_client(addr, port):
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 

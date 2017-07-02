@@ -1,5 +1,6 @@
 from untwisted import iostd
 from untwisted.event import CLOSE, LOAD, DUMPED
+from iostd import lose
 import os
 
 class DumpStr(iostd.DumpStr):
@@ -60,12 +61,7 @@ class Stdout(iostd.Stdout):
         else: 
             dev.drive(LOAD, data)
 
-def lose(device):
-    """
-    It is used to close the device and destroy the Device instance.
-    """
-    device.destroy()
-    device.close()
+
 
 
 
