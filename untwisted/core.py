@@ -281,6 +281,10 @@ class Epoll(Gear):
         """
         """
 
+        # Note: In case of registering for
+        # EPOLLERR	Error condition happened on the assoc. fd
+        # When a connection is tried and it is refused
+        # it would spawn twice CONNECT_ERR.
         is_readable = EPOLLIN  if spin.base.get(READ) else 0 
         is_writable = EPOLLOUT if spin.base.get(WRITE) else 0
         mask        = is_readable | is_writable
@@ -325,6 +329,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

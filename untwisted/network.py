@@ -17,6 +17,9 @@ class SuperSocket(Dispatcher):
         self.dead = False
 
     def destroy(self):
+        # If it is already dead then does nothing.
+        # It warrants DESTROY is spawned just once.
+        if self.dead: return
         core.gear.unregister(self)
         self.dead = True
         self.drive(DESTROY)
@@ -59,6 +62,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
