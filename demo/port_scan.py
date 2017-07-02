@@ -22,7 +22,8 @@ def scan(addr, min, max):
     task = Task()
     for ind in xrange(min, max):
         task.add(create_connection(addr, ind), CONNECT, CONNECT_ERR)
-    
+
+    task.start()    
     xmap(task, DONE, lambda task: die())
 
 if __name__ == '__main__':
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
+
 
 
 

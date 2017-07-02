@@ -16,8 +16,6 @@ class SuperSocket(Dispatcher):
         self.dead = False
 
     def destroy(self):
-        # If it is already dead then does nothing.
-        # It warrants DESTROY is spawned just once.
         core.gear.unregister(self)
         self.dead = True
 

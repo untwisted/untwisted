@@ -8,8 +8,10 @@ class Task(Dispatcher):
 
     def __init__(self):
         Dispatcher.__init__(self)
-        core.gear.pool.append(self)
         self.count = 0
+
+    def start(self):
+        core.gear.pool.append(self)
 
     def add(self, dispatcher, *events):
         """
