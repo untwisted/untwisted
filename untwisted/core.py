@@ -70,7 +70,7 @@ class Gear(object):
         user of the class except he knows what he is
         doing.
         """
-        for ind in self.pool:
+        for ind in self.pool[:]:
             ind.update()
 
     def update(self):
@@ -329,6 +329,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

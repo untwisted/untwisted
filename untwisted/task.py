@@ -1,5 +1,6 @@
 from untwisted.dispatcher import Dispatcher
 from untwisted.event import DONE
+from untwisted import core
 
 class Task(Dispatcher):
     """
@@ -7,25 +8,26 @@ class Task(Dispatcher):
 
     def __init__(self):
         Dispatcher.__init__(self)
+        core.gear.pool.append(self)
         self.count = 0
 
     def add(self, dispatcher, *events):
         """
         """
-
         self.count = self.count + 1
         for ind in events:
-            dispatcher.add_map(ind, self.is_done, events)
+            dispatcher.add_map(ind, self.unpin, events)
 
-    def is_done(self, dispatcher, *args):
+    def unpin(self, dispatcher, *args):
+        for ind in args[-1]:
+            dispatcher.del_map(ind, self.unpin, args[-1])
         self.count = self.count - 1
 
-        for ind in args[-1]:
-            dispatcher.del_map(ind, self.is_done, args[-1])
-
-        if not self.count: 
-            self.drive(DONE)
-
+    def update(self):
+        if self.count: return
+        self.drive(DONE)
+        core.gear.pool.remove(self)
+        
 
 
 
