@@ -1,5 +1,5 @@
 from socket import socket
-from untwisted.event import READ, WRITE, EXPT, ERROR
+from untwisted.event import READ, WRITE, EXPT, ERROR, DESTROY
 from untwisted.dispatcher import *
 from untwisted.core import die
 from untwisted import core
@@ -19,6 +19,7 @@ class SuperSocket(Dispatcher):
     def destroy(self):
         core.gear.unregister(self)
         self.dead = True
+        self.drive(DESTROY)
 
 class SSL(SuperSocket):
     """
@@ -58,6 +59,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
