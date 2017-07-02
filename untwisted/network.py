@@ -1,5 +1,6 @@
 from socket import socket
 from untwisted.event import READ, WRITE, EXPT, ERROR, DESTROY
+from untwisted.core import die
 from untwisted.dispatcher import *
 from untwisted import core
 from untwisted.wrappers import *
@@ -57,6 +58,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
