@@ -27,9 +27,8 @@ class Handshake(object):
         except ssl.SSLWantWriteError:
             pass
         except socket.error as excpt:
-            # When it happens then it should spawn CLOSE.
-            # Otherwise it keeps throwing errno 0.
-            spin.drive(CLOSE, excpt.args[0])
+            # When it happens then it should spawn SSL_CONNECT_ERR.
+            spin.drive(SSL_CONNECT_ERR, excpt)
         except ssl.SSLError as excpt:
             spin.drive(SSL_CONNECT_ERR, excpt)
         else:
@@ -40,6 +39,7 @@ class ClientSSL(Client):
     def update(self, spin):
         Client.update(self, spin)
         Handshake(spin)
+
 
 
 
