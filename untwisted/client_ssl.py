@@ -2,7 +2,7 @@ from untwisted.network import SSL
 from untwisted.client import Client
 from untwisted.exceptions import Erase
 from untwisted.event import WRITE, SSL_CERTIFICATE_ERR, \
-SSL_CONNECT_ERR, SSL_CONNECT, CLOSE
+SSL_CONNECT_ERR, SSL_CONNECT, CLOSE, CONNECT
 from untwisted.errors import CLOSE_ERR_CODE
 import socket
 import ssl
@@ -35,14 +35,11 @@ class Handshake(object):
             spin.drive(SSL_CONNECT)
             raise Erase
 
-class ClientSSL(Client):
+class ClientSSL(object):
+    def __init__(self, spin):
+        Client(spin)
+        spin.add_map(CONNECT, self.update)
+
     def update(self, spin):
-        Client.update(self, spin)
+        spin.del_map(CONNECT, self.update)
         Handshake(spin)
-
-
-
-
-
-
-

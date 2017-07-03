@@ -16,6 +16,7 @@ class DumpStrSSL(DumpStr):
         except ssl.SSLWantWriteError:
             spin.drive(SSL_SEND_ERR, spin, excpt)
         except ssl.SSLEOFError as excpt:
+            print excpt
             pass
         except ssl.SSLError as excpt:
             spin.drive(CLOSE, excpt)
@@ -26,6 +27,7 @@ class DumpStrSSL(DumpStr):
 
 class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
+
 
 
 

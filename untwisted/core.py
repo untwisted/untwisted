@@ -60,6 +60,9 @@ class Gear(object):
         # suitably to their needs.
 
                 break
+            except KeyboardInterrupt:
+                print self.base
+                raise
 
     def process_pool(self):
         """ 
@@ -329,6 +332,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 
