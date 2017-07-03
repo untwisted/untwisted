@@ -1,4 +1,4 @@
-from socket import socket
+from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.event import READ, WRITE
 from untwisted.core import die
 from untwisted.dispatcher import *
@@ -32,15 +32,18 @@ class SSL(SuperSocket):
     def __getattr__(self, name):
         return getattr(self.sock, name)
 
-class Spin(socket, SuperSocket):
+class Spin(SuperSocket):
     """
     The dispatching system for sockets.
     """
 
     def __init__(self, sock=None):
-        socket.__init__(self, _sock = sock._sock if sock else None)
-        self.setblocking(0) 
-        SuperSocket.__init__(self, self.fileno())
+        self.sock = sock if sock else socket()
+        SuperSocket.__init__(self, self.sock.fileno())
+        self.sock.setblocking(0) 
+
+    def __getattr__(self, name):
+        return getattr(self.sock, name)
 
 class Device(SuperSocket):
     """
@@ -58,6 +61,7 @@ class Device(SuperSocket):
 
     def __getattr__(self, name):
         return getattr(self.device, name)
+
 
 
 
