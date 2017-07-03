@@ -74,13 +74,18 @@ def create_client(addr, port):
     client = create_client('www.google.com.br', 80)
     xmap(client, CONNECT, send_data)
     """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    spin = Spin()
+    # First attempt to connect otherwise it leaves
+    # an unconnected spin instance in the reactor.
+    sock.connect_ex((addr, port))
+
+    spin = Spin(sock)
     Client(spin)
-    spin.connect_as((addr, port))
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 

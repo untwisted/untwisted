@@ -29,22 +29,9 @@ class Spin(SuperSocket):
         self.sock = sock if sock else socket()
         SuperSocket.__init__(self, self.sock.fileno())
         self.sock.setblocking(0) 
-        self.con_err = None
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
-
-    def connect_as(self, *args):
-        """
-        This method warrants no exception is going to be thrown
-        even with gaierrors. it sets self.con_err
-        to the exception it was raised.
-        """
-
-        try:
-            self.sock.connect_ex(*args)
-        except Exception as e:
-            self.con_err = e
 
 class Device(SuperSocket):
     """
@@ -70,6 +57,7 @@ class SSL(Spin):
     """
 
     pass
+
 
 
 

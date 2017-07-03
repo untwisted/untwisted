@@ -19,10 +19,11 @@ class Client(object):
         spin.del_map(WRITE, self.update)
         err = spin.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
 
-        if err != 0 or spin.con_err:
+        if err != 0:
             spin.drive(CONNECT_ERR, err)
         else:
             spin.drive(CONNECT)
+
 
 
 
