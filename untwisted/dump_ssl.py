@@ -5,6 +5,10 @@ import ssl
 
 class DumpStrSSL(DumpStr):
     def process(self, spin):
+        # When ssl.SSLEOFError happens it shouldnt spawn CLOSE
+        # because there may exist data to be read.
+        # If it spawns CLOSE the socket is closed and no data
+        # can be read from.
         try:
             size = spin.send(self.data)  
         except ssl.SSLWantReadError:
