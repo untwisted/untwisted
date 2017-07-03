@@ -77,10 +77,11 @@ def create_client(addr, port):
 
     spin = Spin()
     Client(spin)
-    spin.connect_ex((addr, port))
+    spin.connect_as((addr, port))
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 

@@ -20,7 +20,7 @@ def create_client_ssl(addr, port):
     con     = SSL(context.wrap_socket(sock, 
     do_handshake_on_connect=False, server_hostname=addr))
 
-    con.connect_ex((addr, port))
+    con.connect_as((addr, port))
 
     ClientSSL(con)
     con.add_map(SSL_CONNECT, install_ssl_handles)
@@ -31,6 +31,7 @@ def create_client_ssl(addr, port):
 
 def create_server_ssl():
     pass
+
 
 
 

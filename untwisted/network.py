@@ -20,18 +20,6 @@ class SuperSocket(Dispatcher):
         core.gear.unregister(self)
         self.dead = True
 
-class SSL(SuperSocket):
-    """
-    Dispatching system for SSL sockets.
-    """
-    def __init__(self, sock):
-        self.sock = sock
-        SuperSocket.__init__(self, sock.fileno())
-        self.sock.setblocking(0) 
-
-    def __getattr__(self, name):
-        return getattr(self.sock, name)
-
 class Spin(SuperSocket):
     """
     The dispatching system for sockets.
@@ -41,14 +29,28 @@ class Spin(SuperSocket):
         self.sock = sock if sock else socket()
         SuperSocket.__init__(self, self.sock.fileno())
         self.sock.setblocking(0) 
+        self.con_err = None
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
+
+    def connect_as(self, *args):
+        """
+        This method warrants no exception is going to be thrown
+        even with gaierrors. it sets self.con_err
+        to the exception it was raised.
+        """
+
+        try:
+            self.sock.connect_ex(*args)
+        except Exception as e:
+            self.con_err = e
 
 class Device(SuperSocket):
     """
     The dispatching system for child processes.
     """
+
     def __init__(self, device):
         from os import O_NONBLOCK
         from fcntl import fcntl, F_GETFL, F_SETFL
@@ -62,16 +64,12 @@ class Device(SuperSocket):
     def __getattr__(self, name):
         return getattr(self.device, name)
 
+class SSL(Spin):
+    """
+    Dispatching system for SSL sockets.
+    """
 
-
-
-
-
-
-
-
-
-
+    pass
 
 
 
