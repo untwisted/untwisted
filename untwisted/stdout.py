@@ -1,5 +1,5 @@
 from untwisted.event import CLOSE, RECV_ERR, READ, LOAD
-from untwisted.errors import CLOSE_ERR_CODE
+from untwisted.errors import CLOSE_ERR_CODE, RECV_ERR_CODE
 import socket
 
 class Stdout(object):
@@ -23,7 +23,7 @@ class Stdout(object):
         try:
             self.process_data(spin)
         except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
+            self.process_error(spin, excpt)
 
     def process_data(self, spin):
         data = spin.recv(self.SIZE)
@@ -34,10 +34,13 @@ class Stdout(object):
         if not data: raise socket.error('')
         spin.drive(LOAD, data)
 
-    def process_error(self, spin, err):
-        if err in CLOSE_ERR_CODE: 
-            spin.drive(CLOSE, err)
-        else: 
-            spin.drive(RECV_ERR, err)
+    def process_error(self, spin, excpt):
+        if excpt.args[0] in RECV_ERR_CODE:
+            spin.drive(RECV_ERR, excpt)
+        elif excpt.args[0] in CLOSE_ERR_CODE: 
+            spin.drive(CLOSE, excpt)
+        else:
+            raise excpt
+
 
 

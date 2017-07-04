@@ -20,12 +20,13 @@ class DumpStrSSL(DumpStr):
         except ssl.SSLError as excpt:
             spin.drive(CLOSE, excpt)
         except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
+            self.process_error(spin, excpt)
         else:
             self.data = buffer(self.data, size)
 
 class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
+
 
 
 

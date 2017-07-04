@@ -15,7 +15,8 @@ class StdoutSSL(Stdout):
         except ssl.SSLError as excpt:
             spin.drive(CLOSE, spin, excpt)
         except socket.error as excpt:
-            self.process_error(spin, excpt.args[0])
+            self.process_error(spin, excpt)
+
 
 
 
