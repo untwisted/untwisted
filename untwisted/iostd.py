@@ -49,8 +49,8 @@ def create_server(addr, port, backlog):
     """
 
     server = Spin()
-    server.bind(('', 1234))
-    server.listen(200)
+    server.bind((addr, port))
+    server.listen(backlog)
     Server(server)
     server.add_map(ACCEPT, lambda server, spin: install_basic_handles(spin))
     return server
@@ -85,6 +85,7 @@ def create_client(addr, port):
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 
