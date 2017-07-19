@@ -9,7 +9,7 @@ class DumpStr(iostd.DumpStr):
         try:
             size = os.write(dev.fd, self.data)  
         except OSError as excpt:
-            self.process_error(dev, excpt.args[0])
+            self.process_error(dev, excpt)
         else:
             self.data = self.data[size:]
 
@@ -53,7 +53,7 @@ class Stdout(iostd.Stdout):
         try:
             self.process_data(dev)
         except OSError as excpt:
-            self.process_error(dev, excpt.args[0])
+            self.process_error(dev, excpt)
 
     def process_data(self, dev):
         data = os.read(dev.fd, self.SIZE)
@@ -61,6 +61,7 @@ class Stdout(iostd.Stdout):
             dev.drive(CLOSE, '') 
         else: 
             dev.drive(LOAD, data)
+
 
 
 

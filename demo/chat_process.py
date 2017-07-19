@@ -20,12 +20,13 @@ stdin   = Device(child.stdin)
 Stdin(stdin)
 Stdout(stdout)
 
-stdin.dump('print "hello world!"\n')
-xmap(stdin, DUMPED, lambda dev: stdin.dump('quit()\n'))
+stdin.dump(b'print "hello world!"\n')
+xmap(stdin, DUMPED, lambda dev: stdin.dump(b'quit()\n'))
 xmap(stdout, LOAD, on_load)
 xmap(stdin, CLOSE, on_close)
 xmap(stdout, CLOSE, on_close)
 
 core.gear.mainloop()
+
 
 
