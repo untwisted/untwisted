@@ -19,7 +19,7 @@ class CalcParser(object):
 
     @handle_exception(ValueError)
     def handle_found(client, data):
-        op, args = data.split(' ', 1)
+        op, args = data.decode('utf8').split(' ', 1)
         args     = list(map(float, args.split(' ')))
         spawn(client, op, args)
 
@@ -33,7 +33,7 @@ class CalcServer(object):
     def handle_accept(self, server, client):
         Stdin(client)
         Stdout(client)
-        Terminator(client, delim='\r\n')
+        Terminator(client, delim=b'\r\n')
         parser = CalcParser(client)
         
         xmap(client, 'add', self. on_add)    
@@ -51,7 +51,7 @@ class CalcServer(object):
         self.send_msg(client, reduce(operator.sub, args, 0))
 
     def on_div(self, client, args):
-        self.send_msg(client, reduce(operator.div, args, args.pop(0)))
+        self.send_msg(client, reduce(operator.truediv, args, args.pop(0)))
 
     def on_mul(self, client, args):
         self.send_msg(client, reduce(operator.mul, args, args.pop(0)))
@@ -64,7 +64,7 @@ class CalcServer(object):
         client.close()
 
     def send_msg(self, client, msg):
-        client.dump('%s\r\n' % msg)
+        client.dump(('%s\r\n' % msg).encode('utf8'))
 
 if __name__ == '__main__':
     server = Spin()
@@ -74,6 +74,7 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
+
 
 
 
