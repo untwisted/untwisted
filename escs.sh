@@ -61,12 +61,20 @@ gh-md-toc BOOK.md > table.md
 vy table.md
 rm table.md
 ##############################################################################
-# install, untwisted.
+# install, python2, untwisted.
 sudo bash -i
 cd /home/tau/projects/untwisted-code
 python2 setup.py install
 rm -fr build
 exit
+##############################################################################
+# install, python3, untwisted.
+sudo bash -i
+cd /home/tau/projects/untwisted-code
+python3 setup.py install
+rm -fr build
+exit
+
 ##############################################################################
 # remove, uninstall, global, delete, untwisted.
 sudo bash -i
@@ -86,4 +94,20 @@ cd ~/projects/untwisted-code
 python2 setup.py sdist register upload
 rm -fr dist
 ##############################################################################
+# futurize code.
+
+cd ~/projects/untwisted-code
+futurize --stage1 -w **/*.py
+
+# Check changes.
+futurize --stage2 **/*.py
+
+# Apply the changes.
+futurize --stage2 -w **/*.py
+
+# Clear stuff.
+find . -name "*.bak" -exec rm -f {} \;
+
+##############################################################################
+
 

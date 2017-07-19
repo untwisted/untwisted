@@ -22,10 +22,11 @@ class DumpStrSSL(DumpStr):
         except socket.error as excpt:
             self.process_error(spin, excpt)
         else:
-            self.data = buffer(self.data, size)
+            self.data = self.data[size:]
 
 class DumpFileSSL(DumpStrSSL, DumpFile):
     pass
+
 
 
 

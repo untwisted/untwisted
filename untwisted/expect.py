@@ -1,6 +1,8 @@
+from future import standard_library
+standard_library.install_aliases()
 from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from os import environ 
 from untwisted.dispatcher import Dispatcher
 from untwisted import core
@@ -42,15 +44,19 @@ class Expect(Thread, Dispatcher):
         """
         Send data to the child process through.
         """
-
         self.stdin.write(data)
+        self.stdin.flush()
 
     def run(self):
         """
         """
 
-        while self.feed():
+        while True:
+            data = self.feed()
             waker.wake_up()
+            if not data: 
+                break
+
         self.child.wait()
 
     def feed(self):
@@ -82,6 +88,7 @@ class Expect(Thread, Dispatcher):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
 

@@ -1,3 +1,4 @@
+from builtins import object
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.network import Spin
 from untwisted.event import READ
@@ -23,9 +24,10 @@ class Waker(object):
 
     def wake_up(self):
         with self.lock:
-            self.con.send(' ')
+            self.con.send(b' ')
     
 waker = Waker()
+
 
 
 

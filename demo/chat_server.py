@@ -1,6 +1,7 @@
 """
 """
 
+from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator

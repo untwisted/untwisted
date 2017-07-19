@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted.event import CLOSE, RECV_ERR, READ, LOAD
 from untwisted.errors import CLOSE_ERR_CODE, RECV_ERR_CODE
 import socket

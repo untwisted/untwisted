@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted.core import Kill, Root
 from untwisted.exceptions import Stop, Erase
 from untwisted.debug import debug
@@ -26,7 +27,7 @@ class Dispatcher(object):
                 break
             except StopIteration:
                 pass
-            except Kill, Root:
+            except Kill as Root:
                 raise
             except Erase:
                 maps.remove((handle, data))
@@ -51,8 +52,7 @@ class Dispatcher(object):
         if args:
             self.base[event].remove((handle, args))
         else:
-            self.base[event] = filter(lambda ind: 
-                        ind[0] != handle, self.base[event])
+            self.base[event] = [ind for ind in self.base[event] if ind[0] != handle]
 
     def install_maps(self, *args):
         """

@@ -1,6 +1,8 @@
 """
 """
+from __future__ import print_function
 
+from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import *
 from untwisted.splits import Terminator
@@ -42,7 +44,7 @@ class IrcHub(object):
         irc.connect_ex((self.irc_address, self.irc_port))
 
     def handle_connect(self, irc):
-        print 'Connection to %s:%s stablished.' % irc.getpeername()
+        print('Connection to %s:%s stablished.' % irc.getpeername())
 
 
     def down_connection(self, transport, err):
@@ -53,7 +55,7 @@ class IrcHub(object):
 
     def handle_found(self, transport, data):
         transport.arrow.dump('%s\r\n' % data)
-        print data
+        print(data)
 
 if __name__ == '__main__':
     import sys

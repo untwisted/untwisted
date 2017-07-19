@@ -1,6 +1,8 @@
 """ 
 """
+from __future__ import print_function
 
+from builtins import range
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Client, lose, CONNECT, CONNECT_ERR
 from untwisted.task import Task, DONE
@@ -8,7 +10,7 @@ from untwisted.network import die
 from socket import *
 
 def is_open(spin, port):
-    print 'Port %s is open.' % port
+    print('Port %s is open.' % port)
 
 def create_connection(addr, port):
     sock = socket(AF_INET, SOCK_STREAM)
@@ -20,7 +22,7 @@ def create_connection(addr, port):
 
 def scan(addr, min, max):
     task = Task()
-    for ind in xrange(min, max):
+    for ind in range(min, max):
         task.add(create_connection(addr, ind), CONNECT, CONNECT_ERR)
 
     task.start()    

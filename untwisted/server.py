@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted.errors import ACCEPT_ERR_CODE
 from untwisted.event import ACCEPT, ACCEPT_ERR, READ
 from untwisted.network import Spin

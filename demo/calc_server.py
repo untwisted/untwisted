@@ -1,11 +1,14 @@
 """
 """
 
+from builtins import map
+from builtins import object
 from untwisted.network import core, Spin, xmap, spawn
 from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
 from untwisted.splits import Terminator
 from untwisted.tools import handle_exception
 import operator
+from functools import reduce
 
 class CalcParser(object):
     """
@@ -17,7 +20,7 @@ class CalcParser(object):
     @handle_exception(ValueError)
     def handle_found(client, data):
         op, args = data.split(' ', 1)
-        args     = map(float, args.split(' '))
+        args     = list(map(float, args.split(' ')))
         spawn(client, op, args)
 
 class CalcServer(object):

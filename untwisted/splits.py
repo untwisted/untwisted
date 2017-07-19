@@ -1,3 +1,6 @@
+from builtins import str
+from builtins import range
+from builtins import object
 from untwisted.event import LOAD, READ, WRITE, get_event
 import sys
 
@@ -23,7 +26,7 @@ class Fixed(object):
     def update(self, spin, data):
         self.arr.extend(data)
 
-        for ind in xrange(self.size, len(self.arr) + 1, self.size):
+        for ind in range(self.size, len(self.arr) + 1, self.size):
             chunk = buffer(self.arr, ind - self.size, self.size)
             spin.drive(Fixed.FOUND, chunk)
         else:
@@ -50,7 +53,7 @@ class Breaker(object):
     
     """
 
-    def __init__(self, device, delim=' '):
+    def __init__(self, device, delim=b' '):
         self.delim = delim
         device.add_map(Terminator.FOUND, self.handle_found)
 
@@ -58,7 +61,7 @@ class Breaker(object):
         lst = data.split(self.delim)
         device.drive(lst.pop(0), *lst)
 
-class Terminator:
+class Terminator(object):
     """
     A handle for application layer protocols that use '\r\n' as token.
 
@@ -74,19 +77,20 @@ class Terminator:
     """
 
     FOUND = get_event()
-    def __init__(self, spin, delim='\r\n'):
+    def __init__(self, spin, delim=b'\r\n'):
         self.delim  = delim
         self.arr    = bytearray()
 
         spin.add_map(LOAD, self.update)
 
     def update(self, spin, data):
+        # Can be optmized receiving.
         self.arr.extend(data)
 
         if not self.delim in data:
             return
 
-        data = str(self.arr)
+        data = bytes(self.arr)
         lst  = data.split(self.delim)
         del self.arr[:]
         self.arr.extend(lst.pop(-1))
@@ -101,14 +105,14 @@ class Accumulator(object):
     def __init__(self, spin):
         spin.add_map(LOAD, self.update)
         spin.accumulator  = self
-        self.data = ''
+        self.data = bytearray()
 
     def update(self, spin, data):
-        self.data = self.data + data
+        self.data.extend(data)
 
 class AccUntil(object):
     DONE = get_event()
-    def __init__(self, spin, data='', delim='\r\n\r\n'):
+    def __init__(self, spin, data=b'', delim=b'\r\n\r\n'):
         self.delim = delim
         self.arr   = bytearray()
         self.spin  = spin
@@ -122,8 +126,9 @@ class AccUntil(object):
 
     def process(self, spin):
         spin.del_map(LOAD, self.update)
-        a, b = self.arr.split(self.delim, 1)
-        spin.drive(AccUntil.DONE, str(a), str(b))
+        data = bytes(self.arr)
+        a, b = data.split(self.delim, 1)
+        spin.drive(AccUntil.DONE, a, b)
 
 class TmpFile(object):
     DONE = get_event()
@@ -164,6 +169,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     spin.add_map(Terminator.FOUND, log)
+
 
 
 

@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 from untwisted import iostd
 from untwisted.event import CLOSE, LOAD, DUMPED
-from iostd import lose
+from .iostd import lose
 import os
 
 class DumpStr(iostd.DumpStr):
@@ -10,7 +11,7 @@ class DumpStr(iostd.DumpStr):
         except OSError as excpt:
             self.process_error(dev, excpt.args[0])
         else:
-            self.data = buffer(self.data, size)
+            self.data = self.data[size:]
 
 class DumpFile(DumpStr, iostd.DumpFile):
     pass
@@ -60,6 +61,7 @@ class Stdout(iostd.Stdout):
             dev.drive(CLOSE, '') 
         else: 
             dev.drive(LOAD, data)
+
 
 
 

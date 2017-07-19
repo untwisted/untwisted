@@ -1,4 +1,5 @@
 # It imports basic objects.
+from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Server, Stdin, ACCEPT, CLOSE
 from time import asctime

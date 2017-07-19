@@ -1,12 +1,13 @@
+from __future__ import print_function
 from untwisted.network import core, Spin, xmap, die
 from untwisted.iostd import Client, CONNECT, CONNECT_ERR
 import errno
 
 def on_connect(con, addr, port):
-    print 'Connected to %s:%s !' % (addr, port)
+    print('Connected to %s:%s !' % (addr, port))
 
 def on_connect_err(con, err, addr, port):
-    print "Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err]
+    print("Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err])
 
 def create_connection(addr, port):
     con = Spin()

@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted.network import SSL
 from untwisted.client import Client
 from untwisted.exceptions import Erase

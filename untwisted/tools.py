@@ -1,3 +1,5 @@
+from builtins import next
+from builtins import object
 from untwisted.exceptions import Erase
 
 class Hold(object):

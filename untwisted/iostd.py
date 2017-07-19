@@ -1,3 +1,4 @@
+from __future__ import print_function
 from untwisted.network import Spin
 
 from untwisted.client import *
@@ -31,7 +32,7 @@ def put(spin, data):
     
     xmap(con, LOAD, put)
     """
-    print data
+    print(data)
 
 def create_server(addr, port, backlog):
     """

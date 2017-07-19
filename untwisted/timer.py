@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted import core
 import bisect
 import time

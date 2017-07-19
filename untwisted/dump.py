@@ -1,3 +1,4 @@
+from builtins import object
 from untwisted.errors import CLOSE_ERR_CODE, SEND_ERR_CODE
 from untwisted.event import CLOSE, SEND_ERR
 import socket
@@ -15,7 +16,7 @@ class DumpStr(Dump):
     __slots__ = 'data'
 
     def __init__(self, data=''):
-        self.data = buffer(data)
+        self.data = memoryview(data)
 
     def process(self, spin):
         try:
@@ -23,9 +24,9 @@ class DumpStr(Dump):
         except socket.error as excpt:
             self.process_error(spin, excpt)
         else:
-            self.data = buffer(self.data, size)
+            self.data = self.data[size:]
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.data)
 
 class DumpFile(DumpStr):
@@ -48,7 +49,8 @@ class DumpFile(DumpStr):
         except IOError as excpt:
             spin.drive(READ_ERR, excpt)
         else:
-            self.data = buffer(data)
+            self.data = memoryview(data)
+
 
 
 

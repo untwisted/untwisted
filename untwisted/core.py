@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import object
 from untwisted.event import READ, WRITE, ERROR, EXPT
 from select import *
 from socket import *
@@ -13,7 +15,7 @@ def die(msg=''):
     It is used to stop the reactor.
     """
 
-    print msg
+    print(msg)
     raise Kill
 
 class Gear(object):
@@ -61,7 +63,7 @@ class Gear(object):
 
                 break
             except KeyboardInterrupt:
-                print self.base
+                print(self.base)
                 raise
 
     def process_pool(self):
@@ -243,7 +245,7 @@ class Epoll(Gear):
         """
         """
 
-        for ind in self.base.itervalues():
+        for ind in self.base.values():
             self.scale(ind)
 
         events = self.pollster.poll(self.timeout) 
