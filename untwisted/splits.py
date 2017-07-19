@@ -27,8 +27,7 @@ class Fixed(object):
         self.arr.extend(data)
 
         for ind in range(self.size, len(self.arr) + 1, self.size):
-            chunk = buffer(self.arr, ind - self.size, self.size)
-            spin.drive(Fixed.FOUND, chunk)
+            spin.drive(Fixed.FOUND, bytes(self.arr[ind - self.size, self.size]))
         else:
             try:
                del self.arr[:ind]
