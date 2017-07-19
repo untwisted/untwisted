@@ -30,6 +30,7 @@ that if you like clean, consistent and high performance code then untwisted is f
 This neat piece of code implements a basic echo server.
 
 ~~~python
+from builtins import object
 from untwisted.network import Spin, xmap, core
 from untwisted.iostd import create_server, ACCEPT, LOAD
 
@@ -47,10 +48,9 @@ if __name__ == '__main__':
 
 ### Chat Server
 
-This simple chat server permits clients to connect through telnet protocol, 
-pick up a nick then start chatting.
-
 ~~~python
+
+from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator
@@ -63,10 +63,10 @@ class ChatServer(object):
 
     @coroutine
     def handle_accept(self, server, client):
-        Terminator(client, delim='\r\n')
+        Terminator(client, delim=b'\r\n')
         xmap(client, CLOSE, lambda client, err: self.pool.remove(client))
 
-        client.dump('Type a nick.\r\nNick:')    
+        client.dump(b'Type a nick.\r\nNick:')    
         client.nick, = yield client, Terminator.FOUND
 
         xmap(client, Terminator.FOUND, self.echo_msg)
@@ -75,12 +75,13 @@ class ChatServer(object):
     def echo_msg(self, client, data):
         for ind in self.pool:
             if not ind is client:
-                ind.dump('%s:%s\r\n' % (client.nick, data))
+                ind.dump(b'%s:%s\r\n' % (client.nick, data))
 
 if __name__ == '__main__':
     server = create_server('', 1234, 5)
     ChatServer(server)
     core.gear.mainloop()
+
 ~~~
 
 
@@ -89,23 +90,33 @@ if __name__ == '__main__':
 The example below spawns a python process then sends a line of code.
 
 ~~~python
+from __future__ import print_function
 from untwisted.expect import Expect, LOAD, CLOSE
 from untwisted.network import core, xmap, die
 
 def handle(expect, data):
-    print data
+    print(data)
 
+def on_close(expect):
+    print('Closing..')
+    die()
+
+# expect = Expect('telnet', '0.0.0.0', '1234')
 expect = Expect('python', '-i', '-u')
+
+expect.send(b'print("hello world");quit();\n\n')
+
 xmap(expect, LOAD, handle)
-xmap(expect, CLOSE, lambda expect: die())
-expect.send('print "hello world"\nquit()\n')
+xmap(expect, CLOSE, on_close)
+
 core.gear.mainloop()
+
 ~~~
 
 Install
 =======
 
-Untwisted depends on python2.
+Untwisted would run on both python2 or python3.
 
     pip install untwisted
 
@@ -153,6 +164,7 @@ Support
 
 **Channel:** #untwisted
  
+
 
 
 
