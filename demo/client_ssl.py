@@ -8,7 +8,7 @@ import ssl
 def on_connect(con, host):
     StdinSSL(con)
     StdoutSSL(con)
-    con.dump("GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % host)
+    con.dump(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % host.encode('utf8'))
     xmap(con, LOAD, put)
     xmap(con, CLOSE, lambda con, err: lose(con))
 
@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     main(opt.addr, opt.port, opt.host)
     core.gear.mainloop()
+
 
 
 
