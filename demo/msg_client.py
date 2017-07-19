@@ -6,7 +6,7 @@ from untwisted.core import die
 def setup(con, msg):
     Stdout(con)
     Stdin(con)
-    con.dump(msg)
+    con.dump(msg.encode('utf8'))
     xmap(con, DUMPED, lambda con: die('Msg dumped!'))
 
 def create_connection(addr, port, msg):
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     (opt, args) = parser.parse_args()
     create_connection(opt.addr, opt.port, opt.msg)
     core.gear.mainloop()
+
 
 
 
