@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
 
 from distutils.core import setup
 setup(name="untwisted",
@@ -11,6 +11,7 @@ setup(name="untwisted",
       keywords=['asynchronous', 'programming', 'twisted', 'untwisted', 'library', 'framework', 'networking', 'protocols', 'rapidserv', 'irc', 'requests'],
       classifiers=[],
       description="A library for asynchronous programming in python.",)
+
 
 
 
