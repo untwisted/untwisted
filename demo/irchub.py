@@ -21,29 +21,29 @@ class IrcHub(object):
         xmap(server, ACCEPT, self.handle_accept)
 
     def handle_accept(self, server, client):
-        Stdin(client)
-        Stdout(client)
-        Terminator(client, delim='\r\n')
-
-        xmap(client, Terminator.FOUND, self.handle_found)
-        xmap(client, CLOSE, self.down_connection)
-
         irc = Spin()
         Client(irc)
+        xmap(irc, CONNECT, self.handle_connect, client)
+        xmap(irc, CONNECT_ERR, self.down_connection)
+
+        irc.connect_ex((self.irc_address, self.irc_port))
+
+    def handle_connect(self, irc, client):
+        Stdin(client)
+        Stdout(client)
+        Terminator(client, delim=b'\r\n')
         Stdin(irc)
         Stdout(irc)
-        Shrug(irc, delim='\r\n')
+        Terminator(irc, delim=b'\r\n')
         xmap(irc, Terminator.FOUND, self.handle_found)
-        xmap(irc, CONNECT, self.handle_connect)
-        xmap(irc, CONNECT_ERR, self.down_connection)
         xmap(irc, CLOSE, self.down_connection)
+        xmap(client, CLOSE, self.down_connection)
+        xmap(client, Terminator.FOUND, self.handle_found)
 
         irc.arrow    = client
         client.arrow = irc
-        
-        irc.connect_ex((self.irc_address, self.irc_port))
 
-    def handle_connect(self, irc):
+        print('Client Connected', irc.getpeername())
         print('Connection to %s:%s stablished.' % irc.getpeername())
 
 
@@ -54,7 +54,7 @@ class IrcHub(object):
         transport.destroy()
 
     def handle_found(self, transport, data):
-        transport.arrow.dump('%s\r\n' % data)
+        transport.arrow.dump(b'%s\r\n' % data)
         print(data)
 
 if __name__ == '__main__':
@@ -63,6 +63,7 @@ if __name__ == '__main__':
     script, server_port, backlog, target_address, target_port = sys.argv
     IrcHub(int(server_port), int(backlog), target_address, int(target_port))
     core.gear.mainloop()
+
 
 
 
