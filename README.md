@@ -101,7 +101,6 @@ def on_close(expect):
     print('Closing..')
     die()
 
-# expect = Expect('telnet', '0.0.0.0', '1234')
 expect = Expect('python', '-i', '-u')
 
 expect.send(b'print("hello world");quit();\n\n')
