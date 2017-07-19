@@ -14,10 +14,10 @@ class ChatServer(object):
 
     @coroutine
     def handle_accept(self, server, client):
-        Terminator(client, delim='\r\n')
+        Terminator(client, delim=b'\r\n')
         xmap(client, CLOSE, lambda client, err: self.pool.remove(client))
 
-        client.dump('Type a nick.\r\nNick:')    
+        client.dump(b'Type a nick.\r\nNick:')    
         client.nick, = yield client, Terminator.FOUND
 
         xmap(client, Terminator.FOUND, self.echo_msg)
@@ -26,12 +26,13 @@ class ChatServer(object):
     def echo_msg(self, client, data):
         for ind in self.pool:
             if not ind is client:
-                ind.dump('%s:%s\r\n' % (client.nick, data))
+                ind.dump(b'%s:%s\r\n' % (client.nick, data))
 
 if __name__ == '__main__':
     server = create_server('', 1234, 5)
     ChatServer(server)
     core.gear.mainloop()
+
 
 
 
