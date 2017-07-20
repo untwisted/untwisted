@@ -25,15 +25,13 @@ class Fixed(object):
 
     def update(self, spin, data):
         self.arr.extend(data)
-
+        mem  = memoryview(self.arr)
         for ind in range(self.size, len(self.arr) + 1, self.size):
-            spin.drive(Fixed.FOUND, bytes(self.arr[ind - self.size, self.size]))
+            spin.drive(Fixed.FOUND, mem[ind - self.size:ind].tobytes())
         else:
-            try:
-               del self.arr[:ind]
-            except NameError:
-                pass
-
+            del mem
+            del self.arr[:ind]
+    
 class Breaker(object):
     """
     A handle for application layer protocols follows a command scheme pattern.
@@ -169,6 +167,7 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     spin.add_map(Terminator.FOUND, log)
+
 
 
 
