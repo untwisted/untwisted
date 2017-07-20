@@ -15,7 +15,7 @@ class Dump(object):
 class DumpStr(Dump):
     __slots__ = 'data'
 
-    def __init__(self, data=''):
+    def __init__(self, data=b''):
         self.data = memoryview(data)
 
     def process(self, spin):
@@ -50,6 +50,7 @@ class DumpFile(DumpStr):
             spin.drive(READ_ERR, excpt)
         else:
             self.data = memoryview(data)
+
 
 
 
