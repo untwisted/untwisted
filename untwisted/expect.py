@@ -3,7 +3,6 @@ standard_library.install_aliases()
 from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
 from queue import Queue, Empty
-from os import environ 
 from untwisted.dispatcher import Dispatcher
 from untwisted import core
 from untwisted.event import LOAD, CLOSE
@@ -21,12 +20,13 @@ class Expect(Thread, Dispatcher):
 
     SIZE = 1024 * 124
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         """
 
-        self.child     = Popen(args, shell=0, stdout=PIPE, stdin=PIPE,  
-                                            stderr=STDOUT,  env=environ)
+        self.child = Popen(args, stdout=PIPE, stdin=PIPE,  
+        stderr=STDOUT, **kwargs)
+
         self.stdin     = self.child.stdin
         self.stdout    = self.child.stdout
         self.stderr    = self.child.stderr
@@ -88,6 +88,7 @@ class Expect(Thread, Dispatcher):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
 

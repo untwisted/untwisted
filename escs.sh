@@ -64,7 +64,7 @@ rm table.md
 # install, python2, untwisted.
 sudo bash -i
 cd /home/tau/projects/untwisted-code
-python2 setup.py install
+python setup.py install
 rm -fr build
 exit
 ##############################################################################
@@ -109,5 +109,6 @@ futurize --stage2 -w **/*.py
 find . -name "*.bak" -exec rm -f {} \;
 
 ##############################################################################
+
 
 
