@@ -1,10 +1,9 @@
 from builtins import str
 from builtins import range
-from builtins import object
 from untwisted.event import LOAD, READ, WRITE, get_event
 import sys
 
-class Fixed(object):
+class Fixed:
     """
     A handle for application layers that demand fixed chunk transmission of data.
 
@@ -32,7 +31,7 @@ class Fixed(object):
             del mem
             del self.arr[:ind]
     
-class Breaker(object):
+class Breaker:
     """
     A handle for application layer protocols follows a command scheme pattern.
 
@@ -58,7 +57,7 @@ class Breaker(object):
         lst = data.split(self.delim)
         device.drive(lst.pop(0), *lst)
 
-class Terminator(object):
+class Terminator:
     """
     A handle for application layer protocols that use '\r\n' as token.
 
@@ -95,7 +94,7 @@ class Terminator(object):
         for ind in lst:
             spin.drive(Terminator.FOUND, ind)
             
-class Accumulator(object):
+class Accumulator:
     """
     Just an accumulator on LOAD.
     """
@@ -107,7 +106,7 @@ class Accumulator(object):
     def update(self, spin, data):
         self.data.extend(data)
 
-class AccUntil(object):
+class AccUntil:
     DONE = get_event()
     def __init__(self, spin, data=b'', delim=b'\r\n\r\n'):
         self.delim = delim
@@ -127,7 +126,7 @@ class AccUntil(object):
         a, b = data.split(self.delim, 1)
         spin.drive(AccUntil.DONE, a, b)
 
-class TmpFile(object):
+class TmpFile:
     DONE = get_event()
     def __init__(self, spin, data, max_size, fd):
         self.fd       = fd
@@ -167,10 +166,5 @@ def logcon(spin, fd=sys.stdout):
     def log(spin, data):
         fd.write('%s\n' % data)
     spin.add_map(Terminator.FOUND, log)
-
-
-
-
-
 
 

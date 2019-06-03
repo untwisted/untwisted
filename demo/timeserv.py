@@ -1,10 +1,9 @@
 # It imports basic objects.
-from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Server, Stdin, ACCEPT, CLOSE
 from time import asctime
 
-class TimeServ(object):
+class TimeServ:
     def __init__(self, server):
         xmap(server, ACCEPT, self.handle_accept)
        
@@ -24,6 +23,8 @@ if __name__ == '__main__':
     Server(server)
     TimeServ(server)
     core.gear.mainloop()
+
+
 
 
 

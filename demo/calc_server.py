@@ -2,7 +2,6 @@
 """
 
 from builtins import map
-from builtins import object
 from untwisted.network import core, Spin, xmap, spawn
 from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
 from untwisted.splits import Terminator
@@ -10,7 +9,7 @@ from untwisted.tools import handle_exception
 import operator
 from functools import reduce
 
-class CalcParser(object):
+class CalcParser:
     """
     """
 
@@ -23,7 +22,7 @@ class CalcParser(object):
         args     = list(map(float, args.split(' ')))
         spawn(client, op, args)
 
-class CalcServer(object):
+class CalcServer:
     """ 
     """
 
@@ -74,6 +73,7 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
+
 
 
 

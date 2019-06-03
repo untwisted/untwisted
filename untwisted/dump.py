@@ -1,9 +1,8 @@
-from builtins import object
 from untwisted.errors import CLOSE_ERR_CODE, SEND_ERR_CODE
 from untwisted.event import CLOSE, SEND_ERR
 import socket
 
-class Dump(object):
+class Dump:
     def process_error(self, spin, excpt):
         if excpt.args[0] in SEND_ERR_CODE:
             spin.drive(SEND_ERR, excpt)
@@ -50,6 +49,7 @@ class DumpFile(DumpStr):
             spin.drive(READ_ERR, excpt)
         else:
             self.data = memoryview(data)
+
 
 
 

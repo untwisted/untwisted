@@ -1,8 +1,7 @@
 from builtins import next
-from builtins import object
 from untwisted.exceptions import Erase
 
-class Hold(object):
+class Hold:
     def __init__(self, seq):
         self.seq                    = seq
         self.dispatcher, self.event = next(seq)
@@ -23,7 +22,7 @@ class Hold(object):
         self.dispatcher  = dispatcher
         self.event       = event
 
-class HandleProcessor(object):
+class HandleProcessor:
     def __call__(self, handle):
         self.handle = handle
         return self.process_handle
@@ -51,6 +50,7 @@ def coroutine(handle):
     def start(*args, **kwargs):
         hold = Hold(handle(*args, **kwargs))
     return start
+
 
 
 

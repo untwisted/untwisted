@@ -1,13 +1,12 @@
 """
 """
 
-from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 
-class ChatServer(object):
+class ChatServer:
     def __init__(self, server):
         xmap(server, ACCEPT, self.handle_accept)
         self.pool = []
@@ -32,6 +31,7 @@ if __name__ == '__main__':
     server = create_server('', 1234, 5)
     ChatServer(server)
     core.gear.mainloop()
+
 
 
 

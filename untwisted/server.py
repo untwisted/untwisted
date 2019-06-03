@@ -1,10 +1,9 @@
-from builtins import object
 from untwisted.errors import ACCEPT_ERR_CODE
 from untwisted.event import ACCEPT, ACCEPT_ERR, READ
 from untwisted.network import Spin
 import socket
 
-class Server(object):
+class Server:
     """
     Used to set up TCP servers.
 
@@ -27,5 +26,6 @@ class Server(object):
                     break
             else:
                 spin.drive(ACCEPT, self.wrap(sock))
+
 
 

@@ -1,5 +1,4 @@
 from __future__ import print_function
-from builtins import object
 from untwisted.event import READ, WRITE, ERROR, EXPT
 from select import *
 from socket import *
@@ -19,7 +18,7 @@ def die(msg=''):
     print(msg)
     raise Kill
 
-class Gear(object):
+class Gear:
     """ 
     It implements a basic set of methods that should be
     common to all reactors.
@@ -314,7 +313,7 @@ class Epoll(Gear):
             except Root:
                 pass
 
-class Poll(object):
+class Poll:
     def __init__(self, timeout=None):
         self.timeout = timeout
         self.base    = []
@@ -335,6 +334,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 

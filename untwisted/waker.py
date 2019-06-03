@@ -1,10 +1,9 @@
-from builtins import object
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.network import Spin
 from untwisted.event import READ
 from threading import Lock
 
-class Waker(object):
+class Waker:
     MAX_SIZE = 6028
     def __init__(self):
         server = socket(AF_INET, SOCK_STREAM)
@@ -27,6 +26,7 @@ class Waker(object):
             self.con.send(b' ')
     
 waker = Waker()
+
 
 
 

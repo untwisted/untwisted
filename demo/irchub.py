@@ -1,13 +1,10 @@
 """
 """
-from __future__ import print_function
-
-from builtins import object
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import *
 from untwisted.splits import Terminator
 
-class IrcHub(object):
+class IrcHub:
     def __init__(self, server_port, backlog, irc_address, irc_port):
         self.irc_address = irc_address
         self.irc_port    = irc_port
@@ -63,6 +60,7 @@ if __name__ == '__main__':
     script, server_port, backlog, target_address, target_port = sys.argv
     IrcHub(int(server_port), int(backlog), target_address, int(target_port))
     core.gear.mainloop()
+
 
 
 

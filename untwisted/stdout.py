@@ -1,9 +1,8 @@
-from builtins import object
 from untwisted.event import CLOSE, RECV_ERR, READ, LOAD
 from untwisted.errors import CLOSE_ERR_CODE, RECV_ERR_CODE
 import socket
 
-class Stdout(object):
+class Stdout:
     """
     Used to read data through a Spin instance.
 
@@ -42,6 +41,7 @@ class Stdout(object):
             spin.drive(CLOSE, excpt)
         else:
             raise excpt
+
 
 
 

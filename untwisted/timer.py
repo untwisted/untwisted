@@ -1,4 +1,3 @@
-from builtins import object
 from untwisted import core
 import bisect
 import time
@@ -6,7 +5,7 @@ import time
 class CancelCall(Exception):
     pass
 
-class Timer(object):
+class Timer:
     base = []
     def __init__(self, inc, callback, *args, **kwargs):
         self.args         = args
@@ -44,6 +43,7 @@ class Sched(Timer):
             self.cancel()
         else:
             self.time = time.time()
+
 
 
 

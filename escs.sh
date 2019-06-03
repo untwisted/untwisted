@@ -1,9 +1,9 @@
 ##############################################################################
-# clone, untwisted, github.
+# Clone.
 cd ~/projects
 git clone git@github.com:iogf/untwisted.git untwisted-code
 ##############################################################################
-# push, untwisted, github.
+# Push.
 cd ~/projects/untwisted-code
 git status
 git add *
@@ -109,6 +109,7 @@ futurize --stage2 -w **/*.py
 find . -name "*.bak" -exec rm -f {} \;
 
 ##############################################################################
+
 
 
 

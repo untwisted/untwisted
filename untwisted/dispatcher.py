@@ -1,9 +1,8 @@
-from builtins import object
 from untwisted.core import Kill, Root
 from untwisted.exceptions import Stop, Erase
 from untwisted.debug import debug
 
-class Dispatcher(object):
+class Dispatcher:
     """
     The event dispatcher class.
     """
@@ -94,6 +93,7 @@ class Dispatcher(object):
         """
 
         self.step.append(handle)
+
 
 
 

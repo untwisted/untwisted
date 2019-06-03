@@ -1,8 +1,5 @@
 """ 
 """
-from __future__ import print_function
-
-from builtins import range
 from untwisted.network import core, Spin, xmap
 from untwisted.iostd import Client, lose, CONNECT, CONNECT_ERR
 from untwisted.task import Task, DONE
@@ -39,6 +36,7 @@ if __name__ == '__main__':
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
+
 
 
 

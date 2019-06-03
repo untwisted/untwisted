@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 from untwisted.network import core, xmap
 from untwisted.job import Job, DONE
 import time
@@ -16,6 +14,7 @@ for ind in range(100):
     xmap(job, DONE, show)
 
 core.gear.mainloop()
+
 
 
 

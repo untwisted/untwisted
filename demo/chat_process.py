@@ -12,7 +12,7 @@ def on_close(dev, err):
 def on_load(dev, data):
     print('On LOAD ...', data)
 
-child   = Popen(['python2', '-i'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+child   = Popen(['python3', '-i'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
 
 stdout  = Device(child.stdout)
 stdin   = Device(child.stdin)
@@ -27,6 +27,7 @@ xmap(stdin, CLOSE, on_close)
 xmap(stdout, CLOSE, on_close)
 
 core.gear.mainloop()
+
 
 
 

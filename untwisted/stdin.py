@@ -1,10 +1,9 @@
-from builtins import object
 from collections import deque
 from untwisted.event import DUMPED, WRITE
 from untwisted.dump import DumpStr, DumpFile
 from untwisted import core
 
-class Stdin(object):
+class Stdin:
     """ 
     Stdin is a handle used to send data through Spin connections.
 
@@ -67,6 +66,7 @@ class Stdin(object):
         self.start()
         dump = DumpFile(fd)
         self.queue.append(dump)
+
 
 
 
