@@ -2,7 +2,6 @@ from __future__ import print_function
 from untwisted.event import READ, WRITE, ERROR, EXPT
 from select import *
 from socket import *
-from future.utils import itervalues
 
 class Root(Exception):
     pass
@@ -245,7 +244,7 @@ class Epoll(Gear):
         """
         """
 
-        for ind in itervalues(self.base):
+        for ind in self.base.values():
             self.scale(ind)
 
         events = self.pollster.poll(self.timeout) 
@@ -334,6 +333,7 @@ default()
 # install_reactor(Epoll)
 
 # __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
+
 
 
 
