@@ -125,7 +125,7 @@ Documentation
 Applications using Untwisted
 ============================
 
-#### [Sukhoi][https://github.com/untwisted/sukhoi]
+#### [Sukhoi](https://github.com/untwisted/sukhoi)
 
 A powerful micro Web Crawling Framework.
 
