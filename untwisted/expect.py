@@ -1,5 +1,3 @@
-from future import standard_library
-standard_library.install_aliases()
 from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
 from queue import Queue, Empty
@@ -88,6 +86,7 @@ class Expect(Thread, Dispatcher):
         """
         core.gear.pool.remove(self)    
         self.base.clear()
+
 
 
 

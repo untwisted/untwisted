@@ -87,7 +87,6 @@ if __name__ == '__main__':
 The example below spawns a python process then sends a line of code.
 
 ~~~python
-from __future__ import print_function
 from untwisted.expect import Expect, LOAD, CLOSE
 from untwisted.network import core, xmap, die
 
@@ -158,6 +157,7 @@ Support
 
 **Channel:** #untwisted
  
+
 
 
 

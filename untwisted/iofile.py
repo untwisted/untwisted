@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from untwisted import iostd
 from untwisted.event import CLOSE, LOAD, DUMPED
 from .iostd import lose
@@ -61,6 +60,7 @@ class Stdout(iostd.Stdout):
             dev.drive(CLOSE, '') 
         else: 
             dev.drive(LOAD, data)
+
 
 
 

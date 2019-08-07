@@ -1,4 +1,3 @@
-from __future__ import print_function
 from untwisted.network import core, xmap, Device
 from untwisted.iofile import *
 from subprocess import Popen, PIPE, STDOUT
@@ -27,6 +26,7 @@ xmap(stdin, CLOSE, on_close)
 xmap(stdout, CLOSE, on_close)
 
 core.gear.mainloop()
+
 
 
 

@@ -1,4 +1,3 @@
-from __future__ import print_function
 from untwisted.expect import Expect, LOAD, CLOSE
 from untwisted.network import core, xmap, die
 
@@ -17,6 +16,7 @@ xmap(expect, LOAD, handle)
 xmap(expect, CLOSE, on_close)
 
 core.gear.mainloop()
+
 
 
 

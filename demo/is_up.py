@@ -1,4 +1,3 @@
-from __future__ import print_function
 from untwisted.network import core, Spin, xmap, die
 from untwisted.iostd import Client, CONNECT, CONNECT_ERR
 import errno
@@ -29,6 +28,7 @@ if __name__ == '__main__':
     create_connection(args.addr, args.port)
     core.gear.mainloop()
     
+
 
 
 

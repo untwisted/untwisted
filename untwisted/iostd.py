@@ -1,4 +1,3 @@
-from __future__ import print_function
 from untwisted.network import Spin
 
 from untwisted.client import *
@@ -86,6 +85,7 @@ def create_client(addr, port):
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
+
 
 
 
