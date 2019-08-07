@@ -145,11 +145,6 @@ Asynchronous web requests in python.
 
 A non-blocking Flask-like Web Framework in python.
 
-Documentation
-=============
-
-[Wiki](https://github.com/iogf/untwisted/wiki)
-
 Support
 =======
 
