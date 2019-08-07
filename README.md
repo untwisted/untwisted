@@ -30,13 +30,55 @@ that if you like clean, consistent and high performance code then untwisted is f
 This neat piece of code implements a basic echo server.
 
 ~~~python
-~~~
+from untwisted.network import Spin, xmap, core
+from untwisted.iostd import create_server, ACCEPT, LOAD
 
-### 
+class EchoServer:
+    def __init__(self, server):
+        xmap(server, ACCEPT, lambda server, con: 
+                     xmap(con, LOAD, lambda con, data: con.dump(data)))
+
+if __name__ == '__main__':
+    EchoServer(create_server('0.0.0.0', 1234, 5))
+    core.gear.mainloop()
+~~~
 
 ### Chat Server
 
+This piece of code just sets up a simple telnet chat. Once the code
+is running just connect on port 1234 via telnet, type a nick and start chatting :)
+
 ~~~python
+from untwisted.network import core, Spin, xmap
+from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
+from untwisted.splits import Terminator
+from untwisted.tools import coroutine
+
+class ChatServer:
+    def __init__(self, server):
+        xmap(server, ACCEPT, self.handle_accept)
+        self.pool = []
+
+    @coroutine
+    def handle_accept(self, server, client):
+        Terminator(client, delim=b'\r\n')
+        xmap(client, CLOSE, lambda client, err: self.pool.remove(client))
+
+        client.dump(b'Type a nick.\r\nNick:')    
+        client.nick, = yield client, Terminator.FOUND
+
+        xmap(client, Terminator.FOUND, self.echo_msg)
+        self.pool.append(client)
+
+    def echo_msg(self, client, data):
+        for ind in self.pool:
+            if not ind is client:
+                ind.dump(b'%s:%s\r\n' % (client.nick, data))
+
+if __name__ == '__main__':
+    server = create_server('', 1234, 5)
+    ChatServer(server)
+    core.gear.mainloop()
 ~~~
 
 
@@ -45,6 +87,25 @@ This neat piece of code implements a basic echo server.
 The example below spawns a python process then sends a line of code.
 
 ~~~python
+from __future__ import print_function
+from untwisted.expect import Expect, LOAD, CLOSE
+from untwisted.network import core, xmap, die
+
+def handle(expect, data):
+    print(data)
+
+def on_close(expect):
+    print('Closing..')
+    die()
+
+expect = Expect('python', '-i', '-u')
+
+expect.send(b'print("hello world");quit();\n\n')
+
+xmap(expect, LOAD, handle)
+xmap(expect, CLOSE, on_close)
+
+core.gear.mainloop()
 ~~~
 
 Install
@@ -98,5 +159,6 @@ Support
 
 **Channel:** #untwisted
  
+
 
 
