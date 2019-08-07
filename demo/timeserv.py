@@ -11,7 +11,7 @@ class TimeServ:
     def handle_accept(self, server, con):
         Stdin(con)
 
-        con.dump('%s\r\n' % asctime())
+        con.dump(('%s\r\n' % asctime()).encode('utf-8'))
         xmap(con, CLOSE, lambda con, err: lose(con))
 
 
@@ -23,6 +23,7 @@ if __name__ == '__main__':
     Server(server)
     TimeServ(server)
     core.gear.mainloop()
+
 
 
 
