@@ -125,6 +125,10 @@ Documentation
 Applications using Untwisted
 ============================
 
+#### [Sukhoi][https://github.com/untwisted/sukhoi]
+
+A powerful micro Web Crawling Framework.
+
 #### [Vy](https://github.com/iogf/vy)
 
 A vim-like in python made from scratch.
@@ -154,6 +158,7 @@ Support
 
 **Channel:** #untwisted
  
+
 
 
 
