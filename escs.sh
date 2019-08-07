@@ -10,85 +10,69 @@ git add *
 git commit -a
 git push 
 ##############################################################################
-# create the develop branch, untwisted.
+# Create the develop branch.
 git branch -a
 git checkout -b development
 git push --set-upstream origin development
 ##############################################################################
-# merge master into development, untwisted.
+# Merge master into development.
 cd ~/projects/untwisted-code
 git checkout development
 git merge master
 git push
 ##############################################################################
-# merge development into master, untwisted.
+# Merge development into master.
+
 cd ~/projects/untwisted-code
 git checkout master
 git merge development
 git push
 git checkout development
 ##############################################################################
-# check diffs, untwisted.
+# Check diffs.
+
 cd ~/projects/untwisted-code
 git diff
 ##############################################################################
-# delete the development branch, untwisted.
+# Delete development branch.
 git branch -d development
 git push origin :development
 git fetch -p 
 ##############################################################################
-# undo, changes, untwisted, github.
+# Checkout changes.
 cd ~/projects/untwisted-code
 git checkout *
 ##############################################################################
-# create, a new branch locally from an existing commit, from, master.
-git checkout master
-cd ~/projects/untwisted-code
-git checkout -b old_version fcebcd4f229cb29cac344161937d249785bf83f8
-git push --set-upstream origin old_version
+# Create TOC.
 
-git checkout old_version
-##############################################################################
-# delete, old version, untwisted.
-git checkout master
-git branch -d old_version
-git push origin :old_version
-git fetch -p 
-##############################################################################
-# create, toc, table of contents, untwisted.
 cd ~/projects/untwisted-code
 gh-md-toc BOOK.md > table.md
 vy table.md
 rm table.md
 ##############################################################################
-# install, python2, untwisted.
+# Install untwisted manually.
+
 sudo bash -i
 cd /home/tau/projects/untwisted-code
 python setup.py install
 rm -fr build
 exit
-##############################################################################
-# install, python3, untwisted.
-sudo bash -i
-cd /home/tau/projects/untwisted-code
-python3 setup.py install
-rm -fr build
-exit
 
 ##############################################################################
-# remove, uninstall, global, delete, untwisted.
+# Remove the package manually.
 sudo bash -i
 rm -fr /usr/local~/projects/python2.7/dist-packages/untwisted
 rm -fr /usr/local~/projects/python2.7/dist-packages/untwisted-*.egg-info
 exit
 ##############################################################################
-# build, untwisted, package, disutils.
+# Build with disutils.
+
 cd /home/tau/projects/untwisted-code
-python2.6 setup.py sdist 
+python setup.py sdist 
 rm -fr dist
 rm MANIFEST
 ##############################################################################
-# share, put, place, host, package, python, pip, application, untwisted.
+# Upload package to pypi.
 
 cd ~/projects/untwisted-code
 python2 setup.py sdist register upload
@@ -109,6 +93,7 @@ futurize --stage2 -w **/*.py
 find . -name "*.bak" -exec rm -f {} \;
 
 ##############################################################################
+
 
 
 
