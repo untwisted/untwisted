@@ -3,6 +3,11 @@
 cd ~/projects
 git clone git@github.com:iogf/untwisted.git untwisted-code
 ##############################################################################
+# Clone untwisted wiki.
+cd ~/projects
+git clone git@github.com:untwisted/untwisted.wiki.git untwisted.wiki-code
+##############################################################################
+
 # Push.
 cd ~/projects/untwisted-code
 git status

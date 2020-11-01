@@ -11,19 +11,25 @@ def lose(spin):
     It is used to close TCP connection and unregister
     the Spin instance from untwisted reactor.
 
-    Diagram:
-
-    lose -> (int:err | socket.error:err) -> CLOSE_ERR
     """
+
+    # The object will no longer be processed regardless 
+    # it fail to be unregistered in the pollster.
+    try:
+        spin.destroy()
+    except OSError:
+        spin.drive(CLOSE_ERR, excpt.args[0])
+    else:
+        spin.drive(LOST)
 
     try:
         spin.close()
-    except Exception as excpt:
-        err = excpt.args[0]
-        spin.drive(CLOSE_ERR, err)
-    finally:
-        spin.destroy()
-        spin.drive(LOST)
+    except OSError as excpt:
+        spin.drive(CLOSE_ERR, excpt.args[0])
+
+    # The call to socket close method has to be made after
+    # removing the object off the reactor otherwise it may 
+    # occur a bad file descriptor exception.
 
 def put(spin, data):
     """
@@ -31,6 +37,7 @@ def put(spin, data):
     
     xmap(con, LOAD, put)
     """
+
     print(data)
 
 def create_server(addr, port, backlog):
@@ -74,6 +81,7 @@ def create_client(addr, port):
     client = create_client('www.google.com.br', 80)
     xmap(client, CONNECT, send_data)
     """
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # First attempt to connect otherwise it leaves
