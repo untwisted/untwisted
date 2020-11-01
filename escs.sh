@@ -80,8 +80,9 @@ rm MANIFEST
 # Upload package to pypi.
 
 cd ~/projects/untwisted-code
-python setup.py sdist register upload
-rm -fr dist
+python setup.py sdist 
+twine upload dist/*
+
 ##############################################################################
 # futurize code.
 
