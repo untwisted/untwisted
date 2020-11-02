@@ -99,6 +99,17 @@ futurize --stage2 -w **/*.py
 find . -name "*.bak" -exec rm -f {} \;
 
 ##############################################################################
+# Create a virtualenv for a project.
+cd ~/.virtualenvs/
+ls -la
+# by default #python3 has executable named python in arch linux.
+virtualenv untwisted -p /usr/bin/python3.6
+##############################################################################
+# Activate a virtualenv.
+cd ~/.virtualenvs/
+source untwisted/bin/activate
+cd ~/projects/untwisted-code
+##############################################################################
 
 
 

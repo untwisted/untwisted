@@ -1,9 +1,7 @@
-from untwisted.network import SSL
 from untwisted.client import Client
 from untwisted.exceptions import Erase
 from untwisted.event import WRITE, SSL_CERTIFICATE_ERR, \
-SSL_CONNECT_ERR, SSL_CONNECT, CLOSE, CONNECT
-from untwisted.errors import CLOSE_ERR_CODE
+SSL_CONNECT_ERR, SSL_CONNECT, CONNECT
 import socket
 import ssl
 

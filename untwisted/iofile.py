@@ -1,9 +1,10 @@
-from untwisted import iostd
+from untwisted.stdin import SockWriter
+from untwisted.stdout import SockReader
 from untwisted.event import CLOSE, LOAD, DUMPED
-from .iostd import lose
+from untwisted import dump
 import os
 
-class DumpStr(iostd.DumpStr):
+class DumpStr(dump.DumpStr):
     def process(self, dev):
         try:
             size = os.write(dev.fd, self.data)  
@@ -12,20 +13,12 @@ class DumpStr(iostd.DumpStr):
         else:
             self.data = self.data[size:]
 
-class DumpFile(DumpStr, iostd.DumpFile):
+class DumpFile(DumpStr, dump.DumpFile):
     pass
 
-class Stdin(iostd.Stdin):
+class FileWriter(SockWriter):
     """
     Used to dump data through a Device instance.
-
-    Methods:
-        dump     - Send data through a Device instance.
-
-        dumpfile - Dump a file through a Device instance.
-
-    Diagram:
-        WRITE -> Stdin -(int:err, ())-> {**CLOSE, DUMPED}
 
     """
 
@@ -39,13 +32,10 @@ class Stdin(iostd.Stdin):
         fd = DumpFile(fd)
         self.queue.append(fd)
 
-class Stdout(iostd.Stdout):
+class FileReader(SockReader):
     """
     Used to read data from a Device instance.
 
-    Diagram:
-    
-        READ -> Stdout -(int:err, int:err, str:data)-> {**CLOSE, RECV_ERR, LOAD}
     """
 
     def update(self, dev):

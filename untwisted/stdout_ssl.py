@@ -1,9 +1,9 @@
-from untwisted.stdout import Stdout
+from untwisted.stdout import SockReader, LOAD
 from untwisted.event import SSL_RECV_ERR, CLOSE
 import socket
 import ssl
 
-class StdoutSSL(Stdout):
+class SockReaderSSL(SockReader):
     def update(self, spin):
         try:
             while True:

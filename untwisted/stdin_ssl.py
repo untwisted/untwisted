@@ -1,7 +1,7 @@
-from untwisted.stdin import Stdin
+from untwisted.stdin import SockWriter
 from untwisted.dump_ssl import DumpStrSSL, DumpFileSSL
 
-class StdinSSL(Stdin):
+class SockWriterSSL(SockWriter):
     def dump(self, data):
         self.start()
         data = DumpStrSSL(data)

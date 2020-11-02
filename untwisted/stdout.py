@@ -2,7 +2,7 @@ from untwisted.event import CLOSE, RECV_ERR, READ, LOAD
 from untwisted.errors import CLOSE_ERR_CODE, RECV_ERR_CODE
 import socket
 
-class Stdout:
+class SockReader:
     """
     Used to read data through a Spin instance.
     """

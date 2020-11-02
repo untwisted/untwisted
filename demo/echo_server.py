@@ -1,4 +1,4 @@
-from untwisted.network import Spin, xmap, core
+from untwisted.network import xmap, core
 from untwisted.iostd import create_server, ACCEPT, LOAD
 
 class EchoServer:

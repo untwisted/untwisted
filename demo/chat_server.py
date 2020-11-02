@@ -1,8 +1,8 @@
 """
 """
 
-from untwisted.network import core, Spin, xmap
-from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
+from untwisted.network import core, xmap
+from untwisted.iostd import create_server, ACCEPT, CLOSE
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine
 

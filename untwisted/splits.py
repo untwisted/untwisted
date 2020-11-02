@@ -1,6 +1,4 @@
-from builtins import str
-from builtins import range
-from untwisted.event import LOAD, READ, WRITE, get_event
+from untwisted.event import LOAD, get_event
 import sys
 
 class Fixed:

@@ -1,4 +1,4 @@
-from untwisted.event import READ, WRITE, ERROR, EXPT
+from untwisted.event import READ, WRITE
 from select import *
 from socket import *
 

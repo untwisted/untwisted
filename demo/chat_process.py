@@ -1,5 +1,6 @@
 from untwisted.network import core, xmap, Device
-from untwisted.iofile import *
+from untwisted.iofile import FileWriter, FileReader, DUMPED, LOAD, CLOSE
+from untwisted.iostd import lose
 from subprocess import Popen, PIPE, STDOUT
 from untwisted.core import Kill
 
@@ -16,8 +17,8 @@ child   = Popen(['python3', '-i'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
 stdout  = Device(child.stdout)
 stdin   = Device(child.stdin)
 
-Stdin(stdin)
-Stdout(stdout)
+FileWriter(stdin)
+FileReader(stdout)
 
 stdin.dump(b'print "hello world!"\n')
 xmap(stdin, DUMPED, lambda dev: stdin.dump(b'quit()\n'))

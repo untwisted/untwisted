@@ -11,9 +11,9 @@ class DumpStrSSL(DumpStr):
         # can be read from.
         try:
             size = spin.send(self.data)  
-        except ssl.SSLWantReadError:
+        except ssl.SSLWantReadError as excpt:
             spin.drive(SSL_SEND_ERR, spin, excpt)
-        except ssl.SSLWantWriteError:
+        except ssl.SSLWantWriteError as excpt:
             spin.drive(SSL_SEND_ERR, spin, excpt)
         except ssl.SSLEOFError as excpt:
             pass

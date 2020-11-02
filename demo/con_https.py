@@ -1,13 +1,15 @@
+from untwisted.client_ssl import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, \
+SSL_CERTIFICATE_ERR
+from untwisted.stdin_ssl import SockWriterSSL
+from untwisted.stdout_ssl import SockReaderSSL, LOAD, CLOSE
 from untwisted.network import core, SSL, xmap, die
 from untwisted.iostd import put, lose
-from untwisted.iossl import ClientSSL, StdinSSL, StdoutSSL, \
-SSL_CONNECT, SSL_CONNECT_ERR, SSL_CERTIFICATE_ERR, CLOSE, LOAD
 from socket import socket, AF_INET, SOCK_STREAM
 import ssl
 
 def on_connect(con, host):
-    StdinSSL(con)
-    StdoutSSL(con)
+    SockWriterSSL(con)
+    SockReaderSSL(con)
     con.dump(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % host.encode('utf8'))
     xmap(con, LOAD, put)
     xmap(con, CLOSE, lambda con, err: lose(con))

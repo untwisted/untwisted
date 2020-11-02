@@ -1,8 +1,10 @@
-"""
-"""
+from untwisted.event import ACCEPT, CONNECT, CONNECT_ERR, CLOSE
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import *
 from untwisted.splits import Terminator
+from untwisted.server import Server
+from untwisted.stdin import SockWriter
+from untwisted.stdout import SockReader
+from untwisted.client import Client
 
 class IrcHub:
     def __init__(self, server_port, backlog, irc_address, irc_port):
@@ -26,11 +28,11 @@ class IrcHub:
         irc.connect_ex((self.irc_address, self.irc_port))
 
     def handle_connect(self, irc, client):
-        Stdin(client)
-        Stdout(client)
+        SockWriter(client)
+        SockReader(client)
         Terminator(client, delim=b'\r\n')
-        Stdin(irc)
-        Stdout(irc)
+        SockWriter(irc)
+        SockReader(irc)
         Terminator(irc, delim=b'\r\n')
         xmap(irc, Terminator.FOUND, self.handle_found)
         xmap(irc, CLOSE, self.down_connection)
@@ -45,10 +47,10 @@ class IrcHub:
 
 
     def down_connection(self, transport, err):
-        transport.arrow.close()
         transport.arrow.destroy()
-        transport.close()
+        transport.arrow.close()
         transport.destroy()
+        transport.close()
 
     def handle_found(self, transport, data):
         transport.arrow.dump(b'%s\r\n' % data)

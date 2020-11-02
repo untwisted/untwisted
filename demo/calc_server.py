@@ -3,7 +3,10 @@
 
 from builtins import map
 from untwisted.network import core, Spin, xmap, spawn
-from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
+from untwisted.stdout import SockReader
+from untwisted.stdin import SockWriter
+from untwisted.event import CLOSE, ACCEPT
+from untwisted.server import Server
 from untwisted.splits import Terminator
 from untwisted.tools import handle_exception
 import operator
@@ -30,8 +33,8 @@ class CalcServer:
         xmap(server, ACCEPT, self.handle_accept)
 
     def handle_accept(self, server, client):
-        Stdin(client)
-        Stdout(client)
+        SockWriter(client)
+        SockReader(client)
         Terminator(client, delim=b'\r\n')
         parser = CalcParser(client)
         
@@ -73,10 +76,4 @@ if __name__ == '__main__':
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
-
-
-
-
-
-
 

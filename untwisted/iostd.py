@@ -1,10 +1,13 @@
 from untwisted.network import Spin
 
-from untwisted.client import *
-from untwisted.stdin import *
-from untwisted.stdout import *
-from untwisted.server import *
-from untwisted.event import CLOSE_ERR, LOST
+from untwisted.event import CLOSE_ERR, LOST, ACCEPT, \
+CONNECT, CONNECT_ERR, CLOSE
+
+from untwisted.stdin import SockWriter
+from untwisted.stdout import SockReader
+from untwisted.server import Server
+from untwisted.client import Client
+import socket
 
 def lose(spin):
     """
@@ -17,7 +20,7 @@ def lose(spin):
     # it fail to be unregistered in the pollster.
     try:
         spin.destroy()
-    except OSError:
+    except OSError as excpt:
         spin.drive(CLOSE_ERR, excpt.args[0])
     else:
         spin.drive(LOST)
@@ -66,8 +69,8 @@ def install_basic_handles(spin):
     """
     """
 
-    Stdin(spin)
-    Stdout(spin)
+    SockWriter(spin)
+    SockReader(spin)
     spin.add_map(CLOSE, lambda spin, err: lose(spin))
 
 def create_client(addr, port):
@@ -93,13 +96,4 @@ def create_client(addr, port):
     spin.add_map(CONNECT, install_basic_handles)
     spin.add_map(CONNECT_ERR, lambda con, err: lose(con))
     return spin
-
-
-
-
-
-
-
-
-
 

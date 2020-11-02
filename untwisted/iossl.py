@@ -1,17 +1,17 @@
 from untwisted.network import SSL
 from untwisted.event import CLOSE, SSL_CERTIFICATE_ERR, \
-SSL_CONNECT_ERR, SSL_CONNECT, CONNECT_ERR, LOAD
+SSL_CONNECT_ERR, SSL_CONNECT, CONNECT_ERR
 
-from untwisted.client_ssl import *
-from untwisted.stdin_ssl import *
-from untwisted.stdout_ssl import *
+from untwisted.stdin_ssl import SockWriterSSL
+from untwisted.stdout_ssl import SockReaderSSL
+from untwisted.client_ssl import ClientSSL
 from untwisted.iostd import lose
 import socket
 import ssl
 
 def install_ssl_handles(con):
-    StdinSSL(con)
-    StdoutSSL(con)
+    SockWriterSSL(con)
+    SockReaderSSL(con)
     con.add_map(CLOSE, lambda con, err: lose(con))
 
 def create_client_ssl(addr, port):

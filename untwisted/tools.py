@@ -1,5 +1,4 @@
 from builtins import next
-from untwisted.exceptions import Erase
 
 class Hold:
     def __init__(self, seq):

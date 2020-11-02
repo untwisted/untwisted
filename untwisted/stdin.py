@@ -1,9 +1,8 @@
 from collections import deque
 from untwisted.event import DUMPED, WRITE
 from untwisted.dump import DumpStr, DumpFile
-from untwisted import core
 
-class Stdin:
+class SockWriter:
     """ 
     Stdin is a handle used to send data through Spin connections.
 

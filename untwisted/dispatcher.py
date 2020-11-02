@@ -1,4 +1,4 @@
-from untwisted.core import Kill, Root
+from untwisted.core import Kill
 from untwisted.exceptions import Stop, Erase
 from untwisted.debug import debug
 

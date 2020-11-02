@@ -1,5 +1,5 @@
 from untwisted.errors import CLOSE_ERR_CODE, SEND_ERR_CODE
-from untwisted.event import CLOSE, SEND_ERR
+from untwisted.event import CLOSE, SEND_ERR, READ_ERR
 import socket
 
 class Dump:
@@ -40,9 +40,10 @@ class DumpFile(DumpStr):
     def process(self, spin):
         DumpStr.process(self, spin)
 
-        if not self.data: self.process_file()
+        if not self.data: 
+            self.process_file(spin)
 
-    def process_file(self):
+    def process_file(self, spin):
         try:
             data = self.fd.read(DumpFile.BLOCK)
         except IOError as excpt:

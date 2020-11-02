@@ -1,6 +1,4 @@
-from untwisted.network import Spin
 from untwisted.event import CONNECT, CONNECT_ERR, WRITE
-from untwisted import core
 import socket
 
 class Client:

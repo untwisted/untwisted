@@ -1,6 +1,6 @@
 # It imports basic objects.
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import Server, Stdin, ACCEPT, CLOSE
+from untwisted.iostd import Server, Stdin, ACCEPT, CLOSE, lose
 from time import asctime
 
 class TimeServ:
