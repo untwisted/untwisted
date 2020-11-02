@@ -1,7 +1,7 @@
 """ 
 """
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+from untwisted.client import Client, CONNECT, CONNECT_ERR
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.task import Task, DONE
 from untwisted.network import die

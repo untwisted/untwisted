@@ -2,8 +2,8 @@ from untwisted.event import ACCEPT, CONNECT, CONNECT_ERR, CLOSE
 from untwisted.network import core, Spin, xmap
 from untwisted.splits import Terminator
 from untwisted.server import Server
-from untwisted.stdin import SockWriter
-from untwisted.stdout import SockReader
+from untwisted.sock_writer import SockWriter
+from untwisted.sock_reader import SockReader
 from untwisted.client import Client
 
 class IrcHub:

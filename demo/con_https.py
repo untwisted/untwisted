@@ -1,9 +1,9 @@
-from untwisted.client_ssl import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, \
+from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, \
 SSL_CERTIFICATE_ERR
-from untwisted.stdin_ssl import SockWriterSSL
-from untwisted.stdout_ssl import SockReaderSSL, LOAD, CLOSE
+from untwisted.sock_writer import SockWriterSSL
+from untwisted.sock_reader import SockReaderSSL, LOAD, CLOSE
 from untwisted.network import core, SSL, xmap, die
-from untwisted.iostd import put, lose
+from untwisted.client import put, lose
 from socket import socket, AF_INET, SOCK_STREAM
 import ssl
 

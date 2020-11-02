@@ -1,6 +1,8 @@
 # It imports basic objects.
 from untwisted.network import core, Spin, xmap
-from untwisted.iostd import Server, Stdin, ACCEPT, CLOSE, lose
+from untwisted.server import Server, ACCEPT
+from untwisted.client import lose, CLOSE
+from untwisted.sock_writer import SockWriter
 from time import asctime
 
 class TimeServ:
@@ -9,7 +11,7 @@ class TimeServ:
        
 
     def handle_accept(self, server, con):
-        Stdin(con)
+        SockWriter(con)
 
         con.dump(('%s\r\n' % asctime()).encode('utf-8'))
         xmap(con, CLOSE, lambda con, err: lose(con))

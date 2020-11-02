@@ -1,6 +1,7 @@
 from untwisted.network import core, xmap, Device
-from untwisted.iofile import FileWriter, FileReader, DUMPED, LOAD, CLOSE
-from untwisted.iostd import lose
+from untwisted.file_reader import FileReader, LOAD, CLOSE
+from untwisted.file_writer import FileWriter, DUMPED
+from untwisted.client import lose
 from subprocess import Popen, PIPE, STDOUT
 from untwisted.core import Kill
 

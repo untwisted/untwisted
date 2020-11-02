@@ -3,8 +3,8 @@
 
 from builtins import map
 from untwisted.network import core, Spin, xmap, spawn
-from untwisted.stdout import SockReader
-from untwisted.stdin import SockWriter
+from untwisted.sock_reader import SockReader
+from untwisted.sock_writer import SockWriter
 from untwisted.event import CLOSE, ACCEPT
 from untwisted.server import Server
 from untwisted.splits import Terminator

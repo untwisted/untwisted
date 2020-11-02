@@ -1,11 +1,15 @@
 from untwisted.network import xmap, Spin, core
-from untwisted.iostd import Server, Stdout, Stdin, lose, ACCEPT, LOAD, CLOSE
+from untwisted.sock_reader import SockReader, LOAD, CLOSE
 from socket import socket, AF_INET, SOCK_STREAM
+from untwisted.sock_writer import SockWriter
+from untwisted.server import Server, ACCEPT
+from untwisted.client import lose
+
 import sys
 
 def setup(server, con):
-    Stdin(con)
-    Stdout(con)
+    SockReader(con)
+    SockWriter(con)
     xmap(con, CLOSE, lambda con, err: lose(con))
     xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
 

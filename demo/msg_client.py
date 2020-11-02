@@ -1,11 +1,13 @@
 from untwisted.network import xmap, Spin, core
-from untwisted.iostd import Client, Stdout, Stdin, CONNECT, DUMPED
+from untwisted.client import Client, CONNECT
+from untwisted.sock_writer import SockWriter, DUMPED
+from untwisted.sock_reader import SockReader
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.core import die
 
 def setup(con, msg):
-    Stdout(con)
-    Stdin(con)
+    SockReader(con)
+    SockWriter(con)
     con.dump(msg.encode('utf8'))
     xmap(con, DUMPED, lambda con: die('Msg dumped!'))
 

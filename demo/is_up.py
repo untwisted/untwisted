@@ -1,5 +1,5 @@
 from untwisted.network import core, Spin, xmap, die
-from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+from untwisted.client import Client, CONNECT, CONNECT_ERR
 import errno
 
 def on_connect(con, addr, port):
