@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 setup(name="untwisted",
-      version="2.0.2",
+      version="3.0.0",
       packages=["untwisted"],
       author="Iury O. G. Figueiredo",
       author_email="ioliveira@id.uff.br",

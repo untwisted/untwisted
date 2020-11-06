@@ -1,9 +1,5 @@
-from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.event import READ, WRITE
-from untwisted.core import die
-from untwisted.dispatcher import *
+from untwisted.dispatcher import Dispatcher
 from untwisted import core
-from untwisted.wrappers import *
 
 class SuperSocket(Dispatcher):
     """
@@ -58,6 +54,9 @@ class SSL(Spin):
 
     pass
 
+class Extension:
+    def __init__(self, sock):
+        self.sock = sock
 
 
 

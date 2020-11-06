@@ -1,4 +1,9 @@
+from untwisted.dispatcher import Dispatcher
 from builtins import next
+
+xmap  = Dispatcher.add_map
+zmap  = Dispatcher.del_map
+spawn = Dispatcher.drive
 
 class Hold:
     def __init__(self, seq):
@@ -50,6 +55,17 @@ def coroutine(handle):
         hold = Hold(handle(*args, **kwargs))
     return start
 
+def once(dispatcher, event, handle, *args):
+    """
+    Used to do a mapping like event -> handle
+    but handle is called just once upon event.
+    """
 
-
-
+    def shell(dispatcher, *args):
+        try:
+            handle(dispatcher, *args)
+        except Exception as e:
+            raise e
+        finally:
+            dispatcher.del_map(event, shell)
+    dispatcher.add_map(event, shell, *args)

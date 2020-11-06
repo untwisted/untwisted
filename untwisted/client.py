@@ -1,7 +1,7 @@
 from untwisted.event import CONNECT, CONNECT_ERR, WRITE, CLOSE, CLOSE_ERR, \
 LOST, SSL_CERTIFICATE_ERR, SSL_CONNECT_ERR, SSL_CONNECT
 
-from untwisted.exceptions import Erase
+from untwisted.dispatcher import Erase
 from untwisted.sock_writer import SockWriter, SockWriterSSL
 from untwisted.sock_reader import SockReader, SockReaderSSL
 from untwisted.network import Spin
