@@ -1,4 +1,5 @@
 from untwisted.dispatcher import Dispatcher
+from socket import socket
 from untwisted import core
 
 class SuperSocket(Dispatcher):

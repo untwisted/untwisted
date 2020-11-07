@@ -47,7 +47,6 @@ class Dispatcher:
 
     def __init__(self):
         self.base = dict()
-        self.pool = list()
 
     def drive(self, event, *args):
         """
@@ -55,6 +54,8 @@ class Dispatcher:
         """
 
         maps = self.base.get(event)
+        if not maps:
+            return False
 
         for handle, data in maps[:]:
             params = args + data
@@ -70,9 +71,7 @@ class Dispatcher:
                 maps.remove((handle, data))
             except Exception as e:
                 debug(event, params)
-
-        for handle in self.pool:
-            handle(self, event, args)
+        return True
 
     def add_map(self, event, handle, *args):
         """
@@ -120,17 +119,4 @@ class Dispatcher:
 
         pass
 
-    def add_handle(self, handle):
-        """
-        Whenever an event occurs then handle is processed.
-        """
-
-        self.pool.append(handle)
-
-    def del_handle(self, handle):
-        """
-        Avoid handle from being processed when a given event occurs.
-        """
-
-        self.pool.remove(handle)
 
