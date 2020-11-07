@@ -8,18 +8,20 @@ class CancelCall(Exception):
 class Timer:
     base = []
     def __init__(self, inc, callback, *args, **kwargs):
-        self.args         = args
-        self.kwargs       = kwargs
-        self.inc          = inc
-        self.time         = time.time()
-        self.callback     = callback
+        self.args     = args
+        self.kwargs   = kwargs
+        self.inc      = inc
+        self.time     = time.time()
+        self.callback = callback
         core.gear.pool.append(self)
         bisect.insort(Timer.base, inc)
         self.set_reactor_timeout()
 
     def update(self):
-        if not time.time() - self.time > self.inc:
-            return
+        if time.time() - self.time > self.inc:
+            self.exec_ckb()
+
+    def exec_cbk(self):
         self.callback(*self.args, **self.kwargs)
         self.cancel()
 
@@ -34,16 +36,15 @@ class Timer:
 
 class Sched(Timer):
     def update(self):
-        if not time.time() - self.time > self.inc:
-            return
+        if time.time() - self.time > self.inc:
+            self.exec_ckb()
 
+    def exec_cbk(self):
         try:
             self.callback(*self.args, **self.kwargs)
         except CancelCall:
             self.cancel()
         else:
             self.time = time.time()
-
-
-
+    
 

@@ -48,14 +48,14 @@ class Dispatcher:
     def __init__(self):
         self.base = dict()
         self.pool = list()
-        self.step = list()
 
     def drive(self, event, *args):
         """
         Used to dispatch events.
         """
 
-        maps = self.base.get(event, self.step)
+        maps = self.base.get(event)
+
         for handle, data in maps[:]:
             params = args + data
             try:
@@ -133,20 +133,4 @@ class Dispatcher:
         """
 
         self.pool.remove(handle)
-
-    def del_step(self, handle):
-        """
-        """
-
-        self.step.remove(handle)
-
-    def add_step(self, handle):
-        """
-        """
-
-        self.step.append(handle)
-
-
-
-
 
