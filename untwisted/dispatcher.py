@@ -92,6 +92,19 @@ class Dispatcher:
 
         self.base[event].remove((handle, args))
 
+    def once(self, event, handle, *args):
+        """
+        """
+    
+        def shell(*args):
+            try:
+                handle(self, *args)
+            except Exception as e:
+                raise e
+            finally:
+                self.del_map(event, shell)
+        self.add_map(event, shell, *args)
+    
     def install_maps(self, *args):
         """
         Install a set of mappings.
