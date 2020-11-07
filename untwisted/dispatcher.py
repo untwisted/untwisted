@@ -73,6 +73,7 @@ class Dispatcher:
                 debug(event, params)
         return True
 
+
     def add_map(self, event, handle, *args):
         """
         Add a mapping.
@@ -81,18 +82,9 @@ class Dispatcher:
         item = self.base.setdefault(event, list())
         item.append((handle, args))
 
-    def clear_maps(self, event, handle, *args):
-        pass
-
-    def del_map(self, event, handle, *args):
-        """
-        Remove a mapping.
-        """
-
-        self.base[event].remove((handle, args))
-
     def once(self, event, handle, *args):
         """
+        Add a map that runs just once.
         """
     
         def shell(*args):
@@ -104,6 +96,33 @@ class Dispatcher:
                 self.del_map(event, shell)
         self.add_map(event, shell, *args)
     
+    def del_map(self, event, handle, *args):
+        """
+        Remove a mapping.
+        """
+
+        self.base[event].remove((handle, args))
+
+    def clear_maps(self, event, handle, *args):
+        """
+        Clear all mapps for event, handle and args. 
+        It returns how many mappings were deleted.
+
+        When there is no mapping for the event it raises
+        an exception KeyError.
+        """
+
+        maps  = self.base[event]
+        count = 0
+        while maps:
+            try:
+                maps.remove((event, hadle))
+            except ValueError as e:
+                return count
+            count += 1
+
+        return count
+
     def install_maps(self, *args):
         """
         Install a set of mappings.
