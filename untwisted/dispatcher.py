@@ -114,13 +114,13 @@ class Dispatcher:
 
         maps  = self.base[event]
         count = 0
+
         while maps:
             try:
                 maps.remove((event, hadle))
             except ValueError as e:
                 return count
             count += 1
-
         return count
 
     def install_maps(self, *args):

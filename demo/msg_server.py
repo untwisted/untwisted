@@ -1,17 +1,19 @@
-from untwisted.network import xmap, Spin, core
 from untwisted.sock_reader import SockReader, LOAD, CLOSE
+from untwisted.network import Spin
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.sock_writer import SockWriter
-from untwisted.server import Server, ACCEPT
+from untwisted.server import Server
+from untwisted.event import ACCEPT
 from untwisted.client import lose
+from untwisted import core
 
 import sys
 
 def setup(server, con):
     SockReader(con)
     SockWriter(con)
-    xmap(con, CLOSE, lambda con, err: lose(con))
-    xmap(con, LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
+    con.add_map(CLOSE, lambda con, err: lose(con))
+    con.add_map(LOAD, lambda con, data: sys.stdout.write('%s\r\n' % data))
 
 if __name__ == '__main__':    
     from optparse import OptionParser
@@ -33,7 +35,7 @@ if __name__ == '__main__':
     server.listen(opt.backlog)
     Server(server)
     
-    xmap(server, ACCEPT, setup)
+    server.add_map(ACCEPT, setup)
     
     core.gear.mainloop()
 
