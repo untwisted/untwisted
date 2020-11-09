@@ -46,17 +46,15 @@ class Dispatcher:
     """
 
     def __init__(self):
-        self.base = dict()
+        self.base  = dict()
+        self.handles = list()
 
     def drive(self, event, *args):
         """
         Used to dispatch events.
         """
 
-        maps = self.base.get(event)
-        if not maps:
-            return False
-
+        maps = self.base.setdefault(event, [])
         for handle, data in maps[:]:
             params = args + data
             try:
@@ -71,8 +69,15 @@ class Dispatcher:
                 maps.remove((handle, data))
             except Exception as e:
                 debug(event, params)
-        return True
 
+        for handle in self.handles:
+            handle(self, event, *args)
+
+    def add_handle(self, handle):
+        self.handles.append(handle)
+
+    def del_handle(self, handle):
+        self.handles.remove(handle)
 
     def add_map(self, event, handle, *args):
         """
