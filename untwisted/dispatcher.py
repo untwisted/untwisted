@@ -70,7 +70,7 @@ class Dispatcher:
             except Exception as e:
                 debug(event, params)
 
-        for handle in self.handles:
+        for handle in self.handles[:]:
             handle(self, event, *args)
 
     def add_handle(self, handle):
