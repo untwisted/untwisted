@@ -1,5 +1,7 @@
-# Whenever we use get_event it increases
-# So we don't get events messed.
+"""
+Built-in events.
+"""
+
 event_count = 0
 
 def get_event():
@@ -49,11 +51,31 @@ SSL_CERTIFICATE_ERR = get_event()
 SSL_CONNECT_ERR     = get_event()
 SSL_CONNECT         = get_event()
 
-
-
-
-
-
-
-
+CODE = {
+READ: 'READ', 
+WRITE: 'WRITE', 
+EXPT: 'EXPT', 
+ERROR: 'ERROR', 
+DESTROY: 'DESTROY', 
+LOST: 'LOST', 
+CLOSE: 'CLOSE', 
+ACCEPT: 'ACCEPT', 
+CONNECT: 'CONNECT', 
+CONNECT_ERR: 'CONNECT_ERR', 
+LOAD: 'LOAD', 
+DUMPED: 'DUMPED', 
+RECV_ERR: 'RECV_ERR', 
+SEND_ERR: 'SEND_ERR', 
+ACCEPT_ERR: 'ACCEPT_ERR', 
+READ_ERR: 'READ_ERR', 
+DUMPED_FILE: 'DUMPED_FILE', 
+CLOSE_ERR: 'CLOSE_ERR', 
+DONE: 'DONE', 
+TIMEOUT: 'TIMEOUT', 
+SSL_SEND_ERR: 'SSL_SEND_ERR', 
+SSL_RECV_ERR: 'SSL_RECV_ERR', 
+SSL_CERTIFICATE_ERR: 'SSL_CERTIFICATE_ERR', 
+SSL_CONNECT_ERR: 'SSL_CONNECT_ERR', 
+SSL_CONNECT: 'SSL_CONNECT', 
+}
 
