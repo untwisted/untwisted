@@ -51,7 +51,7 @@ class Dispatcher:
     """
 
     def __init__(self):
-        self.base  = dict()
+        self.base = dict()
 
     def drive(self, event, *args):
         """
@@ -77,6 +77,14 @@ class Dispatcher:
             except Exception as e:
                 debug(event, params)
         return True
+
+    def update_base(self, base):
+        """
+        """
+
+        for ind in base.items():
+            maps = self.base.setdefault(ind[0], [])
+            maps.extend(ind[1])
 
     def add_map(self, event, handle, *args):
         """

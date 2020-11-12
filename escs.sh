@@ -110,7 +110,7 @@ cd ~/.virtualenvs/
 source untwisted/bin/activate
 cd ~/projects/untwisted-code
 ##############################################################################
-
+git rm --cached -r build
 
 
 
