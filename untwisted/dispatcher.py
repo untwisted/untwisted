@@ -1,5 +1,5 @@
 from untwisted.core import Kill, Root
-from untwisted.debug import debug
+from traceback import print_exc
 
 class Stop(Exception):
     """
@@ -40,6 +40,11 @@ class Erase(Exception):
 
     pass
 
+def debug(event, params):
+    print('Event:%s' % repr(event))
+    print('Args:%s' % str(params))
+    print_exc()
+
 class Dispatcher:
     """
     The event dispatcher class.
@@ -47,14 +52,16 @@ class Dispatcher:
 
     def __init__(self):
         self.base  = dict()
-        self.handles = list()
 
     def drive(self, event, *args):
         """
         Used to dispatch events.
         """
 
-        maps = self.base.setdefault(event, [])
+        maps = self.base.get(event)
+        if not maps:
+            return False
+
         for handle, data in maps[:]:
             params = args + data
             try:
@@ -69,15 +76,7 @@ class Dispatcher:
                 maps.remove((handle, data))
             except Exception as e:
                 debug(event, params)
-
-        for handle in self.handles[:]:
-            handle(self, event, *args)
-
-    def add_handle(self, handle):
-        self.handles.append(handle)
-
-    def del_handle(self, handle):
-        self.handles.remove(handle)
+        return True
 
     def add_map(self, event, handle, *args):
         """

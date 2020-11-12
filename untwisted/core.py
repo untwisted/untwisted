@@ -331,7 +331,6 @@ default()
 # install_reactor(Select)
 # install_reactor(Epoll)
 
-# __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
 
 
 

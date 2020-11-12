@@ -1,4 +1,4 @@
-from untwisted.event import LOAD, get_event
+from untwisted.event import LOAD, Event
 import sys
 
 class Fixed:
@@ -14,7 +14,9 @@ class Fixed:
     If it arises a chunk of size equal or greater than 4 then FOUND is processed.
     """
 
-    FOUND = get_event()
+    class FOUND(Event):
+        pass
+
     def __init__(self, spin, size=4):
         spin.add_map(LOAD, self.update)
         self.arr  = bytearray()
@@ -70,7 +72,9 @@ class Terminator:
         'some-data\r\n'
     """
 
-    FOUND = get_event()
+    class FOUND(Event):
+        pass
+
     def __init__(self, spin, delim=b'\r\n'):
         self.delim  = delim
         self.arr    = bytearray()
@@ -105,7 +109,9 @@ class Accumulator:
         self.data.extend(data)
 
 class AccUntil:
-    DONE = get_event()
+    class DONE(Event):
+        pass
+
     def __init__(self, spin, data=b'', delim=b'\r\n\r\n'):
         self.delim = delim
         self.arr   = bytearray()
@@ -125,7 +131,9 @@ class AccUntil:
         spin.drive(AccUntil.DONE, a, b)
 
 class TmpFile:
-    DONE = get_event()
+    class DONE(Event):
+        pass
+
     def __init__(self, spin, data, max_size, fd):
         self.fd       = fd
         self.max_size = max_size

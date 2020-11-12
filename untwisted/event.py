@@ -2,80 +2,84 @@
 Built-in events.
 """
 
-event_count = 0
+class Event:
+    pass
 
-def get_event():
-    """ 
-    It returns a new event signal.
+class READ(Event):
+    pass
 
-    from untwisted.network import *
-    X = get_event()
-    Y = get_event()
-    print X
-    print Y
+class WRITE(Event):
+    pass
 
+class EXPT(Event):
+    pass
 
-    Whenever we call get_event it increases the integer
-    corresponding to the signal. That avoids events getting
-    messed through modules.
-    """
+class ERROR(Event):
+    pass
 
-    global event_count
+class DESTROY(Event):
+    pass
 
-    event_count = event_count + 1
-    return event_count
+class LOST(Event):
+    pass
 
-READ             = get_event()
-WRITE            = get_event()
-EXPT             = get_event()
-ERROR            = get_event()
-DESTROY          = get_event()
-LOST             = get_event()
-CLOSE            = get_event()
-ACCEPT           = get_event()
-CONNECT          = get_event()
-CONNECT_ERR      = get_event()
-LOAD             = get_event()
-DUMPED           = get_event()
-RECV_ERR         = get_event()
-SEND_ERR         = get_event()
-ACCEPT_ERR       = get_event()
-READ_ERR         = get_event()
-DUMPED_FILE      = get_event()
-CLOSE_ERR        = get_event()
-DONE             = get_event()
-TIMEOUT          = get_event()
-SSL_SEND_ERR        = get_event()
-SSL_RECV_ERR        = get_event()
-SSL_CERTIFICATE_ERR = get_event()
-SSL_CONNECT_ERR     = get_event()
-SSL_CONNECT         = get_event()
+class CLOSE(Event):
+    pass
 
-CODE = {
-READ: 'READ', 
-WRITE: 'WRITE', 
-EXPT: 'EXPT', 
-ERROR: 'ERROR', 
-DESTROY: 'DESTROY', 
-LOST: 'LOST', 
-CLOSE: 'CLOSE', 
-ACCEPT: 'ACCEPT', 
-CONNECT: 'CONNECT', 
-CONNECT_ERR: 'CONNECT_ERR', 
-LOAD: 'LOAD', 
-DUMPED: 'DUMPED', 
-RECV_ERR: 'RECV_ERR', 
-SEND_ERR: 'SEND_ERR', 
-ACCEPT_ERR: 'ACCEPT_ERR', 
-READ_ERR: 'READ_ERR', 
-DUMPED_FILE: 'DUMPED_FILE', 
-CLOSE_ERR: 'CLOSE_ERR', 
-DONE: 'DONE', 
-TIMEOUT: 'TIMEOUT', 
-SSL_SEND_ERR: 'SSL_SEND_ERR', 
-SSL_RECV_ERR: 'SSL_RECV_ERR', 
-SSL_CERTIFICATE_ERR: 'SSL_CERTIFICATE_ERR', 
-SSL_CONNECT_ERR: 'SSL_CONNECT_ERR', 
-SSL_CONNECT: 'SSL_CONNECT', 
-}
+class ACCEPT(Event):
+    pass
+
+class CONNECT(Event):
+    pass
+
+class CONNECT_ERR(Event):
+    pass
+
+class LOAD(Event):
+    pass
+
+class DUMPED(Event):
+    pass
+
+class RECV_ERR(Event):
+    pass
+
+class SEND_ERR(Event):
+    pass
+
+class ACCEPT_ERR(Event):
+    pass
+
+class READ_ERR(Event):
+    pass
+
+class READ_ERR(Event):
+    pass
+
+class DUMPED_FILE(Event):
+    pass
+
+class CLOSE_ERR(Event):
+    pass
+
+class DONE(Event):
+    pass
+
+class TIMEOUT(Event):
+    pass
+
+class SSL_SEND_ERR(Event):
+    pass
+
+class SSL_RECV_ERR(Event):        
+    pass
+
+class SSL_CERTIFICATE_ERR(Event): 
+    pass
+
+class SSL_CONNECT_ERR(Event):     
+    pass
+
+class SSL_CONNECT(Event):         
+    pass
 
