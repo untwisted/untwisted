@@ -144,7 +144,6 @@ class TmpFile:
     def update(self, spin, data):
         pos   = self.fd.tell()
         count = self.max_size - pos
-        # It can be optmized.
         self.fd.write(data[:count])
 
         if len(data) < count: 

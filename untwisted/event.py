@@ -53,9 +53,6 @@ class ACCEPT_ERR(Event):
 class READ_ERR(Event):
     pass
 
-class READ_ERR(Event):
-    pass
-
 class DUMPED_FILE(Event):
     pass
 

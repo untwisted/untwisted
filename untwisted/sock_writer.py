@@ -38,13 +38,11 @@ class DumpFile(DumpStr):
     def __init__(self, fd):
         self.fd = fd
         DumpStr.__init__(self)
-        self.process_file()
 
     def process(self, spin):
-        DumpStr.process(self, spin)
-
         if not self.data: 
             self.process_file(spin)
+        DumpStr.process(self, spin)
 
     def process_file(self, spin):
         try:
