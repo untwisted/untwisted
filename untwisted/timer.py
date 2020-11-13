@@ -19,9 +19,9 @@ class Timer:
 
     def update(self):
         if time.time() - self.time > self.inc:
-            self.exec_ckb()
+            self.exec_callback()
 
-    def exec_cbk(self):
+    def exec_callback(self):
         self.callback(*self.args, **self.kwargs)
         self.cancel()
 
@@ -37,7 +37,7 @@ class Timer:
 class Sched(Timer):
     def update(self):
         if time.time() - self.time > self.inc:
-            self.exec_ckb()
+            self.exec_callback()
 
     def exec_cbk(self):
         try:
