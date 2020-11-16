@@ -118,7 +118,7 @@ Untwisted would run on python3.
 Documentation
 =============
 
-[Untwisted Book](https://github.com/untwisted/untwisted/Book.md)
+[Untwisted Book](https://github.com/untwisted/untwisted/blob/master/Book.md)
 
 
 Applications using Untwisted
