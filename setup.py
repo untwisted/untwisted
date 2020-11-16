@@ -8,9 +8,10 @@ setup(name="untwisted",
       author_email="ioliveira@id.uff.br",
       url='https://github.com/iogf/untwisted',
       download_url='https://github.com/iogf/untwisted/releases',
-      keywords=['asynchronous', 'programming', 'twisted', 'untwisted', 'library', 'framework', 'networking', 'protocols', 'rapidserv', 'irc', 'requests'],
+      keywords=['asynchronous', 'programming', 'twisted', 'untwisted', 'library', 
+      'framework', 'networking', 'protocols', 'rapidserv', 'irc', 'requests'],
       classifiers=[],
-      description="A library for asynchronous programming in python.",)
+      description="A better hell of callbacks for asynchronous programming. Untwisted is The Event Driven Framework for Python.",)
 
 
 
