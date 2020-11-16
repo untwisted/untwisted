@@ -118,7 +118,7 @@ Untwisted would run on python3.
 Documentation
 =============
 
-[Wiki](https://github.com/iogf/untwisted/wiki)
+[Wiki](https://github.com/untwisted/untwisted/Book.md)
 
 
 Applications using Untwisted
@@ -147,18 +147,3 @@ Asynchronous web requests in python.
 #### [Rapidserv](https://github.com/iogf/rapidserv)
 
 A non-blocking Flask-like Web Framework in python.
-
-Support
-=======
-
-#### Freenode
-
-**Address:** irc.freenode.org
-
-**Channel:** #untwisted
- 
-
-
-
-
-
