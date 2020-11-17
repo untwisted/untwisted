@@ -111,11 +111,11 @@ class Expect(ChildStdout, ChildStdin):
         """
         """
 
-        self.child = Popen(args, stdout=PIPE, 
+        child = Popen(args, stdout=PIPE, 
         stdin=PIPE,  stderr=STDOUT)
         self.args = args
 
-        self.stdin = self.child.stdin
-        self.stdout = self.child.stdout
-
+        self.stdin = child.stdin
+        self.stdout = child.stdout
+        super(Expect, self).__init__(child)
 
