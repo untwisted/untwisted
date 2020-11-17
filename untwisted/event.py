@@ -17,9 +17,6 @@ class ERROR(Event):
 class DESTROY(Event):
     pass
 
-class LOST(Event):
-    pass
-
 class CLOSE(Event):
     pass
 

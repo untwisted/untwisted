@@ -1,4 +1,4 @@
-from untwisted.event import READ, WRITE, CLOSE
+from untwisted.event import READ, WRITE, CLOSE, DESTROY
 from select import *
 from socket import *
 
@@ -163,6 +163,7 @@ class Select(Gear):
 
         self.rsock.discard(spin)
         self.wsock.discard(spin)
+        spin.drive(DESTROY)
 
     def scale(self, spin):
         """
@@ -241,6 +242,8 @@ class Epoll(Gear):
 
         del self.base[spin.fd]
         self.pollster.unregister(spin.fd)
+        spin.drive(DESTROY)
+
         return True
 
     def scale(self, spin):

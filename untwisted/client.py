@@ -1,5 +1,5 @@
 from untwisted.event import CONNECT, CONNECT_ERR, WRITE, CLOSE, CLOSE_ERR, \
-LOST, SSL_CERTIFICATE_ERR, SSL_CONNECT_ERR, SSL_CONNECT
+SSL_CERTIFICATE_ERR, SSL_CONNECT_ERR, SSL_CONNECT
 
 from untwisted.dispatcher import Erase
 from untwisted.sock_writer import SockWriter, SockWriterSSL
@@ -72,23 +72,15 @@ def lose(spin):
 
     """
 
-    # The object will no longer be processed regardless 
-    # it fail to be unregistered in the pollster.
-    try:
-        spin.destroy()
-    except OSError as excpt:
-        spin.drive(CLOSE_ERR, excpt.args[0])
-    else:
-        spin.drive(LOST)
+    # First unregister it otherwise it raises an error
+    # due to the fd being closed when unregistering off
+    # epoll.
+    spin.destroy()
 
     try:
         spin.close()
     except OSError as excpt:
         spin.drive(CLOSE_ERR, excpt.args[0])
-
-    # The call to socket close method has to be made after
-    # removing the object off the reactor otherwise it may 
-    # occur a bad file descriptor exception.
 
 def put(spin, data):
     """
