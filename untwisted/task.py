@@ -18,15 +18,18 @@ class Task(Dispatcher):
         """
         self.count = self.count + 1
         for ind in events:
-            dispatcher.add_map(ind, self.unpin, events)
+            dispatcher.add_map(ind, self.exced, events)
 
-    def unpin(self, dispatcher, *args):
+    def exced(self, dispatcher, *args):
         for ind in args[-1]:
-            dispatcher.del_map(ind, self.unpin, args[-1])
+            dispatcher.del_map(ind, self.exced, args[-1])
         self.count = self.count - 1
 
     def update(self):
-        if self.count: return
+        if self.count <= 0: 
+            self.destroy() 
+
+    def destroy(self):
         self.drive(DONE)
         core.gear.pool.remove(self)
         

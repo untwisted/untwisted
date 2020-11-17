@@ -1,8 +1,9 @@
-from untwisted.network import core, xmap, Device
+from untwisted.network import Device
 from untwisted.file_reader import FileReader, LOAD, CLOSE
 from untwisted.file_writer import FileWriter, DUMPED
 from untwisted.client import lose
 from subprocess import Popen, PIPE, STDOUT
+from untwisted import core
 from untwisted.core import Kill
 
 def on_close(dev, err):
@@ -22,10 +23,10 @@ FileWriter(stdin)
 FileReader(stdout)
 
 stdin.dump(b'print "hello world!"\n')
-xmap(stdin, DUMPED, lambda dev: stdin.dump(b'quit()\n'))
-xmap(stdout, LOAD, on_load)
-xmap(stdin, CLOSE, on_close)
-xmap(stdout, CLOSE, on_close)
+stdin.add_map(DUMPED, lambda dev: stdin.dump(b'quit()\n'))
+stdout.add_map(LOAD, on_load)
+stdin.add_map(CLOSE, on_close)
+stdout.add_map(CLOSE, on_close)
 
 core.gear.mainloop()
 

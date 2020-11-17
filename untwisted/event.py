@@ -11,7 +11,7 @@ class READ(Event):
 class WRITE(Event):
     pass
 
-class EXPT(Event):
+class SOCK_EXCEPTION(Event):
     pass
 
 class ERROR(Event):

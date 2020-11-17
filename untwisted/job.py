@@ -15,7 +15,7 @@ class Job(Thread, Dispatcher):
             print sum
     
         job = Job(func, 1, 2)
-        xmap(job, DONE, on_done)
+        job.add_map(DONE, on_done)
     
     In case of an exception occuring inside func then the event 
     ERROR happens instead of the DONE event which carries the exception thrown.    
