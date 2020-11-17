@@ -1,4 +1,4 @@
-from untwisted.event import READ, WRITE
+from untwisted.event import READ, WRITE, CLOSE
 from select import *
 from socket import *
 
@@ -129,7 +129,7 @@ class Select(Gear):
             self.scale(ind)
 
         rsock, wsock, xsock = select(self.rsock , 
-        self.wsock, self.xsock, self.timeout)
+        self.wsock, self.base, self.timeout)
 
         for ind in wsock:
             try:
@@ -143,6 +143,12 @@ class Select(Gear):
             except Root:
                 pass
 
+        for ind in xsock:
+            try:
+                ind.drive(CLOSE)
+            except Root:
+                pass
+
     def register(self, spin):
         """
         """
@@ -153,69 +159,24 @@ class Select(Gear):
         """
         """
 
-        try:
-            self.base.remove(spin)
-        except ValueError:
-            pass
+        self.base.remove(spin)
 
-        self.del_rsock(spin)
-        self.del_wsock(spin)
-
-    def update_rsock(self, spin):
-        """
-        """
-
-        if spin.base.get(READ):
-            self.add_rsock(spin)
-        else:
-            self.del_rsock(spin)
+        self.rsock.discard(spin)
+        self.wsock.discard(spin)
 
     def scale(self, spin):
         """
         """
 
-        self.update_wsock(spin)
-        self.update_rsock(spin)
-
-    def update_wsock(self, spin):
-        """
-        """
+        if spin.base.get(READ):
+            self.rsock.add(spin)
+        else:
+            self.rsock.discard(spin)
 
         if spin.base.get(WRITE):
-            self.add_wsock(spin)
+            self.wsock.add(spin)
         else:
-            self.del_wsock(spin)
-
-    def add_rsock(self, spin):
-        """
-        """
-
-        self.rsock.add(spin)
-
-    def add_wsock(self, spin):
-        """
-        """
-
-        self.wsock.add(spin)
-
-    def del_wsock(self, spin):
-        """
-        """
-
-        try:
-            self.wsock.remove(spin)
-        except KeyError:
-            pass
-
-    def del_rsock(self, spin):
-        """
-        """
-
-        try:
-            self.rsock.remove(spin)
-        except KeyError:
-            pass
-
+            self.wsock.discard(spin)
 
 class Epoll(Gear):
     """
@@ -275,10 +236,12 @@ class Epoll(Gear):
         # fd1 == fd0 -> True
         # 
         peer = self.base.get(spin.fd)
-        if not peer is spin: return
+        if not peer is spin: 
+            return False
 
         del self.base[spin.fd]
         self.pollster.unregister(spin.fd)
+        return True
 
     def scale(self, spin):
         """
@@ -330,15 +293,5 @@ def default():
 default()
 # install_reactor(Select)
 # install_reactor(Epoll)
-
-
-
-
-
-
-
-
-
-
 
 
