@@ -131,15 +131,16 @@ class Select(Gear):
         rsock, wsock, xsock = select(self.rsock , 
         self.wsock, self.base, self.timeout)
 
-        for ind in wsock:
-            try:
-                ind.drive(WRITE)
-            except Root:
-                pass
-
         for ind in rsock:
             try:
                 ind.drive(READ)
+            except Root:
+                pass
+
+        wsock = (ind for ind in wsock if not ind.dead)
+        for ind in wsock:
+            try:
+                ind.drive(WRITE)
             except Root:
                 pass
 
@@ -283,8 +284,8 @@ def default():
     except NameError:
         install_reactor(Select)
 
-default()
-# install_reactor(Select)
+# default()
+install_reactor(Select)
 # install_reactor(Epoll)
 
 
