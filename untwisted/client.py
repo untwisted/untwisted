@@ -75,12 +75,9 @@ def lose(spin):
     # First unregister it otherwise it raises an error
     # due to the fd being closed when unregistering off
     # epoll.
-    spin.destroy()
 
-    try:
-        spin.close()
-    except OSError as excpt:
-        spin.drive(CLOSE_ERR, excpt.args[0])
+    spin.destroy()
+    spin.close()
 
 def put(spin, data):
     """

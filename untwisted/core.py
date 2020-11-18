@@ -210,10 +210,7 @@ class Epoll(Gear):
 
         events = self.pollster.poll(self.timeout) 
         for fd, event in events:
-            try:
-                self.dispatch(fd, event)
-            except KeyError:
-                pass
+            self.dispatch(fd, event)
 
     def register(self, spin):
         """
@@ -258,15 +255,15 @@ class Epoll(Gear):
 
         spin = self.base[fd]
 
-        if event & EPOLLOUT:
-            try:
-                spin.drive(WRITE)
-            except Root:
-                pass
-
         if event & EPOLLIN:
             try:
                 spin.drive(READ)
+            except Root:
+                pass
+
+        if event & EPOLLOUT and not spin.dead:
+            try:
+                spin.drive(WRITE)
             except Root:
                 pass
 
