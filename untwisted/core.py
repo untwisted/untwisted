@@ -226,25 +226,18 @@ class Epoll(Gear):
         """
         """
 
-        # It is needed to make sure the spin instance is in fact the one
-        # that has to be removed since when creating new Spin instances it may 
-        # occur the following happening:
+        # Note: 
         # spin0 = Spin()
         # fd0   = spin0.fileno()
         # spin0.destroy()
+        # spin0.close()
         # spin1 = Spin()
         # fd1   = spin1.fileno()
         # fd1 == fd0 -> True
-        # 
-        peer = self.base.get(spin.fd)
-        if not peer is spin: 
-            return False
 
         del self.base[spin.fd]
         self.pollster.unregister(spin.fd)
         spin.drive(DESTROY)
-
-        return True
 
     def scale(self, spin):
         """
