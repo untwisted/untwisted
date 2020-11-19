@@ -21,44 +21,21 @@ class Gear:
     It implements a basic set of methods that should be
     common to all reactors.
 
-    This class isn't intented to be subclassed outside untwisted
-    modules.
-
-    I thought of installing the reactor inside this class
-    instead of inside this module. However, it arose some
-    odd patterns which i preferred to avoid. 
-
     """
 
     MAX_SIZE = 6028
     def __init__(self):
-        """ Class constructor """
         self.pool = []
 
     def mainloop(self):
         """ 
         This is the reactor mainloop.
-        It is intented to be called when
-        a reactor is installed.
-
-        from untwisted.network import *
-
-        # It processes forever.
-        core.gear.mainloop()
         """
             
         while True:
-        # It calls repeteadly the reactor
-        # update method.
             try:
                 self.update()
             except Kill:
-        # It breaks the loop
-        # silently.
-        # people implementing reactors from other mainloop
-        # should implement this try: catch
-        # suitably to their needs.
-
                 break
             except KeyboardInterrupt:
                 print(self.base)
@@ -66,12 +43,8 @@ class Gear:
 
     def process_pool(self):
         """ 
-        This method processes the pool of objects
-        that are binded to the reactor. 
-
-        This method shouldn't be called by the
-        user of the class except he knows what he is
-        doing.
+        Process a pool of objects that 
+        should be updated when the reactor is not idling.
         """
         for ind in self.pool[:]:
             ind.update()
@@ -97,12 +70,7 @@ class Select(Gear):
     """
 
     def __init__(self):
-        # This variable holds the timeout passed
-        # to select.
         self.timeout = None
-
-        # This is the default timeout. It is used
-        # by objects being processed in pool.
         self.default_timeout = None
 
         self.base  = []
@@ -115,7 +83,6 @@ class Select(Gear):
 
     def update(self):
         """ 
-        Other reactors should call this method.
         """
 
         self.process_pool()
@@ -128,8 +95,8 @@ class Select(Gear):
         for ind in self.base: 
             self.scale(ind)
 
-        rsock, wsock, xsock = select(self.rsock , 
-        self.wsock, self.base, self.timeout)
+        rsock, wsock, xsock = select(self.rsock, 
+            self.wsock, self.base, self.timeout)
 
         for ind in rsock:
             try:
@@ -196,7 +163,6 @@ class Epoll(Gear):
 
     def update(self):
         """
-        Other reactors should call this method.
         """
 
         self.process_pool()
@@ -284,8 +250,8 @@ def default():
     except NameError:
         install_reactor(Select)
 
-# default()
-install_reactor(Select)
+default()
+# install_reactor(Select)
 # install_reactor(Epoll)
 
 
