@@ -78,7 +78,6 @@ class Select(Gear):
         # These are the sockets in R/W status.
         self.rsock = set()
         self.wsock = set()
-        self.xsock = set()
         Gear.__init__(self)
 
     def update(self):
@@ -250,8 +249,8 @@ def default():
     except NameError:
         install_reactor(Select)
 
-default()
-# install_reactor(Select)
+# default()
+install_reactor(Select)
 # install_reactor(Epoll)
 
 

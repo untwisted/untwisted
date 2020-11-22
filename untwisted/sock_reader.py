@@ -44,8 +44,7 @@ class SockReader:
 class SockReaderSSL(SockReader):
     def update(self, spin):
         try:
-            while True:
-                self.process_data(spin)
+            self.process_data(spin)
         except ssl.SSLWantReadError as excpt:
             spin.drive(SSL_RECV_ERR, spin, excpt)
         except ssl.SSLWantWriteError as excpt:
