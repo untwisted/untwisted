@@ -103,7 +103,6 @@ class Select(Gear):
             except Root:
                 pass
 
-        wsock = (ind for ind in wsock if not ind.dead)
         for ind in wsock:
             try:
                 ind.drive(WRITE)
@@ -227,7 +226,7 @@ class Epoll(Gear):
             except Root:
                 pass
 
-        if event & EPOLLOUT and not spin.dead:
+        if event & EPOLLOUT:
             try:
                 spin.drive(WRITE)
             except Root:
@@ -249,8 +248,8 @@ def default():
     except NameError:
         install_reactor(Select)
 
-# default()
-install_reactor(Select)
+default()
+# install_reactor(Select)
 # install_reactor(Epoll)
 
 

@@ -10,7 +10,8 @@ class Dump:
         if excpt.args[0] in SEND_ERR_CODE:
             spin.drive(SEND_ERR, excpt)
         elif excpt.args[0] in CLOSE_ERR_CODE: 
-            spin.drive(CLOSE, excpt)
+            if not spin.dead:
+                spin.drive(CLOSE, excpt)
         else:
             raise excpt
 
