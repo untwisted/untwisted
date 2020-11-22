@@ -33,7 +33,7 @@ class Fixed:
     
 class Breaker:
     """
-    A handle for application layer protocols follows a command scheme pattern.
+    A handle for application layer protocols which follows a command scheme pattern.
 
     def on_add(spin, *args):
         print args
@@ -109,63 +109,62 @@ class Accumulator:
         self.data.extend(data)
 
 class AccUntil:
+    """
+    """
+
     class DONE(Event):
         pass
 
-    def __init__(self, spin, data=b'', delim=b'\r\n\r\n'):
+    def __init__(self, spin, delim=b'\r\n\r\n'):
         self.delim = delim
         self.arr   = bytearray()
         self.spin  = spin
-        spin.add_map(LOAD, self.update)
-        self.update(spin, data)
+
+    def start(self, data=b''):
+        self.spin.add_map(LOAD, self.update)
+        self.update(self.spin, data)
 
     def update(self, spin, data):
         self.arr.extend(data)
         if self.delim in self.arr:
-            self.process(spin)
+            self.stop()
 
-    def process(self, spin):
-        spin.del_map(LOAD, self.update)
+    def stop(self):
+        self.spin.del_map(LOAD, self.update)
         data = bytes(self.arr)
+
         a, b = data.split(self.delim, 1)
-        spin.drive(AccUntil.DONE, a, b)
+        self.spin.drive(AccUntil.DONE, a, b)
 
 class TmpFile:
     class DONE(Event):
         pass
 
-    def __init__(self, spin, data, max_size, fd):
-        self.fd       = fd
-        self.max_size = max_size
-        spin.add_map(LOAD, self.update)
+    def __init__(self, spin):
+        self.spin = spin
+        self.fd   = None
+        self.size = None
 
-        self.update(spin, data)
+    def start(self, fd, size=0, init_data=b''):
+        self.fd = fd
+        self.size = size
+
+        self.spin.add_map(LOAD, self.update)
+        self.update(self.spin, init_data)
+
+    def stop(self, data):
+        lsize = self.size - self.fd.tell()
+        self.fd.write(data[:lsize])
+
+        self.spin.del_map(LOAD, self.update)
+        self.spin.drive(TmpFile.DONE, self.fd, data[lsize:])
 
     def update(self, spin, data):
-        pos   = self.fd.tell()
-        count = self.max_size - pos
-        self.fd.write(data[:count])
-
-        if len(data) < count: 
-            return
-
-        spin.del_map(LOAD, self.update)
-        spin.drive(TmpFile.DONE, self.fd, data[count:])
-
-# class AccAck(object):
-    # DONE = get_event()
-# 
-    # def __init__(self, spin, fd, max_size, ack):
-        # self.fd       = fd
-        # self.max_size = size
-        # xmap(spin, LOAD, self.update)
-# 
-    # def update(self, spin, data):
-        # self.fd.write(data)
-        # spin.dump(self.ack(fd, self.max_size))
-# 
-        # if self.fd.tell() >= self.max_size:
-            # pass
+        lsize = self.size - self.fd.tell()
+        if len(data) >= lsize: 
+            self.stop(data)
+        else:
+            self.fd.write(data)
 
 def logcon(spin, fd=sys.stdout):
     def log(spin, data):
