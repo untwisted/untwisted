@@ -1,24 +1,25 @@
 # It imports basic objects.
-from untwisted.network import core, Spin, xmap
+from untwisted.network import SuperSocket
 from untwisted.server import Server, ACCEPT
 from untwisted.client import lose, CLOSE
 from untwisted.sock_writer import SockWriter
+from untwisted import core
 from time import asctime
 
 class TimeServ:
     def __init__(self, server):
-        xmap(server, ACCEPT, self.handle_accept)
+        server.add_map(ACCEPT, self.handle_accept)
        
 
     def handle_accept(self, server, con):
         SockWriter(con)
 
         con.dump(('%s\r\n' % asctime()).encode('utf-8'))
-        xmap(con, CLOSE, lambda con, err: lose(con))
+        con.add_map(CLOSE, lambda con, err: lose(con))
 
 
 if __name__ == '__main__':
-    server = Spin()
+    server = SuperSocket()
     server.bind(('', 1234))
     server.listen(200)
 

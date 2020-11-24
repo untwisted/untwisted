@@ -55,10 +55,10 @@ class Gear:
         reactor classes.
         """
 
-    def register(self, spin):
+    def register(self, ssock):
         pass
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         pass
 
         pass
@@ -115,35 +115,35 @@ class Select(Gear):
             except Root:
                 pass
 
-    def register(self, spin):
+    def register(self, ssock):
         """
         """
 
-        self.base.append(spin)
+        self.base.append(ssock)
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         """
         """
 
-        self.base.remove(spin)
+        self.base.remove(ssock)
 
-        self.rsock.discard(spin)
-        self.wsock.discard(spin)
-        spin.drive(DESTROY)
+        self.rsock.discard(ssock)
+        self.wsock.discard(ssock)
+        ssock.drive(DESTROY)
 
-    def scale(self, spin):
+    def scale(self, ssock):
         """
         """
 
-        if spin.base.get(READ):
-            self.rsock.add(spin)
+        if ssock.base.get(READ):
+            self.rsock.add(ssock)
         else:
-            self.rsock.discard(spin)
+            self.rsock.discard(ssock)
 
-        if spin.base.get(WRITE):
-            self.wsock.add(spin)
+        if ssock.base.get(WRITE):
+            self.wsock.add(ssock)
         else:
-            self.wsock.discard(spin)
+            self.wsock.discard(ssock)
 
 class Epoll(Gear):
     """
@@ -177,31 +177,31 @@ class Epoll(Gear):
         for fd, event in events:
             self.dispatch(fd, event)
 
-    def register(self, spin):
+    def register(self, ssock):
         """
         """
 
-        self.base[spin.fd] = spin
-        self.pollster.register(spin.fd)
+        self.base[ssock.fd] = ssock
+        self.pollster.register(ssock.fd)
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         """
         """
 
         # Note: 
-        # spin0 = Spin()
-        # fd0   = spin0.fileno()
-        # spin0.destroy()
-        # spin0.close()
-        # spin1 = Spin()
-        # fd1   = spin1.fileno()
+        # ssock0 = SuperSocket()
+        # fd0   = ssock0.fileno()
+        # ssock0.destroy()
+        # ssock0.close()
+        # ssock1 = SuperSocket()
+        # fd1   = ssock1.fileno()
         # fd1 == fd0 -> True
 
-        del self.base[spin.fd]
-        self.pollster.unregister(spin.fd)
-        spin.drive(DESTROY)
+        del self.base[ssock.fd]
+        self.pollster.unregister(ssock.fd)
+        ssock.drive(DESTROY)
 
-    def scale(self, spin):
+    def scale(self, ssock):
         """
         """
 
@@ -209,26 +209,26 @@ class Epoll(Gear):
         # EPOLLERR	Error condition happened on the assoc. fd
         # When a connection is tried and it is refused
         # it would spawn twice CONNECT_ERR.
-        is_readable = EPOLLIN  if spin.base.get(READ) else 0 
-        is_writable = EPOLLOUT if spin.base.get(WRITE) else 0
+        is_readable = EPOLLIN  if ssock.base.get(READ) else 0 
+        is_writable = EPOLLOUT if ssock.base.get(WRITE) else 0
         mask        = is_readable | is_writable
-        self.pollster.modify(spin.fd, mask)
+        self.pollster.modify(ssock.fd, mask)
 
     def dispatch(self, fd, event):
         """
         """
 
-        spin = self.base[fd]
+        ssock = self.base[fd]
 
         if event & EPOLLIN:
             try:
-                spin.drive(READ)
+                ssock.drive(READ)
             except Root:
                 pass
 
         if event & EPOLLOUT:
             try:
-                spin.drive(WRITE)
+                ssock.drive(WRITE)
             except Root:
                 pass
 

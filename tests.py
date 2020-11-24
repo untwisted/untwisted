@@ -84,7 +84,7 @@ class TestSockReaderSSL(TestCase):
     def setUp(self):
         pass
 
-class TestSpin(TestCase):
+class TestSuperSocket(TestCase):
     def setUp(self):
         pass
 

@@ -1,5 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.network import Spin
+from untwisted.network import SuperSocket
 from untwisted.event import READ
 from threading import Lock
 
@@ -10,11 +10,11 @@ class Waker:
         server.bind(('127.0.0.1', 0))
         server.listen(1)
 
-        client = Spin()
+        client = SuperSocket()
         client.connect_ex(server.getsockname())
 
-        def consume(spin):
-            spin.recv(self.MAX_SIZE)
+        def consume(ssock):
+            ssock.recv(self.MAX_SIZE)
 
         client.add_map(READ, consume)
 

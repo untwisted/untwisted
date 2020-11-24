@@ -1,8 +1,7 @@
 """
 """
 
-from builtins import map
-from untwisted.network import Spin
+from untwisted.network import SuperSocket
 from untwisted.sock_reader import SockReader
 from untwisted.sock_writer import SockWriter
 from untwisted.event import CLOSE, ACCEPT
@@ -70,7 +69,7 @@ class CalcServer:
         client.dump(('%s\r\n' % msg).encode('utf8'))
 
 if __name__ == '__main__':
-    server = Spin()
+    server = SuperSocket()
     server.bind(('', 1234))
     server.listen(5)
 

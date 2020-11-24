@@ -1,4 +1,4 @@
-from untwisted.network import Spin
+from untwisted.network import SuperSocket
 from untwisted.client import Client, CONNECT
 from untwisted.sock_writer import SockWriter, DUMPED
 from untwisted.sock_reader import SockReader
@@ -16,7 +16,7 @@ def setup(con, msg):
 
 def create_connection(addr, port, msg):
     sock = socket(AF_INET, SOCK_STREAM)
-    con  = Spin(sock)
+    con  = SuperSocket(sock)
 
     Client(con)
     con.connect_ex((addr, port))

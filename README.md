@@ -30,7 +30,7 @@ that if you like clean, consistent and high performance code then untwisted is f
 This neat piece of code implements a basic echo server.
 
 ~~~python
-from untwisted.network import Spin, xmap, core
+from untwisted.network import SuperSocket, xmap, core
 from untwisted.iostd import create_server, ACCEPT, LOAD
 
 class EchoServer:
@@ -49,7 +49,7 @@ This piece of code just sets up a simple telnet chat. Once the code
 is running just connect on port 1234 via telnet, type a nick and start chatting :)
 
 ~~~python
-from untwisted.network import core, Spin, xmap
+from untwisted.network import core, SuperSocket, xmap
 from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine

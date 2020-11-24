@@ -1,29 +1,30 @@
 from untwisted.event import ACCEPT, CONNECT, CONNECT_ERR, CLOSE
-from untwisted.network import core, Spin, xmap
+from untwisted.network import SuperSocket
 from untwisted.splits import Terminator
 from untwisted.server import Server
 from untwisted.sock_writer import SockWriter
 from untwisted.sock_reader import SockReader
 from untwisted.client import Client
+from untwisted import core
 
 class IrcHub:
     def __init__(self, server_port, backlog, irc_address, irc_port):
         self.irc_address = irc_address
         self.irc_port    = irc_port
 
-        server = Spin()
+        server = SuperSocket()
         server.bind(('', server_port))
         server.listen(int(backlog))
     
         Server(server)
     
-        xmap(server, ACCEPT, self.handle_accept)
+        server.add_map(ACCEPT, self.handle_accept)
 
     def handle_accept(self, server, client):
-        irc = Spin()
+        irc = SuperSocket()
         Client(irc)
-        xmap(irc, CONNECT, self.handle_connect, client)
-        xmap(irc, CONNECT_ERR, self.down_connection)
+        irc.add_map(CONNECT, self.handle_connect, client)
+        irc.add_map(CONNECT_ERR, self.down_connection)
 
         irc.connect_ex((self.irc_address, self.irc_port))
 
@@ -34,10 +35,10 @@ class IrcHub:
         SockWriter(irc)
         SockReader(irc)
         Terminator(irc, delim=b'\r\n')
-        xmap(irc, Terminator.FOUND, self.handle_found)
-        xmap(irc, CLOSE, self.down_connection)
-        xmap(client, CLOSE, self.down_connection)
-        xmap(client, Terminator.FOUND, self.handle_found)
+        irc.add_map(Terminator.FOUND, self.handle_found)
+        irc.add_map(CLOSE, self.down_connection)
+        client.add_map(CLOSE, self.down_connection)
+        client.add_map(Terminator.FOUND, self.handle_found)
 
         irc.arrow    = client
         client.arrow = irc

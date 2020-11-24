@@ -5,25 +5,25 @@ import ssl
 
 class SockReader:
     """
-    Used to read data through a Spin instance.
+    Used to read data through a SuperSocket instance.
     """
     
     SIZE = 1024 * 124
 
-    def __init__(self, spin):
-        spin.add_map(READ, self.update)
+    def __init__(self, ssock):
+        ssock.add_map(READ, self.update)
 
-    def update(self, spin):
+    def update(self, ssock):
         """
         """
 
         try:
-            self.process_data(spin)
+            self.process_data(ssock)
         except socket.error as excpt:
-            self.process_error(spin, excpt)
+            self.process_error(ssock, excpt)
 
-    def process_data(self, spin):
-        data = spin.recv(self.SIZE)
+    def process_data(self, ssock):
+        data = ssock.recv(self.SIZE)
 
         # It has to raise the error here
         # otherwise it CLOSE gets spawned
@@ -31,28 +31,28 @@ class SockReader:
 
         if not data: 
             raise socket.error('')
-        spin.drive(LOAD, data)
+        ssock.drive(LOAD, data)
 
-    def process_error(self, spin, excpt):
+    def process_error(self, ssock, excpt):
         if excpt.args[0] in RECV_ERR_CODE:
-            spin.drive(RECV_ERR, excpt)
+            ssock.drive(RECV_ERR, excpt)
         elif excpt.args[0] in CLOSE_ERR_CODE: 
-            spin.drive(CLOSE, excpt)
+            ssock.drive(CLOSE, excpt)
         else:
             raise excpt
 
 class SockReaderSSL(SockReader):
-    def update(self, spin):
+    def update(self, ssock):
         try:
-            self.process_data(spin)
+            self.process_data(ssock)
         except ssl.SSLWantReadError as excpt:
-            spin.drive(SSL_RECV_ERR, spin, excpt)
+            ssock.drive(SSL_RECV_ERR, ssock, excpt)
         except ssl.SSLWantWriteError as excpt:
-            spin.drive(SSL_RECV_ERR, spin, excpt)
+            ssock.drive(SSL_RECV_ERR, ssock, excpt)
         except ssl.SSLError as excpt:
-            spin.drive(CLOSE, spin, excpt)
+            ssock.drive(CLOSE, ssock, excpt)
         except socket.error as excpt:
-            self.process_error(spin, excpt)
+            self.process_error(ssock, excpt)
 
 
 

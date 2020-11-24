@@ -112,6 +112,8 @@ cd ~/projects/untwisted-code
 ##############################################################################
 git rm --cached -r build
 
+grep -rl --exclude-dir='.git' 'ssock' ./ | xargs sed -i 's/ssock/ssock/g'
+grep -rl --exclude-dir='.git' 'ssock' ./ | xargs sed -i 's/ssock/ssock/g'
 
 
 

@@ -1,22 +1,22 @@
 """ 
 """
-from untwisted.network import core, Spin, xmap
+from untwisted.network import SuperSocket
 from untwisted.client import Client, CONNECT, CONNECT_ERR
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.task import Task, DONE
 from untwisted.network import die
-# from socket import *
+from untwisted import core
 
-def is_open(spin, port):
+def is_open(ssock, port):
     print('Port %s is open.' % port)
 
 def create_connection(addr, port):
     sock = socket(AF_INET, SOCK_STREAM)
-    spin = Spin(sock)
-    Client(spin)
-    xmap(spin, CONNECT, is_open, port)
-    spin.connect_ex((addr, port))
-    return spin
+    ssock = SuperSocket(sock)
+    Client(ssock)
+    ssock.add_map(CONNECT, is_open, port)
+    ssock.connect_ex((addr, port))
+    return ssock
 
 def scan(addr, min, max):
     task = Task()
@@ -24,7 +24,7 @@ def scan(addr, min, max):
         task.add(create_connection(addr, ind), CONNECT, CONNECT_ERR)
 
     task.start()    
-    xmap(task, DONE, lambda task: die())
+    task.add_map(DONE, lambda task: die())
 
 if __name__ == '__main__':
     from optparse import OptionParser

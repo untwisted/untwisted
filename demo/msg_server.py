@@ -1,5 +1,5 @@
 from untwisted.sock_reader import SockReader, LOAD, CLOSE
-from untwisted.network import Spin
+from untwisted.network import SuperSocket
 from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.sock_writer import SockWriter
 from untwisted.server import Server
@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     (opt, args) = parser.parse_args()
     sock   = socket(AF_INET, SOCK_STREAM)
-    server = Spin(sock) 
+    server = SuperSocket(sock) 
     server.bind((opt.addr, opt.port))
     server.listen(opt.backlog)
     Server(server)

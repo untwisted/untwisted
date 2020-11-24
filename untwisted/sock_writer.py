@@ -6,12 +6,12 @@ import ssl
 import socket
 
 class Dump:
-    def process_error(self, spin, excpt):
+    def process_error(self, ssock, excpt):
         if excpt.args[0] in SEND_ERR_CODE:
-            spin.drive(SEND_ERR, excpt)
+            ssock.drive(SEND_ERR, excpt)
         elif excpt.args[0] in CLOSE_ERR_CODE: 
-            if not spin.dead:
-                spin.drive(CLOSE, excpt)
+            if not ssock.dead:
+                ssock.drive(CLOSE, excpt)
         else:
             raise excpt
 
@@ -21,11 +21,11 @@ class DumpStr(Dump):
     def __init__(self, data=b''):
         self.data = memoryview(data)
 
-    def process(self, spin):
+    def process(self, ssock):
         try:
-            size = spin.send(self.data)  
+            size = ssock.send(self.data)  
         except socket.error as excpt:
-            self.process_error(spin, excpt)
+            self.process_error(ssock, excpt)
         else:
             self.data = self.data[size:]
 
@@ -40,37 +40,37 @@ class DumpFile(DumpStr):
         self.fd = fd
         DumpStr.__init__(self)
 
-    def process(self, spin):
+    def process(self, ssock):
         if not self.data: 
-            self.process_file(spin)
-        DumpStr.process(self, spin)
+            self.process_file(ssock)
+        DumpStr.process(self, ssock)
 
-    def process_file(self, spin):
+    def process_file(self, ssock):
         try:
             data = self.fd.read(DumpFile.BLOCK)
         except IOError as excpt:
-            spin.drive(READ_ERR, excpt)
+            ssock.drive(READ_ERR, excpt)
         else:
             self.data = memoryview(data)
 
 class DumpStrSSL(DumpStr):
-    def process(self, spin):
+    def process(self, ssock):
         # When ssl.SSLEOFError happens it shouldnt spawn CLOSE
         # because there may exist data to be read.
         # If it spawns CLOSE the socket is closed and no data
         # can be read from.
         try:
-            size = spin.send(self.data)  
+            size = ssock.send(self.data)  
         except ssl.SSLWantReadError as excpt:
-            spin.drive(SSL_SEND_ERR, spin, excpt)
+            ssock.drive(SSL_SEND_ERR, ssock, excpt)
         except ssl.SSLWantWriteError as excpt:
-            spin.drive(SSL_SEND_ERR, spin, excpt)
+            ssock.drive(SSL_SEND_ERR, ssock, excpt)
         except ssl.SSLEOFError as excpt:
             pass
         except ssl.SSLError as excpt:
-            spin.drive(CLOSE, excpt)
+            ssock.drive(CLOSE, excpt)
         except socket.error as excpt:
-            self.process_error(spin, excpt)
+            self.process_error(ssock, excpt)
         else:
             self.data = self.data[size:]
 
@@ -79,46 +79,46 @@ class DumpFileSSL(DumpStrSSL, DumpFile):
 
 class SockWriter:
     """ 
-    Stdin is a handle used to send data through Spin connections.
+    Stdin is a handle used to send data through SuperSocket connections.
 
     """
 
-    def __init__(self, spin):
+    def __init__(self, ssock):
         """ 
         """
 
         self.queue    = deque()
         self.data     = None
-        spin.dump     = self.dump
-        spin.dumpfile = self.dumpfile
-        self.spin     = spin
+        ssock.dump     = self.dump
+        ssock.dumpfile = self.dumpfile
+        self.ssock     = ssock
 
-    def update(self, spin):
+    def update(self, ssock):
         """
         """
         
         if not self.data: 
-            self.process_queue(spin)
+            self.process_queue(ssock)
 
-        self.data.process(spin)
+        self.data.process(ssock)
 
-    def process_queue(self, spin):
+    def process_queue(self, ssock):
         try:
             self.data = self.queue.popleft()
         except IndexError: 
             self.stop()
 
     def stop(self):
-        self.spin.del_map(WRITE, self.update)
-        self.spin.drive(DUMPED)
+        self.ssock.del_map(WRITE, self.update)
+        self.ssock.drive(DUMPED)
 
     def start(self):
         if not self.queue: 
-            self.spin.add_map(WRITE, self.update)
+            self.ssock.add_map(WRITE, self.update)
 
     def dump(self, data):
         """ 
-        Send data through a Spin instance. 
+        Send data through a SuperSocket instance. 
         """
 
         self.start()
@@ -127,7 +127,7 @@ class SockWriter:
 
     def dumpfile(self, fd):
         """ 
-        Dump a file through a Spin instance. 
+        Dump a file through a SuperSocket instance. 
         """
 
         self.start()
