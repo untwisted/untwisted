@@ -3,7 +3,7 @@ from untwisted.network import SuperSocket
 from threading import Thread
 from untwisted.job import Job
 from untwisted.waker import waker
-from untwisted.splits import Terminator
+from untwisted.splits import Terminator, AccUntil
 from untwisted.sock_writer import SockWriter
 from untwisted.sock_reader import SockReader
 from untwisted.client import Client, create_client, lose
@@ -221,7 +221,35 @@ class TestSockReader(unittest.TestCase):
         self.assertEqual(self.sent, b'abc' * 100)
 
 class TestSockAccUntil(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.server = create_server('0.0.0.0', 1241, 5)
+        self.server.add_map(ACCEPT, self.handle_accept)
+
+        self.client = create_client('0.0.0.0', 1241)
+        self.client.add_map(CONNECT, self.handle_connect)
+
+    def handle_done(self, client, a, b):
+        self.assertEqual(a, b'abc' * 100)
+        self.assertEqual(b, b'efg' * 100)
+
+        client.destroy()
+        client.close()
+
+        self.server.destroy()
+        self.server.close()
+        die()
+
+    def handle_accept(self, server, ssock):
+        self.ssock = ssock
+        ssock.dump(b'abc' * 100 + b'\r\n\r\n' + b'efg'* 100)
+
+    def handle_connect(self, client):
+        acc = AccUntil(client)
+        acc.start()
+        client.add_map(AccUntil.DONE, self.handle_done)
+
+    def test_accept(self):
+        core.gear.mainloop()
 
 class TestTerminator(unittest.TestCase):
     def setUp(self):
