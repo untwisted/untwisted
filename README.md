@@ -12,6 +12,46 @@ libraries like pexpect and twisted proposes to solve in a flexible but concrete 
 Untwisted is extremely modular, applications that are implemented on top of untwisted tend to be 
 succint and elegant. Untwisted has an impressive performance when compared to other python frameworks.
 
+Untwisted implements the concept of super sockets. A super socket in the Untwisted context it is an event emitter
+system. A SuperSocket instance is a socket with an event dispatcher mechanism. Handles can be mapped to events
+that are called when a given event associated with the socket happens.
+
+~~~python
+from untwisted.network import SuperSocket
+# Builtin handle/extension to spawn CONNECT, CONNECT_ERR events.
+from untwisted.client import Client
+# Builtin events.
+from untwisted.event import CONNECT, CONNECT_ERR
+from untwisted import core
+
+def handle_connect(ssock):
+    print('Connected !')
+
+def handle_connect_err(ssock, err):
+    print('Not connected:', err)
+
+ssock = SuperSocket()
+Client(ssock)
+ssock.connect_ex(('httpbin.org', 80))
+
+# Map handles to the events from Client handle.
+ssock.add_map(CONNECT, handle_connect)
+ssock.add_map(CONNECT_ERR, handle_connect_err)
+
+# Start reactor to scale socket READ/WRITE events asynchronously.
+core.gear.mainloop()
+~~~
+
+The SuperSocket class is a socket with event emitter methods. When a given socket is ready for
+reading or writing then a READ or WRITE event are emitted.  
+
+Events can be spawned from event handles thus allowing different parts of an application to raise
+new events. Events can be any kind of Python objects, strings, integers etc.
+
+The event-driven paradigm is such a powerful mean of handling many problems in the asynchronicity
+world however it might become too harsh sometimes. Untwisted  attempts to simplify working internet
+protocols thus building networking applications.
+
 ### Echo Server
 
 This neat piece of code implements a basic echo server.
