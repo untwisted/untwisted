@@ -53,11 +53,14 @@ class Job(Thread, Dispatcher):
                 self.process()
         
     def process(self):
+        # First remove itself in case a call to die
+        # happens and the reactor is activated later
+        # it will keep processing these handles.
+        core.gear.pool.remove(self)
         if self.err:
             self.drive(ERROR, self.err)
         else:
             self.drive(DONE, self.data)
-        core.gear.pool.remove(self)
 
 
 

@@ -1,11 +1,12 @@
 from untwisted.event import ACCEPT, ACCEPT_ERR, CLOSE, CONNECT, CONNECT_ERR, READ, LOAD, DUMPED, DONE
+from untwisted.network import SuperSocket
 from threading import Thread
 from untwisted.job import Job
 from untwisted.waker import waker
 from untwisted.splits import Terminator
 from untwisted.sock_writer import SockWriter
 from untwisted.sock_reader import SockReader
-from untwisted.client import create_client
+from untwisted.client import Client, create_client, lose
 from untwisted.server import create_server
 from untwisted.core import die
 from untwisted import core
@@ -20,9 +21,23 @@ class TestDispatcher(unittest.TestCase):
     def setUp(self):
         pass
 
-class TestWaker(unittest.TestCase):
+class TestJob(unittest.TestCase):
     def setUp(self):
-        pass
+        job = Job(self.do_job)
+        job.add_map(DONE, self.handle_done)
+        self.retval = False
+
+    def handle_done(self, job, retval):
+        self.retval = retval
+        die()
+
+    def do_job(self):
+        time.sleep(1)
+        return True
+
+    def test_job(self):
+        core.gear.mainloop()
+        self.assertEqual(self.retval, True)
 
 class TestTask(unittest.TestCase):
     def setUp(self):
@@ -30,11 +45,43 @@ class TestTask(unittest.TestCase):
 
 class TestClient(unittest.TestCase):
     def setUp(self):
-        pass
+        self.server = create_server('0.0.0.0', 1236, 5)
+
+        self.client = create_client('0.0.0.0', 1236)
+        self.client.add_map(CONNECT, self.handle_connect)
+
+    def handle_connect(self, client):
+        client.destroy()
+        client.close()
+
+        self.server.destroy()
+        self.server.close()
+        die()
+
+    def test_accept(self):
+        core.gear.mainloop()
+        self.assertNotIn(self.server, core.gear.base)
+        self.assertNotIn(self.client, core.gear.base)
 
 class TestLose(unittest.TestCase):
     def setUp(self):
-        pass
+        self.server = create_server('0.0.0.0', 1235, 5)
+
+        self.client = SuperSocket()
+        self.client.connect_ex(('0.0.0.0', 1235))
+
+        Client(self.client)
+        self.client.add_map(CONNECT, self.handle_connect)
+
+    def handle_connect(self, client):
+        lose(client)
+        lose(self.server)
+        die()
+
+    def test_accept(self):
+        core.gear.mainloop()
+        self.assertNotIn(self.server, core.gear.base)
+        self.assertNotIn(self.client, core.gear.base)
 
 class TestServer(unittest.TestCase):
     def setUp(self):
@@ -194,7 +241,7 @@ class HandleWakeup:
     def update(self):
         die()
 
-class TestJob(unittest.TestCase):
+class TestWaker(unittest.TestCase):
     def setUp(self):
         self.handlewakeup = HandleWakeup()
         core.gear.pool.append(self.handlewakeup)
