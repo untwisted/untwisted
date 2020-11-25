@@ -52,7 +52,7 @@ protocols thus building networking applications.
 
 ### Echo Server
 
-This neat piece of code implements a basic echo server.
+This code implements a basic echo server.
 
 ~~~python
 from untwisted.event import ACCEPT, LOAD
@@ -145,6 +145,20 @@ if __name__ == '__main__':
     stderr.add_map(LOAD, on_stderr)
     stdout.add_map(CLOSE, on_close)
     core.gear.mainloop()
+~~~
+
+Would output:
+
+~~~
+(untwisted) [tau@localhost demo]$ python spawn_process.py 
+Stderr data: b'Python 3.9.0 (default, Oct  6 2020, 00:00:00) \n'
+Stderr data: b'[GCC 10.2.1 20200826 (Red Hat 10.2.1-3)] on linux\n'
+Stderr data: b'Type "help", "copyright", "credits" or "license" for more information.\n'
+Stdout data:  b'hello world\n'
+Stderr data: b'>>> >>> Traceback (most recent call last):\n'
+Stderr data: b'  File "<stdin>", line 1, in <module>\n'
+Stderr data: b'ZeroDivisionError: division by zero\n'
+Closing..
 ~~~
 
 Install
