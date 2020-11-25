@@ -15,11 +15,10 @@ class Waker:
 
         def consume(ssock):
             ssock.recv(self.MAX_SIZE)
-
         client.add_map(READ, consume)
 
         self.con, addr  = server.accept()
-        self.lock       = Lock()
+        self.lock = Lock()
 
     def wake_up(self):
         with self.lock:

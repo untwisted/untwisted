@@ -1,7 +1,5 @@
 from untwisted.event import ACCEPT, ACCEPT_ERR, READ
-
 from untwisted.errors import ACCEPT_ERR_CODE
-
 from untwisted.client import install_basic_handles
 from untwisted.network import SuperSocket
 import socket

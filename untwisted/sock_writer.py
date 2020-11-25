@@ -87,11 +87,11 @@ class SockWriter:
         """ 
         """
 
-        self.queue    = deque()
-        self.data     = None
-        ssock.dump     = self.dump
+        self.queue = deque()
+        self.data  = None
+        ssock.dump = self.dump
+        self.ssock = ssock
         ssock.dumpfile = self.dumpfile
-        self.ssock     = ssock
 
     def update(self, ssock):
         """
