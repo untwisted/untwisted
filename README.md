@@ -6,14 +6,13 @@ non blocking sockets.
 
 Untwisted supports asynchronously dealing with sockets, spawning processes while spawning threads to 
 perform other jobs. It is possible to talk to a process using a thread based approach or a unix file 
-descriptor while waiting for socket's events. Untwisted basically solves the problem that some python 
+descriptor while waiting for socket's events. Untwisted basically solves the problem that some Python 
 libraries like pexpect and twisted proposes to solve in a flexible but concrete manner.
 
-Untwisted is extremely modular, applications that are implemented on top of untwisted tend to be 
-succint and elegant. Untwisted has an impressive performance when compared to other python frameworks.
+Untwisted implements the concept of super sockets. A super socket in the untwisted context it is an event emitter
+system. Those who are familiar with Nodejs would feel more comfortable with untwisted super sockets approach.
 
-Untwisted implements the concept of super sockets. A super socket in the Untwisted context it is an event emitter
-system. A SuperSocket instance is a socket with an event dispatcher mechanism. Handles can be mapped to events
+A SuperSocket instance is a socket with an event dispatcher mechanism. Handles can be mapped to events
 that are called when a given event associated with the socket happens.
 
 ~~~python
@@ -42,8 +41,7 @@ ssock.add_map(CONNECT_ERR, handle_connect_err)
 core.gear.mainloop()
 ~~~
 
-The SuperSocket class is a socket with event emitter methods. When a given socket is ready for
-reading or writing then a READ or WRITE event are emitted.  
+When a given socket is ready for reading or writing then a READ or WRITE event are emitted.  
 
 Events can be spawned from event handles thus allowing different parts of an application to raise
 new events. Events can be any kind of Python objects, strings, integers etc.
