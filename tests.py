@@ -7,6 +7,7 @@ from untwisted.splits import Terminator
 from untwisted.sock_writer import SockWriter
 from untwisted.sock_reader import SockReader
 from untwisted.client import Client, create_client, lose
+from untwisted.dispatcher import Dispatcher, Stop, Erase
 from untwisted.server import create_server
 from untwisted.core import die
 from untwisted import core
@@ -19,7 +20,38 @@ class TestExpect(unittest.TestCase):
 
 class TestDispatcher(unittest.TestCase):
     def setUp(self):
-        pass
+        self.dispatcher = Dispatcher()
+        self.dispatcher.add_map('event0', self.handle_event0, False, True)
+        self.dispatcher.add_map('event1', self.handle_event1, False)
+        self.dispatcher.add_map('event2', self.handle_event2, False)
+        self.dispatcher.add_map('event3', self.handle_event3, False)
+        self.dispatcher.add_map('event4', self.handle_event4)
+
+    def handle_event0(self, dispatcher, value0, value1):
+        self.assertEqual(value1, True)
+        self.assertEqual(value0, False)
+
+    def handle_event1(self, dispatcher, value0, value1, value2):
+        self.assertEqual(value2, False)
+        self.assertEqual(value1, True)
+        self.assertEqual(value0, True)
+
+    def handle_event2(self, dispatcher, value0, value1):
+        self.assertEqual(value1, False)
+        self.assertEqual(value0, True)
+
+    def handle_event3(self, dispatcher, value):
+        self.assertEqual(value, False)
+
+    def handle_event4(self, dispatcher):
+        raise Stop
+
+    def test_dispatcher(self):
+        self.dispatcher.drive('event0')
+        self.dispatcher.drive('event1', True, True)
+        self.dispatcher.drive('event2', True)
+        self.dispatcher.drive('event3')
+        self.dispatcher.drive('event4')
 
 class TestJob(unittest.TestCase):
     def setUp(self):
