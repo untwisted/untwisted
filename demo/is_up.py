@@ -1,5 +1,6 @@
-from untwisted.network import SuperSocket, die
+from untwisted.network import SuperSocket
 from untwisted.client import Client, CONNECT, CONNECT_ERR
+from untwisted.core import die
 from untwisted import core
 import errno
 
@@ -18,6 +19,7 @@ def create_connection(addr, port):
     con.add_map(CONNECT_ERR, lambda con, err: die())
     
     con.connect_ex((addr, port))
+    print('connecting')
 
 if __name__ == '__main__':
     import argparse
