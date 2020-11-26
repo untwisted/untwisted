@@ -101,11 +101,15 @@ class TestLose(unittest.TestCase):
 
         Client(self.client)
         self.client.add_map(CONNECT, self.handle_connect)
+        self.server.add_map(ACCEPT, self.handle_accept)
+
+    def handle_accept(self, server, ssock):
+        self.ssock = ssock
+        self.ssock.add_map(CLOSE, lambda ssock, err: die())
 
     def handle_connect(self, client):
         lose(client)
         lose(self.server)
-        die()
 
     def test_accept(self):
         core.gear.mainloop()
