@@ -9,8 +9,6 @@ class Task(Dispatcher):
     def __init__(self):
         Dispatcher.__init__(self)
         self.count = 0
-
-    def start(self):
         core.gear.pool.append(self)
 
     def add(self, dispatcher, *events):
@@ -18,11 +16,9 @@ class Task(Dispatcher):
         """
         self.count = self.count + 1
         for ind in events:
-            dispatcher.add_map(ind, self.exced, events)
+            dispatcher.once(ind, self.check_tasks)
 
-    def exced(self, dispatcher, *args):
-        for ind in args[-1]:
-            dispatcher.del_map(ind, self.exced, args[-1])
+    def check_tasks(self, dispatcher, *args):
         self.count = self.count - 1
 
     def update(self):
