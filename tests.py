@@ -1,5 +1,6 @@
 from untwisted.event import ACCEPT, ACCEPT_ERR, CLOSE, CONNECT, CONNECT_ERR, READ, LOAD, DUMPED, DONE
 from untwisted.network import SuperSocket
+from untwisted.timer import Timer
 from threading import Thread
 from untwisted.job import Job
 from untwisted.waker import waker
@@ -285,7 +286,17 @@ class TestFileWriter(unittest.TestCase):
 
 class TestTimer(unittest.TestCase):
     def setUp(self):
-        pass
+        self.count = 0
+        for ind in range(0, 100):
+            timer = Timer(2, self.handle_timeout, ind) 
+        timer = Timer(3, die)
+
+    def handle_timeout(self, value):
+        self.count += 1
+
+    def test_timer(self):
+        core.gear.mainloop()
+        self.assertEqual(self.count, 100)
 
 class TestSched(unittest.TestCase):
     def setUp(self):
