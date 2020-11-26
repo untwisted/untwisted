@@ -84,6 +84,8 @@ class TestClient(unittest.TestCase):
 
     def handle_connect(self, client):
         print('Connected!', client)
+        lose(client)
+        lose(self.server)
         die()
 
     def test_accept(self):
@@ -116,6 +118,8 @@ class TestServer(unittest.TestCase):
 
     def handle_accept(self, server, ssock):
         print('Accepted:', ssock)
+        lose(ssock)
+        lose(self.server)
         die()
 
     def test_accept(self):
@@ -133,27 +137,24 @@ class TestSockWriter(unittest.TestCase):
 
     def handle_load(self, ssock, data):
         self.sent = self.sent + data
-        if self.sent == b'abc' * 100:
-            self.terminate()
-
-    def terminate(self):
-        lose(self.ssock)
-        lose(self.server)
-        die()
 
     def handle_accept(self, server, ssock):
         self.ssock = ssock
         ssock.add_map(LOAD, self.handle_load)
 
-    def handle_done(self, ssock):
-        print('Sent bytes from:', ssock)
+    def handle_done(self, ssock, data):
+        print('Received bytes from:', ssock)
         lose(ssock)
         lose(self.server)
         die()
 
     def handle_connect(self, client):
         client.dump(b'abc' * 100)
-        client.add_map(DONE, self.handle_done)
+        client.add_map(DUMPED, self.handle_dumped)
+
+    def handle_dumped(self, client):
+        print('Sent from:', client)
+        self.ssock.add_map(LOAD, self.handle_done)
 
     def test_accept(self):
         core.gear.mainloop()
@@ -171,22 +172,20 @@ class TestSockReader(unittest.TestCase):
 
     def handle_load(self, client, data):
         self.sent = self.sent + data
-        if self.sent == b'abc' * 100:
-            self.terminate()
-
-    def terminate(self):
-        lose(self.ssock)
-        lose(self.server)
-        die()
 
     def handle_accept(self, server, ssock):
         self.ssock = ssock
 
         ssock.dump(b'abc' * 100)
-        ssock.add_map(DONE, self.handle_done)
+        ssock.add_map(DUMPED, self.handle_dumped)
 
-    def handle_done(self, ssock):
-        lose(ssock)
+    def handle_dumped(self, ssock):
+        print('Sent from:', ssock)
+        self.client.add_map(LOAD, self.handle_done)
+
+    def handle_done(self, client, data):
+        print('Received bytes from:', self.client)
+        lose(client)
         lose(self.server)
         die()
 
