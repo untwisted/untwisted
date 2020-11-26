@@ -43,24 +43,22 @@ class Terminator:
 
     def __init__(self, ssock, delim=b'\r\n'):
         self.delim  = delim
-        self.arr    = bytearray()
+        self.arr = bytearray()
 
         ssock.add_map(LOAD, self.update)
+        self.ssock = ssock
 
     def update(self, ssock, data):
-        # Can be optmized receiving.
         self.arr.extend(data)
+        chunks = self.arr.split(self.delim)
+        if chunks:
+            self.raise_events(chunks)
 
-        if not self.delim in data:
-            return
-
-        data = bytes(self.arr)
-        lst  = data.split(self.delim)
-        del self.arr[:]
-        self.arr.extend(lst.pop(-1))
-
-        for ind in lst:
-            ssock.drive(Terminator.FOUND, ind)
+    def raise_events(self, chunks):
+        self.arr.extend(chunks.pop(-1))
+        for ind in chunks:
+            self.ssock.drive(Terminator.FOUND, bytes(ind))
+        self.arr.clear()
             
 class Accumulator:
     """
