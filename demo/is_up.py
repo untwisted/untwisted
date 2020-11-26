@@ -19,7 +19,6 @@ def create_connection(addr, port):
     con.add_map(CONNECT_ERR, lambda con, err: die())
     
     con.connect_ex((addr, port))
-    print('connecting')
 
 if __name__ == '__main__':
     import argparse

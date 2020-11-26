@@ -83,17 +83,11 @@ class TestClient(unittest.TestCase):
         self.client.add_map(CONNECT, self.handle_connect)
 
     def handle_connect(self, client):
-        client.destroy()
-        client.close()
-
-        self.server.destroy()
-        self.server.close()
+        print('Connected!', client)
         die()
 
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
 
 class TestLose(unittest.TestCase):
     def setUp(self):
@@ -112,8 +106,6 @@ class TestLose(unittest.TestCase):
 
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
 
 class TestServer(unittest.TestCase):
     def setUp(self):
@@ -123,26 +115,11 @@ class TestServer(unittest.TestCase):
         self.client = create_client('0.0.0.0', 1237)
 
     def handle_accept(self, server, ssock):
-        self.ssock = ssock
-        ssock.destroy()
-        ssock.close()
-
-        # When ssock is closed then CLOSE is spawned in self.client
-        # and a handle to set down the socket is called thus there is no 
-        # need to set down self.client otherwise an exception raises
-        # due to multiple attempts to set down the socket.
-        # self.client.destroy()
-        # self.client.close()
-
-        self.server.destroy()
-        self.server.close()
+        print('Accepted:', ssock)
         die()
 
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
-        self.assertNotIn(self.ssock, core.gear.base)
 
 class TestSockWriter(unittest.TestCase):
     def setUp(self):
@@ -157,18 +134,21 @@ class TestSockWriter(unittest.TestCase):
     def handle_load(self, ssock, data):
         self.sent = self.sent + data
         if self.sent == b'abc' * 100:
-            self.client.drive(DONE)
+            self.terminate()
+
+    def terminate(self):
+        lose(self.ssock)
+        lose(self.server)
+        die()
 
     def handle_accept(self, server, ssock):
         self.ssock = ssock
         ssock.add_map(LOAD, self.handle_load)
 
     def handle_done(self, ssock):
-        self.client.destroy()
-        self.client.close()
-
-        self.server.destroy()
-        self.server.close()
+        print('Sent bytes from:', ssock)
+        lose(ssock)
+        lose(self.server)
         die()
 
     def handle_connect(self, client):
@@ -177,10 +157,6 @@ class TestSockWriter(unittest.TestCase):
 
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
-        self.assertNotIn(self.ssock, core.gear.base)
-        self.assertNotEqual(self.ssock, None)
         self.assertEqual(self.sent, b'abc' * 100)
 
 class TestSockReader(unittest.TestCase):
@@ -196,7 +172,12 @@ class TestSockReader(unittest.TestCase):
     def handle_load(self, client, data):
         self.sent = self.sent + data
         if self.sent == b'abc' * 100:
-            self.ssock.drive(DONE)
+            self.terminate()
+
+    def terminate(self):
+        lose(self.ssock)
+        lose(self.server)
+        die()
 
     def handle_accept(self, server, ssock):
         self.ssock = ssock
@@ -205,20 +186,12 @@ class TestSockReader(unittest.TestCase):
         ssock.add_map(DONE, self.handle_done)
 
     def handle_done(self, ssock):
-        ssock.destroy()
-        ssock.close()
-
-        self.server.destroy()
-        self.server.close()
+        lose(ssock)
+        lose(self.server)
         die()
 
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
-        self.assertNotEqual(self.ssock, None)
-        self.assertNotIn(self.ssock, core.gear.base)
-        self.assertEqual(self.sent, b'abc' * 100)
 
 class TestSockAccUntil(unittest.TestCase):
     def setUp(self):
@@ -231,16 +204,11 @@ class TestSockAccUntil(unittest.TestCase):
     def handle_done(self, client, a, b):
         self.assertEqual(a, b'abc' * 100)
         self.assertEqual(b, b'efg' * 100)
-
-        client.destroy()
-        client.close()
-
-        self.server.destroy()
-        self.server.close()
+        lose(client)
+        lose(self.server)
         die()
 
     def handle_accept(self, server, ssock):
-        self.ssock = ssock
         ssock.dump(b'abc' * 100 + b'\r\n\r\n' + b'efg'* 100)
 
     def handle_connect(self, client):
@@ -265,33 +233,23 @@ class TestTerminator(unittest.TestCase):
     def handle_found(self, client, data):
         self.sent = self.sent + data
         if self.sent == b'abc' * 100:
-            self.ssock.drive(DONE)
+            self.terminate()
+
+    def terminate(self):
+        lose(self.ssock)
+        lose(self.server)
+        die()
 
     def handle_accept(self, server, ssock):
         self.ssock = ssock
-
         ssock.dump(b'abc\r\n' * 100)
-        ssock.add_map(DONE, self.handle_done)
 
     def handle_connect(self, client):
         Terminator(client)
         client.add_map(Terminator.FOUND, self.handle_found)
 
-    def handle_done(self, ssock):
-        ssock.destroy()
-        ssock.close()
-
-        self.server.destroy()
-        self.server.close()
-        die()
-
     def test_accept(self):
         core.gear.mainloop()
-        self.assertNotIn(self.server, core.gear.base)
-        self.assertNotIn(self.client, core.gear.base)
-        self.assertNotEqual(self.ssock, None)
-        self.assertNotIn(self.ssock, core.gear.base)
-        self.assertEqual(self.sent, b'abc' * 100)
 
 class TestTmpFile(unittest.TestCase):
     def setUp(self):
