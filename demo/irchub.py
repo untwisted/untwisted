@@ -1,4 +1,4 @@
-from untwisted.event import ACCEPT, CONNECT, CONNECT_ERR, CLOSE
+from untwisted.event import ACCEPT, CONNECT
 from untwisted.network import SuperSocket
 from untwisted.splits import Terminator
 from untwisted.server import Server
@@ -17,15 +17,12 @@ class IrcHub:
         server.listen(int(backlog))
     
         Server(server)
-    
         server.add_map(ACCEPT, self.handle_accept)
 
     def handle_accept(self, server, client):
         irc = SuperSocket()
         Client(irc)
         irc.add_map(CONNECT, self.handle_connect, client)
-        irc.add_map(CONNECT_ERR, self.down_connection)
-
         irc.connect_ex((self.irc_address, self.irc_port))
 
     def handle_connect(self, irc, client):
@@ -36,8 +33,6 @@ class IrcHub:
         SockReader(irc)
         Terminator(irc, delim=b'\r\n')
         irc.add_map(Terminator.FOUND, self.handle_found)
-        irc.add_map(CLOSE, self.down_connection)
-        client.add_map(CLOSE, self.down_connection)
         client.add_map(Terminator.FOUND, self.handle_found)
 
         irc.arrow    = client
@@ -46,22 +41,23 @@ class IrcHub:
         print('Client Connected', irc.getpeername())
         print('Connection to %s:%s stablished.' % irc.getpeername())
 
-
-    def down_connection(self, transport, err):
-        transport.arrow.destroy()
-        transport.arrow.close()
-        transport.destroy()
-        transport.close()
-
     def handle_found(self, transport, data):
         transport.arrow.dump(b'%s\r\n' % data)
         print(data)
 
 if __name__ == '__main__':
-    import sys
+    from optparse import OptionParser
 
-    script, server_port, backlog, target_address, target_port = sys.argv
-    IrcHub(int(server_port), int(backlog), target_address, int(target_port))
+    parser   = OptionParser()
+    parser.add_option("-s", "--sport", dest="sport", metavar="integer", default=6667)
+    parser.add_option("-p", "--dport", dest="dport", metavar="integer", default=443)
+    parser.add_option("-b", "--backlog", dest="backlog", metavar="integer", default=5)
+
+    parser.add_option("-t", "--target", dest="target",
+                      metavar="string", default="irc.undernet.org")
+    (opt, args) = parser.parse_args()
+
+    IrcHub(int(opt.sport), int(opt.backlog), opt.target, int(opt.dport))
     core.gear.mainloop()
 
 
