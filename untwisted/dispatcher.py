@@ -101,7 +101,7 @@ class Dispatcher:
     
         def shell(*args):
             try:
-                handle(self, *args)
+                handle(*args)
             except Exception as e:
                 raise e
             finally:
