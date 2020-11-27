@@ -42,6 +42,7 @@ ssock.add_map(CONNECT_ERR, handle_connect_err)
 core.gear.mainloop()
 ~~~
 
+
 Events can be spawned from event handles thus allowing different parts of an application to raise
 new events. Events can be any kind of Python objects, strings, integers etc.
 
