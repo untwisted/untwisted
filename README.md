@@ -17,9 +17,7 @@ that are called when a given event associated with the socket happens.
 
 ~~~python
 from untwisted.network import SuperSocket
-# Builtin handle/extension to spawn CONNECT, CONNECT_ERR events.
 from untwisted.client import Client
-# Builtin events.
 from untwisted.event import CONNECT, CONNECT_ERR
 from untwisted import core
 
@@ -30,24 +28,25 @@ def handle_connect_err(ssock, err):
     print('Not connected:', err)
 
 ssock = SuperSocket()
+# An extesion that is responsible for spawning CONNECT or CONNECT_ERR events.
 Client(ssock)
 ssock.connect_ex(('httpbin.org', 80))
 
-# Map handles to the events from Client handle.
+# When the client connects just call handle_connect.
 ssock.add_map(CONNECT, handle_connect)
+
+# In case it fails just calls handle_connect_err.
 ssock.add_map(CONNECT_ERR, handle_connect_err)
 
-# Start reactor to scale socket READ/WRITE events asynchronously.
+# Start the reactor.
 core.gear.mainloop()
 ~~~
-
-When a given socket is ready for reading or writing then a READ or WRITE event are emitted.  
 
 Events can be spawned from event handles thus allowing different parts of an application to raise
 new events. Events can be any kind of Python objects, strings, integers etc.
 
 The event-driven paradigm is such a powerful mean of handling many problems in the asynchronicity
-world however it might become too harsh sometimes. Untwisted  attempts to simplify working internet
+world however it might become too harsh sometimes. Untwisted  attempts to simplify working with internet
 protocols thus building networking applications.
 
 ### Echo Server
