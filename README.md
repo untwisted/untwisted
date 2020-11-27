@@ -35,7 +35,7 @@ ssock.connect_ex(('httpbin.org', 80))
 # When the client connects just call handle_connect.
 ssock.add_map(CONNECT, handle_connect)
 
-# In case it fails just calls handle_connect_err.
+# In case it fails just call handle_connect_err.
 ssock.add_map(CONNECT_ERR, handle_connect_err)
 
 # Start the reactor.
