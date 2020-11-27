@@ -1,4 +1,4 @@
-from untwisted.network import core, xmap
+from untwisted import core
 from untwisted.job import Job, DONE
 import time
 
@@ -11,7 +11,7 @@ def show(job, result):
 
 for ind in range(100):
     job = Job(sum, ind, 1000)
-    xmap(job, DONE, show)
+    job.add_map(DONE, show)
 
 core.gear.mainloop()
 

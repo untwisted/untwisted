@@ -1,16 +1,21 @@
-from untwisted.network import core, SSL, xmap, die
-from untwisted.iostd import put, lose
-from untwisted.iossl import ClientSSL, StdinSSL, StdoutSSL, \
-SSL_CONNECT, SSL_CONNECT_ERR, SSL_CERTIFICATE_ERR, CLOSE, LOAD
+from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, \
+SSL_CERTIFICATE_ERR, put, lose
+from untwisted.sock_writer import SockWriterSSL
+from untwisted.sock_reader import SockReaderSSL, LOAD, CLOSE
 from socket import socket, AF_INET, SOCK_STREAM
+from untwisted import core
+from untwisted.core import die
+from untwisted.network import SSL
+
 import ssl
 
 def on_connect(con, host):
-    StdinSSL(con)
-    StdoutSSL(con)
+    SockWriterSSL(con)
+    SockReaderSSL(con)
     con.dump(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % host.encode('utf8'))
-    xmap(con, LOAD, put)
-    xmap(con, CLOSE, lambda con, err: lose(con))
+    con.add_map(LOAD, put)
+    con.add_map(CLOSE, lambda con, err: lose(con))
+    con.add_map(CLOSE, lambda con, err: die())
 
 def main(addr, port, host):
     sock    = socket(AF_INET, SOCK_STREAM)
@@ -19,9 +24,9 @@ def main(addr, port, host):
     con.connect_ex((addr, port))
 
     ClientSSL(con)
-    xmap(con, SSL_CONNECT, on_connect, host)
-    xmap(con, SSL_CONNECT_ERR, lambda con, err: die(err))
-    xmap(con, SSL_CERTIFICATE_ERR, lambda con, err: die(err))
+    con.add_map(SSL_CONNECT, on_connect, host)
+    con.add_map(SSL_CONNECT_ERR, lambda con, err: die(err))
+    con.add_map(SSL_CERTIFICATE_ERR, lambda con, err: die(err))
 
 if __name__ == '__main__':
     from optparse import OptionParser

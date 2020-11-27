@@ -1,11 +1,8 @@
-from socket import socket, AF_INET, SOCK_STREAM
-from untwisted.event import READ, WRITE
-from untwisted.core import die
-from untwisted.dispatcher import *
+from untwisted.dispatcher import Dispatcher
+from socket import socket
 from untwisted import core
-from untwisted.wrappers import *
 
-class SuperSocket(Dispatcher):
+class BaseSocket(Dispatcher):
     """
     The dispatching system for file descriptors.
     """
@@ -20,14 +17,14 @@ class SuperSocket(Dispatcher):
         core.gear.unregister(self)
         self.dead = True
 
-class Spin(SuperSocket):
+class SuperSocket(BaseSocket):
     """
     The dispatching system for sockets.
     """
 
     def __init__(self, sock=None):
         self.sock = sock if sock else socket()
-        SuperSocket.__init__(self, self.sock.fileno())
+        BaseSocket.__init__(self, self.sock.fileno())
         self.sock.setblocking(0) 
 
     def __getattr__(self, name):
@@ -43,7 +40,7 @@ class Device(SuperSocket):
         from fcntl import fcntl, F_GETFL, F_SETFL
         
         self.device = device
-        SuperSocket.__init__(self, self.device.fileno())
+        BaseSocket.__init__(self, self.device.fileno())
 
         # A non blocking device.
         fcntl(self.fd, F_SETFL, fcntl(self.fd, F_GETFL) | O_NONBLOCK)
@@ -51,13 +48,16 @@ class Device(SuperSocket):
     def __getattr__(self, name):
         return getattr(self.device, name)
 
-class SSL(Spin):
+class SSL(SuperSocket):
     """
     Dispatching system for SSL sockets.
     """
 
     pass
 
+class Extension:
+    def __init__(self, sock):
+        self.sock = sock
 
 
 

@@ -1,9 +1,9 @@
+from untwisted.dispatcher import Dispatcher
 from builtins import next
-from untwisted.exceptions import Erase
 
 class Hold:
     def __init__(self, seq):
-        self.seq                    = seq
+        self.seq = seq
         self.dispatcher, self.event = next(seq)
         self.dispatcher.add_map(self.event, self)
 
@@ -50,7 +50,4 @@ def coroutine(handle):
     def start(*args, **kwargs):
         hold = Hold(handle(*args, **kwargs))
     return start
-
-
-
 

@@ -80,8 +80,9 @@ rm MANIFEST
 # Upload package to pypi.
 
 cd ~/projects/untwisted-code
-python setup.py sdist register upload
-rm -fr dist
+python setup.py sdist 
+twine upload dist/*
+
 ##############################################################################
 # futurize code.
 
@@ -98,8 +99,21 @@ futurize --stage2 -w **/*.py
 find . -name "*.bak" -exec rm -f {} \;
 
 ##############################################################################
+# Create a virtualenv for a project.
+cd ~/.virtualenvs/
+ls -la
+# by default #python3 has executable named python in arch linux.
+virtualenv untwisted -p /usr/bin/python3.6
+##############################################################################
+# Activate a virtualenv.
+cd ~/.virtualenvs/
+source untwisted/bin/activate
+cd ~/projects/untwisted-code
+##############################################################################
+git rm --cached -r build
 
-
+grep -rl --exclude-dir='.git' 'Spin' ./ | xargs sed -i 's/Spin/SuperSocket/g'
+grep -rl --exclude-dir='.git' 'spin' ./ | xargs sed -i 's/spin/ssock/g'
 
 
 

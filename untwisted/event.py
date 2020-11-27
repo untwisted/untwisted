@@ -1,59 +1,76 @@
-# Whenever we use get_event it increases
-# So we don't get events messed.
-event_count = 0
+"""
+Built-in events.
+"""
 
-def get_event():
-    """ 
-    It returns a new event signal.
+class Event:
+    pass
 
-    from untwisted.network import *
-    X = get_event()
-    Y = get_event()
-    print X
-    print Y
+class READ(Event):
+    pass
 
+class WRITE(Event):
+    pass
 
-    Whenever we call get_event it increases the integer
-    corresponding to the signal. That avoids events getting
-    messed through modules.
-    """
+class ERROR(Event):
+    pass
 
-    global event_count
+class DESTROY(Event):
+    pass
 
-    event_count = event_count + 1
-    return event_count
+class CLOSE(Event):
+    pass
 
-READ             = get_event()
-WRITE            = get_event()
-EXPT             = get_event()
-ERROR            = get_event()
-DESTROY          = get_event()
-LOST             = get_event()
-CLOSE            = get_event()
-ACCEPT           = get_event()
-CONNECT          = get_event()
-CONNECT_ERR      = get_event()
-LOAD             = get_event()
-DUMPED           = get_event()
-RECV_ERR         = get_event()
-SEND_ERR         = get_event()
-ACCEPT_ERR       = get_event()
-READ_ERR         = get_event()
-DUMPED_FILE      = get_event()
-CLOSE_ERR        = get_event()
-DONE             = get_event()
-TIMEOUT          = get_event()
-SSL_SEND_ERR        = get_event()
-SSL_RECV_ERR        = get_event()
-SSL_CERTIFICATE_ERR = get_event()
-SSL_CONNECT_ERR     = get_event()
-SSL_CONNECT         = get_event()
+class ACCEPT(Event):
+    pass
 
+class CONNECT(Event):
+    pass
 
+class CONNECT_ERR(Event):
+    pass
 
+class LOAD(Event):
+    pass
 
+class DUMPED(Event):
+    pass
 
+class RECV_ERR(Event):
+    pass
 
+class SEND_ERR(Event):
+    pass
 
+class ACCEPT_ERR(Event):
+    pass
 
+class READ_ERR(Event):
+    pass
+
+class DUMPED_FILE(Event):
+    pass
+
+class CLOSE_ERR(Event):
+    pass
+
+class DONE(Event):
+    pass
+
+class TIMEOUT(Event):
+    pass
+
+class SSL_SEND_ERR(Event):
+    pass
+
+class SSL_RECV_ERR(Event):        
+    pass
+
+class SSL_CERTIFICATE_ERR(Event): 
+    pass
+
+class SSL_CONNECT_ERR(Event):     
+    pass
+
+class SSL_CONNECT(Event):         
+    pass
 

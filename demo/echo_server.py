@@ -1,10 +1,11 @@
-from untwisted.network import Spin, xmap, core
-from untwisted.iostd import create_server, ACCEPT, LOAD
+from untwisted.server import create_server
+from untwisted.event import ACCEPT, LOAD
+from untwisted import core
 
 class EchoServer:
     def __init__(self, server):
-        xmap(server, ACCEPT, lambda server, con: 
-                     xmap(con, LOAD, lambda con, data: con.dump(data)))
+        server.add_map(ACCEPT, lambda server, con: 
+                     con.add_map(LOAD, lambda con, data: con.dump(data)))
 
 if __name__ == '__main__':
     EchoServer(create_server('0.0.0.0', 1234, 5))

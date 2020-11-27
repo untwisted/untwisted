@@ -15,7 +15,7 @@ class Job(Thread, Dispatcher):
             print sum
     
         job = Job(func, 1, 2)
-        xmap(job, DONE, on_done)
+        job.add_map(DONE, on_done)
     
     In case of an exception occuring inside func then the event 
     ERROR happens instead of the DONE event which carries the exception thrown.    
@@ -53,11 +53,14 @@ class Job(Thread, Dispatcher):
                 self.process()
         
     def process(self):
+        # First remove itself in case a call to die
+        # happens and the reactor is activated later
+        # it will keep processing these handles.
+        core.gear.pool.remove(self)
         if self.err:
             self.drive(ERROR, self.err)
         else:
             self.drive(DONE, self.data)
-        core.gear.pool.remove(self)
 
 
 

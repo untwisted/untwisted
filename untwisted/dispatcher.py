@@ -1,6 +1,49 @@
 from untwisted.core import Kill, Root
-from untwisted.exceptions import Stop, Erase
-from untwisted.debug import debug
+from traceback import print_exc
+
+class Stop(Exception):
+    """
+    This exception is used to avoid remaining handles being
+    processed for a given event.
+
+    from untwisted.dispatcher import Dispatcher, Stop
+    
+    def handle0(dispatcher):
+        raise Stop
+    
+    def handle1(dispatcher):
+        print 'it will not be processed!'
+    
+    dispatcher = Dispatcher()
+    dispatcher.add_map('alpha', handle0)
+    dispatcher.add_map('alpha', handle1)
+    dispatcher.drive('alpha')
+    """
+    pass
+
+class Erase(Exception):
+    """
+    When this exception is thrown from a handle it avoids such a handle
+    being processed again upon its event.
+
+    from untwisted.dispatcher import Dispatcher, Erase
+    
+    def handle(dispatcher):
+        print 'It will be called just once!'
+        raise Erase
+    
+    dispatcher = Dispatcher()
+    dispatcher.add_map('alpha', handle)
+    dispatcher.drive('alpha')
+    dispatcher.drive('alpha')
+    """
+
+    pass
+
+def debug(event, params):
+    print('Event:%s' % repr(event))
+    print('Args:%s' % str(params))
+    print_exc()
 
 class Dispatcher:
     """
@@ -9,15 +52,16 @@ class Dispatcher:
 
     def __init__(self):
         self.base = dict()
-        self.pool = list()
-        self.step = list()
 
     def drive(self, event, *args):
         """
         Used to dispatch events.
         """
 
-        maps = self.base.get(event, self.step)
+        maps = self.base.get(event)
+        if not maps:
+            return False
+
         for handle, data in maps[:]:
             params = args + data
             try:
@@ -26,32 +70,70 @@ class Dispatcher:
                 break
             except StopIteration:
                 pass
-            except Kill as Root:
+            except (Kill, Root) as e:
                 raise
             except Erase:
                 maps.remove((handle, data))
             except Exception as e:
                 debug(event, params)
+        return True
 
-        for handle in self.pool:
-            handle(self, event, args)
+    def update_base(self, base):
+        """
+        """
+
+        for ind in base.items():
+            maps = self.base.setdefault(ind[0], [])
+            maps.extend(ind[1])
 
     def add_map(self, event, handle, *args):
         """
-        Add a mapping like event -(arg0, arg1, arg2, ...)-> handle.
+        Add a mapping.
         """
 
         item = self.base.setdefault(event, list())
         item.append((handle, args))
 
+    def once(self, event, handle, *args):
+        """
+        Add a map that runs just once.
+        """
+    
+        def shell(*args):
+            try:
+                handle(self, *args)
+            except Exception as e:
+                raise e
+            finally:
+                self.del_map(event, shell)
+        self.add_map(event, shell, *args)
+    
     def del_map(self, event, handle, *args):
         """
-        Remove a mapping like event -(arg0, arg1, arg2, ...)-> handle.
+        Remove a mapping.
         """
-        if args:
-            self.base[event].remove((handle, args))
-        else:
-            self.base[event] = [ind for ind in self.base[event] if ind[0] != handle]
+
+        self.base[event].remove((handle, args))
+
+    def clear_maps(self, event, handle, *args):
+        """
+        Clear all mapps for event, handle and args. 
+        It returns how many mappings were deleted.
+
+        When there is no mapping for the event it raises
+        an exception KeyError.
+        """
+
+        maps  = self.base[event]
+        count = 0
+
+        while maps:
+            try:
+                maps.remove((event, hadle))
+            except ValueError as e:
+                return count
+            count += 1
+        return count
 
     def install_maps(self, *args):
         """
@@ -61,40 +143,11 @@ class Dispatcher:
         for ind in args:
             self.add_map(*ind)
 
-    def insert_map(self, index, map):
+    def insert_map(self, index, handle):
         """
 
         """
 
         pass
-
-    def add_handle(self, handle):
-        """
-        Whenever an event occurs then handle is processed.
-        """
-
-        self.pool.append(handle)
-
-    def del_handle(self, handle):
-        """
-        Avoid handle from being processed when a given event occurs.
-        """
-
-        self.pool.remove(handle)
-
-    def del_step(self, handle):
-        """
-        """
-
-        self.step.remove(handle)
-
-    def add_step(self, handle):
-        """
-        """
-
-        self.step.append(handle)
-
-
-
 
 

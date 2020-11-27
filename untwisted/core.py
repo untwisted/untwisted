@@ -1,4 +1,4 @@
-from untwisted.event import READ, WRITE, ERROR, EXPT
+from untwisted.event import READ, WRITE, CLOSE, DESTROY
 from select import *
 from socket import *
 
@@ -21,44 +21,21 @@ class Gear:
     It implements a basic set of methods that should be
     common to all reactors.
 
-    This class isn't intented to be subclassed outside untwisted
-    modules.
-
-    I thought of installing the reactor inside this class
-    instead of inside this module. However, it arose some
-    odd patterns which i preferred to avoid. 
-
     """
 
     MAX_SIZE = 6028
     def __init__(self):
-        """ Class constructor """
         self.pool = []
 
     def mainloop(self):
         """ 
         This is the reactor mainloop.
-        It is intented to be called when
-        a reactor is installed.
-
-        from untwisted.network import *
-
-        # It processes forever.
-        core.gear.mainloop()
         """
             
         while True:
-        # It calls repeteadly the reactor
-        # update method.
             try:
                 self.update()
             except Kill:
-        # It breaks the loop
-        # silently.
-        # people implementing reactors from other mainloop
-        # should implement this try: catch
-        # suitably to their needs.
-
                 break
             except KeyboardInterrupt:
                 print(self.base)
@@ -66,12 +43,8 @@ class Gear:
 
     def process_pool(self):
         """ 
-        This method processes the pool of objects
-        that are binded to the reactor. 
-
-        This method shouldn't be called by the
-        user of the class except he knows what he is
-        doing.
+        Process a pool of objects that 
+        should be updated when the reactor is not idling.
         """
         for ind in self.pool[:]:
             ind.update()
@@ -82,10 +55,10 @@ class Gear:
         reactor classes.
         """
 
-    def register(self, spin):
+    def register(self, ssock):
         pass
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         pass
 
         pass
@@ -97,12 +70,7 @@ class Select(Gear):
     """
 
     def __init__(self):
-        # This variable holds the timeout passed
-        # to select.
         self.timeout = None
-
-        # This is the default timeout. It is used
-        # by objects being processed in pool.
         self.default_timeout = None
 
         self.base  = []
@@ -110,12 +78,10 @@ class Select(Gear):
         # These are the sockets in R/W status.
         self.rsock = set()
         self.wsock = set()
-        self.xsock = set()
         Gear.__init__(self)
 
     def update(self):
         """ 
-        Other reactors should call this method.
         """
 
         self.process_pool()
@@ -128,14 +94,8 @@ class Select(Gear):
         for ind in self.base: 
             self.scale(ind)
 
-        rsock, wsock, xsock = select(self.rsock , 
-        self.wsock, self.xsock, self.timeout)
-
-        for ind in wsock:
-            try:
-                ind.drive(WRITE)
-            except Root:
-                pass
+        rsock, wsock, xsock = select(self.rsock, 
+            self.wsock, self.base, self.timeout)
 
         for ind in rsock:
             try:
@@ -143,79 +103,47 @@ class Select(Gear):
             except Root:
                 pass
 
-    def register(self, spin):
+        for ind in wsock:
+            try:
+                ind.drive(WRITE)
+            except Root:
+                pass
+
+        for ind in xsock:
+            try:
+                ind.drive(CLOSE)
+            except Root:
+                pass
+
+    def register(self, ssock):
         """
         """
 
-        self.base.append(spin)
+        self.base.append(ssock)
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         """
         """
 
-        try:
-            self.base.remove(spin)
-        except ValueError:
-            pass
+        self.base.remove(ssock)
 
-        self.del_rsock(spin)
-        self.del_wsock(spin)
+        self.rsock.discard(ssock)
+        self.wsock.discard(ssock)
+        ssock.drive(DESTROY)
 
-    def update_rsock(self, spin):
+    def scale(self, ssock):
         """
         """
 
-        if spin.base.get(READ):
-            self.add_rsock(spin)
+        if ssock.base.get(READ):
+            self.rsock.add(ssock)
         else:
-            self.del_rsock(spin)
+            self.rsock.discard(ssock)
 
-    def scale(self, spin):
-        """
-        """
-
-        self.update_wsock(spin)
-        self.update_rsock(spin)
-
-    def update_wsock(self, spin):
-        """
-        """
-
-        if spin.base.get(WRITE):
-            self.add_wsock(spin)
+        if ssock.base.get(WRITE):
+            self.wsock.add(ssock)
         else:
-            self.del_wsock(spin)
-
-    def add_rsock(self, spin):
-        """
-        """
-
-        self.rsock.add(spin)
-
-    def add_wsock(self, spin):
-        """
-        """
-
-        self.wsock.add(spin)
-
-    def del_wsock(self, spin):
-        """
-        """
-
-        try:
-            self.wsock.remove(spin)
-        except KeyError:
-            pass
-
-    def del_rsock(self, spin):
-        """
-        """
-
-        try:
-            self.rsock.remove(spin)
-        except KeyError:
-            pass
-
+            self.wsock.discard(ssock)
 
 class Epoll(Gear):
     """
@@ -233,7 +161,6 @@ class Epoll(Gear):
 
     def update(self):
         """
-        Other reactors should call this method.
         """
 
         self.process_pool()
@@ -248,39 +175,33 @@ class Epoll(Gear):
 
         events = self.pollster.poll(self.timeout) 
         for fd, event in events:
-            try:
-                self.dispatch(fd, event)
-            except KeyError:
-                pass
+            self.dispatch(fd, event)
 
-    def register(self, spin):
+    def register(self, ssock):
         """
         """
 
-        self.base[spin.fd] = spin
-        self.pollster.register(spin.fd)
+        self.base[ssock.fd] = ssock
+        self.pollster.register(ssock.fd)
 
-    def unregister(self, spin):
+    def unregister(self, ssock):
         """
         """
 
-        # It is needed to make sure the spin instance is in fact the one
-        # that has to be removed since when creating new Spin instances it may 
-        # occur the following happening:
-        # spin0 = Spin()
-        # fd0   = spin0.fileno()
-        # spin0.destroy()
-        # spin1 = Spin()
-        # fd1   = spin1.fileno()
+        # Note: 
+        # ssock0 = SuperSocket()
+        # fd0   = ssock0.fileno()
+        # ssock0.destroy()
+        # ssock0.close()
+        # ssock1 = SuperSocket()
+        # fd1   = ssock1.fileno()
         # fd1 == fd0 -> True
-        # 
-        peer = self.base.get(spin.fd)
-        if not peer is spin: return
 
-        del self.base[spin.fd]
-        self.pollster.unregister(spin.fd)
+        del self.base[ssock.fd]
+        self.pollster.unregister(ssock.fd)
+        ssock.drive(DESTROY)
 
-    def scale(self, spin):
+    def scale(self, ssock):
         """
         """
 
@@ -288,26 +209,26 @@ class Epoll(Gear):
         # EPOLLERR	Error condition happened on the assoc. fd
         # When a connection is tried and it is refused
         # it would spawn twice CONNECT_ERR.
-        is_readable = EPOLLIN  if spin.base.get(READ) else 0 
-        is_writable = EPOLLOUT if spin.base.get(WRITE) else 0
+        is_readable = EPOLLIN  if ssock.base.get(READ) else 0 
+        is_writable = EPOLLOUT if ssock.base.get(WRITE) else 0
         mask        = is_readable | is_writable
-        self.pollster.modify(spin.fd, mask)
+        self.pollster.modify(ssock.fd, mask)
 
     def dispatch(self, fd, event):
         """
         """
 
-        spin = self.base[fd]
-
-        if event & EPOLLOUT:
-            try:
-                spin.drive(WRITE)
-            except Root:
-                pass
+        ssock = self.base[fd]
 
         if event & EPOLLIN:
             try:
-                spin.drive(READ)
+                ssock.drive(READ)
+            except Root:
+                pass
+
+        if event & EPOLLOUT:
+            try:
+                ssock.drive(WRITE)
             except Root:
                 pass
 
@@ -330,16 +251,5 @@ def default():
 default()
 # install_reactor(Select)
 # install_reactor(Epoll)
-
-# __all__ = ['get_event', 'READ', 'WRITE' , 'install_reactor']
-
-
-
-
-
-
-
-
-
 
 

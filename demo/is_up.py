@@ -1,5 +1,7 @@
-from untwisted.network import core, Spin, xmap, die
-from untwisted.iostd import Client, CONNECT, CONNECT_ERR
+from untwisted.network import SuperSocket
+from untwisted.client import Client, CONNECT, CONNECT_ERR
+from untwisted.core import die
+from untwisted import core
 import errno
 
 def on_connect(con, addr, port):
@@ -9,12 +11,12 @@ def on_connect_err(con, err, addr, port):
     print("Failed to connect to %s:%s, errcode " % (addr, port), errno.errorcode[err])
 
 def create_connection(addr, port):
-    con = Spin()
+    con = SuperSocket()
     Client(con)
-    xmap(con, CONNECT, on_connect, addr, port)
-    xmap(con, CONNECT_ERR, on_connect_err, addr, port)
-    xmap(con, CONNECT, lambda con: die())
-    xmap(con, CONNECT_ERR, lambda con, err: die())
+    con.add_map(CONNECT, on_connect, addr, port)
+    con.add_map(CONNECT_ERR, on_connect_err, addr, port)
+    con.add_map(CONNECT, lambda con: die())
+    con.add_map(CONNECT_ERR, lambda con, err: die())
     
     con.connect_ex((addr, port))
 

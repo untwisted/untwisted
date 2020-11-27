@@ -1,42 +1,66 @@
 Untwisted
 =========
 
-What is untwisted?
+Untwisted is an event driven framework meant to implement networking applications using
+non blocking sockets.
 
-A library for asynchronous programming in python. 
-
-Despite of the above statement being true it doesn't answer the question entirely. 
-Untwisted is a different approach to solve the problem of implementing networking applications. 
-Untwisted architecture makes it simpler to handle internet protocols, consequently it is easier
-to implement applications that run on top of such protocols. 
-
-Untwisted supports asynchronously dealing with sockets, file descriptors while spawning threads to 
+Untwisted supports asynchronously dealing with sockets, spawning processes while spawning threads to 
 perform other jobs. It is possible to talk to a process using a thread based approach or a unix file 
-descriptor while waiting for socket's events. Untwisted basically solves the problem that some python 
-libraries like pexpect and twisted proposes to solve in a neat and powerful way.
+descriptor while waiting for socket's events. Untwisted basically solves the problem that some Python 
+libraries like pexpect and twisted proposes to solve in a flexible but concrete manner.
 
-Untwisted is extremely modular, applications that are implemented on top of untwisted tend to be 
-succint and elegant. Untwisted has an impressive performance when compared to other python frameworks.
+Untwisted implements the concept of super sockets. A super socket in the untwisted context it is an event emitter
+system. Those who are familiar with Nodejs would feel more comfortable with untwisted super sockets approach.
 
-You may be wondering right now why you would endevour to learn a new python asynchronous framework once 
-you have spent so many hours trying to learn asynchronous programming in python with other frameworks. 
-One of the reasons to learn untwisted framework is the fact that you'll spend some pleasant hours 
-understanding untwisted and some minutes implementing complex applications on top of it. Another reason is
-that if you like clean, consistent and high performance code then untwisted is for you.
+A SuperSocket instance is a socket with an event dispatcher mechanism. Handles can be mapped to events
+that are called when a given event associated with the socket happens.
 
+~~~python
+from untwisted.network import SuperSocket
+from untwisted.client import Client
+from untwisted.event import CONNECT, CONNECT_ERR
+from untwisted import core
+
+def handle_connect(ssock):
+    print('Connected !')
+
+def handle_connect_err(ssock, err):
+    print('Not connected:', err)
+
+ssock = SuperSocket()
+# An extesion that is responsible for spawning CONNECT or CONNECT_ERR events.
+Client(ssock)
+ssock.connect_ex(('httpbin.org', 80))
+
+# When the client connects just call handle_connect.
+ssock.add_map(CONNECT, handle_connect)
+
+# In case it fails just call handle_connect_err.
+ssock.add_map(CONNECT_ERR, handle_connect_err)
+
+# Start the reactor.
+core.gear.mainloop()
+~~~
+
+Events can be spawned from event handles thus allowing different parts of an application to raise
+new events. Events can be any kind of Python objects, strings, integers etc.
+
+The event-driven paradigm is such a powerful mean of handling many problems in the asynchronicity
+world however it might become too harsh sometimes. Untwisted  attempts to simplify working with internet
+protocols thus building networking applications.
 
 ### Echo Server
 
-This neat piece of code implements a basic echo server.
+This code implements a basic echo server.
 
 ~~~python
-from untwisted.network import Spin, xmap, core
-from untwisted.iostd import create_server, ACCEPT, LOAD
+from untwisted.event import ACCEPT, LOAD
+from untwisted import core
 
 class EchoServer:
     def __init__(self, server):
-        xmap(server, ACCEPT, lambda server, con: 
-                     xmap(con, LOAD, lambda con, data: con.dump(data)))
+        server.add_map(ACCEPT, lambda server, con: 
+                     con.add_map(LOAD, lambda con, data: con.dump(data)))
 
 if __name__ == '__main__':
     EchoServer(create_server('0.0.0.0', 1234, 5))
@@ -49,25 +73,26 @@ This piece of code just sets up a simple telnet chat. Once the code
 is running just connect on port 1234 via telnet, type a nick and start chatting :)
 
 ~~~python
-from untwisted.network import core, Spin, xmap
-from untwisted.iostd import create_server, ACCEPT, CLOSE, lose
+from untwisted.server import create_server
+from untwisted.event import ACCEPT, CLOSE
 from untwisted.splits import Terminator
 from untwisted.tools import coroutine
+from untwisted import core
 
 class ChatServer:
     def __init__(self, server):
-        xmap(server, ACCEPT, self.handle_accept)
+        server.add_map(ACCEPT, self.handle_accept)
         self.pool = []
 
     @coroutine
     def handle_accept(self, server, client):
         Terminator(client, delim=b'\r\n')
-        xmap(client, CLOSE, lambda client, err: self.pool.remove(client))
+        client.add_map(CLOSE, lambda client, err: self.pool.remove(client))
 
         client.dump(b'Type a nick.\r\nNick:')    
         client.nick, = yield client, Terminator.FOUND
 
-        xmap(client, Terminator.FOUND, self.echo_msg)
+        client.add_map(Terminator.FOUND, self.echo_msg)
         self.pool.append(client)
 
     def echo_msg(self, client, data):
@@ -82,29 +107,57 @@ if __name__ == '__main__':
 ~~~
 
 
-### Spawn Processes
+### Spawn Process
 
-The example below spawns a python process then sends a line of code.
+Untwisted allows you to spawn processes send/read data asynchronously. The example below
+spawns a Python interpreter instance. The code is sent to the interpreter and output
+is read both from the process stdout and stderr.
 
 ~~~python
-from untwisted.expect import Expect, LOAD, CLOSE
-from untwisted.network import core, xmap, die
+from untwisted.expect import ChildStdout, ChildStderr, ChildStdin
+from subprocess import Popen, PIPE
+from untwisted.event import LOAD, CLOSE
+from untwisted.core import die
+from untwisted import core
 
-def handle(expect, data):
-    print(data)
+
+def on_stdout(stdout, data):
+    print('Stdout data: ', data)
+
+def on_stderr(stderr, data):
+    print('Stderr data:', data)
 
 def on_close(expect):
     print('Closing..')
     die()
 
-expect = Expect('python', '-i', '-u')
+if __name__ == '__main__':
+    code = b'print("hello world")\nprint(1/0)\nquit()\n'
 
-expect.send(b'print("hello world");quit();\n\n')
+    proc   = Popen(['python', '-i', '-u'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    stdin  = ChildStdin(proc)
+    stdout = ChildStdout(proc)
+    stderr = ChildStderr(proc)
+    
+    stdin.send(code)
+    stdout.add_map(LOAD, on_stdout)
+    stderr.add_map(LOAD, on_stderr)
+    stdout.add_map(CLOSE, on_close)
+    core.gear.mainloop()
+~~~
 
-xmap(expect, LOAD, handle)
-xmap(expect, CLOSE, on_close)
+Would output:
 
-core.gear.mainloop()
+~~~
+(untwisted) [tau@localhost demo]$ python spawn_process.py 
+Stderr data: b'Python 3.9.0 (default, Oct  6 2020, 00:00:00) \n'
+Stderr data: b'[GCC 10.2.1 20200826 (Red Hat 10.2.1-3)] on linux\n'
+Stderr data: b'Type "help", "copyright", "credits" or "license" for more information.\n'
+Stdout data:  b'hello world\n'
+Stderr data: b'>>> >>> Traceback (most recent call last):\n'
+Stderr data: b'  File "<stdin>", line 1, in <module>\n'
+Stderr data: b'ZeroDivisionError: division by zero\n'
+Closing..
 ~~~
 
 Install
@@ -118,8 +171,7 @@ Untwisted would run on python3.
 Documentation
 =============
 
-[Untwisted Book](https://github.com/untwisted/untwisted/blob/master/Book.md)
-
+[Untwisted Book](https://github.com/untwisted/untwisted/wiki)
 
 Applications using Untwisted
 ============================
@@ -128,22 +180,22 @@ Applications using Untwisted
 
 A powerful micro Web Crawling Framework.
 
-#### [Vy](https://github.com/iogf/vy)
+#### [Vy](https://github.com/vyapp/vy)
 
 A vim-like in python made from scratch.
 
-#### [Ameliabot](https://github.com/iogf/ameliabot)
+#### [Ameliabot](https://github.com/untwisted/ameliabot)
 
 A flexible ircbot written on top of untwisted framework.
 
-#### [Steinitz](https://github.com/iogf/steinitz)
+#### [Steinitz](https://github.com/untwisted/steinitz)
 
 A chess interface to fics with support for stockfish to analyze moves.
 
-#### [Websnake](https://github.com/iogf/websnake)
+#### [Websnake](https://github.com/untwisted/websnake)
 
 Asynchronous web requests in python.
 
-#### [Rapidserv](https://github.com/iogf/rapidserv)
+#### [Rapidserv](https://github.com/untwisted/rapidserv)
 
 A non-blocking Flask-like Web Framework in python.

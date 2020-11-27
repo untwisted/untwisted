@@ -1,11 +1,14 @@
 """
 """
 
-from builtins import map
-from untwisted.network import core, Spin, xmap, spawn
-from untwisted.iostd import Server, Stdin, Stdout, CLOSE, ACCEPT
+from untwisted.network import SuperSocket
+from untwisted.sock_reader import SockReader
+from untwisted.sock_writer import SockWriter
+from untwisted.event import CLOSE, ACCEPT
+from untwisted.server import Server
 from untwisted.splits import Terminator
 from untwisted.tools import handle_exception
+from untwisted import core
 import operator
 from functools import reduce
 
@@ -14,34 +17,34 @@ class CalcParser:
     """
 
     def __init__(self, client):
-        xmap(client, Terminator.FOUND, self.handle_found)
+        client.add_map(Terminator.FOUND, self.handle_found)
 
     @handle_exception(ValueError)
     def handle_found(client, data):
         op, args = data.decode('utf8').split(' ', 1)
         args     = list(map(float, args.split(' ')))
-        spawn(client, op, args)
+        client.drive(op, args)
 
 class CalcServer:
     """ 
     """
 
     def __init__(self, server):
-        xmap(server, ACCEPT, self.handle_accept)
+        server.add_map(ACCEPT, self.handle_accept)
 
     def handle_accept(self, server, client):
-        Stdin(client)
-        Stdout(client)
+        SockWriter(client)
+        SockReader(client)
         Terminator(client, delim=b'\r\n')
         parser = CalcParser(client)
         
-        xmap(client, 'add', self. on_add)    
-        xmap(client, 'sub', self.on_sub)    
-        xmap(client, 'mul', self.on_mul)    
-        xmap(client, 'div', self.on_div)    
-        xmap(client, (parser.handle_found, ValueError), self.on_error)    
+        client.add_map('add', self. on_add)    
+        client.add_map('sub', self.on_sub)    
+        client.add_map('mul', self.on_mul)    
+        client.add_map('div', self.on_div)    
+        client.add_map((parser.handle_found, ValueError), self.on_error)    
 
-        xmap(client, CLOSE, self.handle_close)
+        client.add_map(CLOSE, self.handle_close)
 
     def on_add(self, client, args):
         self.send_msg(client, reduce(operator.add, args, 0))
@@ -66,17 +69,11 @@ class CalcServer:
         client.dump(('%s\r\n' % msg).encode('utf8'))
 
 if __name__ == '__main__':
-    server = Spin()
+    server = SuperSocket()
     server.bind(('', 1234))
     server.listen(5)
 
     Server(server)
     CalcServer(server)
     core.gear.mainloop()
-
-
-
-
-
-
 
