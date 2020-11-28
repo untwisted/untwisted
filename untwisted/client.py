@@ -71,7 +71,7 @@ class ClientSSL:
 def lose(ssock):
     """
     It is used to close TCP connection and unregister
-    the SuperSocket instance from untwisted reactor.
+    the SuperSocket instance off the untwisted reactor.
 
     """
 

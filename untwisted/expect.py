@@ -59,6 +59,10 @@ class ChildThread(Dispatcher):
         self.base.clear()
 
 class ChildStdout(ChildThread):
+    """
+    An event emitter to read data from a process stdout stream.
+    """
+
     def __init__(self, child):
         if child.stdout is None:
             raise ChildError('Child has no stdout!')
@@ -72,6 +76,10 @@ class ChildStdout(ChildThread):
         return data
 
 class ChildStderr(ChildThread):
+    """
+    An event emitter to read data from a process stderr stream.
+    """
+
     def __init__(self, child):
         if child.stderr is None:
             raise ChildError('Child has no stderr!')
@@ -84,6 +92,11 @@ class ChildStderr(ChildThread):
         return data
 
 class ChildStdin:
+    """
+    A wrapper around a process stdin stream to dump data to an
+    underlying process.
+    """
+
     def __init__(self, child):
         self.child = child
 
