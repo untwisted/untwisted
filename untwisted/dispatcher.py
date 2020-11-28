@@ -88,7 +88,6 @@ class Dispatcher:
 
     def add_map(self, event, handle, *args):
         """
-        Add a mapping.
         """
 
         item = self.base.setdefault(event, list())
@@ -96,28 +95,23 @@ class Dispatcher:
 
     def once(self, event, handle, *args):
         """
-        Add a map that runs just once.
         """
     
-        def shell(*args):
-            try:
-                handle(*args)
-            except Exception as e:
-                raise e
-            finally:
-                self.del_map(event, shell)
-        self.add_map(event, shell, *args)
+        def handle_wrapper(dispatcher, *args):
+            self.del_map(event, handle_wrapper, *args)
+            handle(dispatcher, *args)
+
+        self.add_map(event, handle_wrapper, *args)
+        return handle_wrapper
     
     def del_map(self, event, handle, *args):
         """
-        Remove a mapping.
         """
 
         self.base[event].remove((handle, args))
 
     def del_all(self, event, handle):
         """
-        Clear all mapps for event, handle.
         """
 
         maps  = self.base[event]
@@ -127,17 +121,8 @@ class Dispatcher:
 
     def install_maps(self, *args):
         """
-        Install a set of mappings.
         """
 
         for ind in args:
             self.add_map(*ind)
-
-    def insert_map(self, index, handle):
-        """
-
-        """
-
-        pass
-
 

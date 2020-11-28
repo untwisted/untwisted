@@ -28,6 +28,8 @@ class TestDispatcher(unittest.TestCase):
         self.dispatcher.add_map('event3', self.handle_event3, False)
         self.dispatcher.add_map('event4', self.handle_event4)
 
+        self.wrapper = self.dispatcher.once('event5', self.handle_event5)
+
     def handle_event0(self, dispatcher, value0, value1):
         self.assertEqual(value1, True)
         self.assertEqual(value0, False)
@@ -47,12 +49,19 @@ class TestDispatcher(unittest.TestCase):
     def handle_event4(self, dispatcher):
         raise Stop
 
-    def test_dispatcher(self):
+    def handle_event5(self, dispatcher):
+        maps = dispatcher.base['event5']
+        self.assertNotIn((self.wrapper, ()), maps)
+
+    def test_drive(self):
         self.dispatcher.drive('event0')
         self.dispatcher.drive('event1', True, True)
         self.dispatcher.drive('event2', True)
         self.dispatcher.drive('event3')
         self.dispatcher.drive('event4')
+
+    def test_once(self):
+        self.dispatcher.drive('event5')
 
 class TestJob(unittest.TestCase):
     def setUp(self):

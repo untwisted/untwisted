@@ -45,12 +45,3 @@ if __name__ == '__main__':
 
     main(opt.addr, opt.port, opt.host)
     core.gear.mainloop()
-
-
-
-
-
-
-
-
-
