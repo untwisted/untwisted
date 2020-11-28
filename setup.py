@@ -11,7 +11,7 @@ setup(name="untwisted",
       keywords=['asynchronous', 'programming', 'twisted', 'untwisted', 'library', 
       'framework', 'networking', 'protocols', 'rapidserv', 'irc', 'requests'],
       classifiers=[],
-      description="A better hell of callbacks for asynchronous programming. Untwisted is The Event Driven Framework for Python.",)
+      description="A better hell of callbacks for asynchronous programming. Untwisted is an Event Driven Framework for Python.",)
 
 
 
