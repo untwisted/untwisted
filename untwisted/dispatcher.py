@@ -80,21 +80,42 @@ class Dispatcher:
 
     def update_base(self, base):
         """
+        Extend a Dispatcher instance base with other Dispatcher instance events.
+        
+        Example:
+
+        disp0 = Dispatcher()
+        disp1 = Dispatcher()
+        disp0.update_base(disp1.base)
         """
 
         for ind in base.items():
             maps = self.base.setdefault(ind[0], [])
             maps.extend(ind[1])
 
-    def add_map(self, event, handle, *args):
+    def del_map(self, event, handle, *args):
         """
+        Used to unbind a handle for a given event.
+
+        The *args parameter has to be the same objects that
+        were used to bind the handle.
         """
 
-        item = self.base.setdefault(event, list())
-        item.append((handle, args))
+        self.base[event].remove((handle, args))
+
+    def del_all(self, event, handle):
+        """
+        Remove all handles for a given event.
+        """
+
+        maps  = self.base[event]
+        for ind in maps[:]:
+            if ind[0] is handle:
+                maps.remove(ind)
 
     def once(self, event, handle, *args):
         """
+        Execute a handle just once.
         """
     
         def handle_wrapper(dispatcher, *args):
@@ -103,26 +124,24 @@ class Dispatcher:
 
         self.add_map(event, handle_wrapper, *args)
         return handle_wrapper
-    
-    def del_map(self, event, handle, *args):
-        """
-        """
-
-        self.base[event].remove((handle, args))
-
-    def del_all(self, event, handle):
-        """
-        """
-
-        maps  = self.base[event]
-        for ind in maps[:]:
-            if ind[0] is handle:
-                maps.remove(ind)
 
     def install_maps(self, *args):
         """
+        A shorthand to bind multiple handles at once.
+
+        The *args parameter is a sequence of tuples like.
+
+        ((event0, handle, args), ...)
         """
 
         for ind in args:
             self.add_map(*ind)
 
+    def add_map(self, event, handle, *args):
+        """
+        Bind a handle to an event with *args being appended to the event
+        arguments when the event occurs.
+        """
+
+        item = self.base.setdefault(event, list())
+        item.append((handle, args))

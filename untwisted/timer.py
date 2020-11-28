@@ -6,6 +6,11 @@ class CancelCall(Exception):
     pass
 
 class Timer:
+    """
+    Execute a calback after a given period of time.  The *args, **kwargs
+    parameters are passed to the callback.
+    """
+
     base = []
     def __init__(self, interval, callback, *args, **kwargs):
         self.args = args
@@ -36,6 +41,11 @@ class Timer:
 
 
 class Sched(Timer):
+    """
+    Execute periodically a handle in a given interval. The constructor receives
+    the same parameters as Timer constructor.
+    """
+
     def update(self):
         if time.time() - self.time > self.interval:
             self.exec_callback()
@@ -48,4 +58,3 @@ class Sched(Timer):
         else:
             self.time = time.time()
     
-
