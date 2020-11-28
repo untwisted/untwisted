@@ -12,8 +12,7 @@ import ssl
 
 class Client:
     """
-    Used to set up TCP clients.
-
+    Extension to spawn CONNECT or CONNECT_ERR events.
     """
 
     def __init__(self, ssock):
@@ -57,6 +56,10 @@ class Handshake:
             raise Erase
 
 class ClientSSL:
+    """
+    Extension used to spawn SSL_CONNECT or SSL_CONNECT_ERR events.
+    """
+
     def __init__(self, ssock):
         Client(ssock)
         ssock.add_map(CONNECT, self.update)
@@ -81,6 +84,7 @@ def lose(ssock):
 
 def put(ssock, data):
     """
+    A handle to be mapped to events like LOAD.
     """
 
     print(data)
@@ -95,6 +99,10 @@ def install_basic_handles(ssock):
 
 def create_client(addr, port):
     """
+    Shorthand function to create a client connection. It installs
+    automatically all extensions to send and receive data.
+
+    It also deals with CLOSE event properly.
     """
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -115,6 +123,13 @@ def install_ssl_handles(con):
     con.add_map(CLOSE, lambda con, err: lose(con))
 
 def create_client_ssl(addr, port):
+    """
+    Shorthand function to set up a SSL connection. It installs all necessary
+    extensions to send and receive data over a secured connection.
+    
+    It also deals with CLOSE event properly.
+    """
+
     sock    = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     context = ssl.create_default_context()
     wrap    = context.wrap_socket(sock, 
