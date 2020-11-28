@@ -36,6 +36,8 @@ class Breaker:
 
 class Terminator:
     """
+    Used to tokenize messages, it works on LOAD event and spawns 
+    Terminator.FOUND when it finds a given delimiter.
     """
 
     class FOUND(Event):
@@ -74,6 +76,8 @@ class Accumulator:
 
 class AccUntil:
     """
+    An accumulator that splits a message into two chunks based
+    on a delimiter. It spawns AccUntil.DONE when such a delimiter is found.
     """
 
     class DONE(Event):

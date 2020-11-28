@@ -4,7 +4,8 @@ import os
 
 class FileReader(SockReader):
     """
-    Used to read data from a Device instance.
+    Used to read data from a Device instance. It spawns LOAD or CLOSE
+    events.
 
     """
 

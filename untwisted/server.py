@@ -6,7 +6,8 @@ import socket
 
 class Server:
     """
-    Used to set up TCP servers.
+    Used to set up TCP servers. It spawns ACCEPT_ERR or ACCEPT when new
+    connections arise.
 
     """
 

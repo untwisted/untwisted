@@ -5,7 +5,8 @@ import ssl
 
 class SockReader:
     """
-    Used to read data through a SuperSocket instance.
+    Used to read data through a SuperSocket instance. It spawns LOAD, RECV_ERR or 
+    CLOSE.
     """
     
     SIZE = 1024 * 124
@@ -42,6 +43,11 @@ class SockReader:
             raise excpt
 
 class SockReaderSSL(SockReader):
+    """    
+    Used to read data from a SSL connection. It spawns LOAD, SSL_RECV_ERR
+    or CLOSE.
+    """
+
     def update(self, ssock):
         try:
             self.process_data(ssock)
@@ -53,9 +59,4 @@ class SockReaderSSL(SockReader):
             ssock.drive(CLOSE, ssock, excpt)
         except socket.error as excpt:
             self.process_error(ssock, excpt)
-
-
-
-
-
 

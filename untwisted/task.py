@@ -4,6 +4,8 @@ from untwisted import core
 
 class Task(Dispatcher):
     """
+    Used to keep track of events. It spawns DONE when all
+    events that were specified happen with a given set of Dispatcher instances.
     """
 
     def __init__(self):

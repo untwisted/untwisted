@@ -135,6 +135,10 @@ class SockWriter:
         self.queue.append(dump)
 
 class SockWriterSSL(SockWriter):
+    """
+    Used to dump data through a SuperSocket instance.
+    """
+
     def dump(self, data):
         self.start()
         data = DumpStrSSL(data)
