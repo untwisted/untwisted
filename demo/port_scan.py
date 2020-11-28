@@ -34,13 +34,3 @@ if __name__ == '__main__':
     scan(opt.addr, int(opt.min), int(opt.max))
     core.gear.mainloop()
     
-
-
-
-
-
-
-
-
-
-

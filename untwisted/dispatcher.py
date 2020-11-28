@@ -115,25 +115,15 @@ class Dispatcher:
 
         self.base[event].remove((handle, args))
 
-    def clear_maps(self, event, handle, *args):
+    def del_all(self, event, handle):
         """
-        Clear all mapps for event, handle and args. 
-        It returns how many mappings were deleted.
-
-        When there is no mapping for the event it raises
-        an exception KeyError.
+        Clear all mapps for event, handle.
         """
 
         maps  = self.base[event]
-        count = 0
-
-        while maps:
-            try:
-                maps.remove((event, hadle))
-            except ValueError as e:
-                return count
-            count += 1
-        return count
+        for ind in maps[:]:
+            if ind[0] is handle:
+                maps.remove(ind)
 
     def install_maps(self, *args):
         """
