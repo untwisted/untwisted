@@ -121,7 +121,6 @@ class Dispatcher:
         def handle_wrapper(dispatcher, *args):
             self.del_map(event, handle_wrapper, *args)
             handle(dispatcher, *args)
-
         self.add_map(event, handle_wrapper, *args)
         return handle_wrapper
 

@@ -27,6 +27,12 @@ class SuperSocket(BaseSocket):
         BaseSocket.__init__(self, self.sock.fileno())
         self.sock.setblocking(0) 
 
+    def add_mapW(self, handle, *args):
+        pass
+
+    def add_mapR(self, handle, *args):
+        pass
+
     def __getattr__(self, name):
         return getattr(self.sock, name)
 

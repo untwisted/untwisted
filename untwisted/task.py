@@ -20,10 +20,12 @@ class Task(Dispatcher):
         """
         self.count = self.count + 1
         for ind in events:
-            dispatcher.once(ind, self.check_tasks)
+            dispatcher.add_map(ind, self.check_tasks, events)
 
     def check_tasks(self, dispatcher, *args):
         self.count = self.count - 1
+        for ind in args[-1]:
+            dispatcher.del_map(ind, self.check_tasks, args[-1])
 
     def update(self):
         if self.count <= 0: 
