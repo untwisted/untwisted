@@ -54,11 +54,10 @@ class Device(SuperSocket):
     def __getattr__(self, name):
         return getattr(self.device, name)
 
-class SSL(SuperSocket):
+class SuperSocketSSL(SuperSocket):
     """
     Dispatching system for SSL sockets.
     """
-
     pass
 
 class Extension:

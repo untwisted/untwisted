@@ -5,7 +5,7 @@ from untwisted.dispatcher import Erase
 from untwisted.sock_writer import SockWriter, SockWriterSSL
 from untwisted.sock_reader import SockReader, SockReaderSSL
 from untwisted.network import SuperSocket
-from untwisted.network import SSL
+from untwisted.network import SuperSocketSSL
 
 import socket
 import ssl
@@ -138,7 +138,7 @@ def create_client_ssl(addr, port):
     # First attempt to connect otherwise it leaves
     # an unconnected ssock instance in the reactor.
     wrap.connect_ex((addr, port))
-    con = SSL(wrap)
+    con = SuperSocketSSL(wrap)
 
     ClientSSL(con)
     con.add_map(SSL_CONNECT, install_ssl_handles)
