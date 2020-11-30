@@ -27,7 +27,7 @@ class Client:
         else:
             ssock.drive(CONNECT)
 
-class Handshake:
+class ClientHandshake:
     """ 
     """
 
@@ -40,15 +40,13 @@ class Handshake:
 
         try:
             ssock.do_handshake()
-        except ssl.CertificateError as excpt:
-            ssock.drive(SSL_CERTIFICATE_ERR, excpt)
         except ssl.SSLWantReadError:
             pass
         except ssl.SSLWantWriteError:
             pass
-        except socket.error as excpt:
-            ssock.drive(SSL_CONNECT_ERR, excpt)
         except ssl.SSLError as excpt:
+            ssock.drive(SSL_CONNECT_ERR, excpt)
+        except socket.error as excpt:
             ssock.drive(SSL_CONNECT_ERR, excpt)
         else:
             ssock.drive(SSL_CONNECT)
@@ -65,7 +63,7 @@ class ClientSSL:
 
     def update(self, ssock):
         ssock.del_map(CONNECT, self.update)
-        Handshake(ssock)
+        ClientHandshake(ssock)
 
 def lose(ssock):
     """

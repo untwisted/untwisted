@@ -1,4 +1,4 @@
-from untwisted.event import ACCEPT, ACCEPT_ERR, READ, CLOSE, SSL_ACCEPT
+from untwisted.event import ACCEPT, ACCEPT_ERR, READ, CLOSE, SSL_ACCEPT, WRITE, SSL_ACCEPT_ERR, SSL_CERTIFICATE_ERR
 from untwisted.errors import ACCEPT_ERR_CODE
 from untwisted.client import install_basic_handles
 from untwisted.network import SuperSocket, SuperSocketSSL
@@ -20,11 +20,32 @@ class Server:
             try:
                 sock, addr = ssock.accept()
             except socket.error as excpt:
-                if not excpt.args[0] in ACCEPT_ERR_CODE: 
-                    ssock.drive(CLOSE, excpt)
-                else:
-                    break
+                break
             ssock.drive(ACCEPT, SuperSocket(sock))
+
+class ServerHandshake:
+    """ 
+    """
+
+    def __init__(self, server, ssock):
+        self.server = server
+        ssock.add_map(WRITE, self.do_handshake)
+
+    def do_handshake(self, ssock):
+        """
+        """
+
+        try:
+            ssock.do_handshake()
+        except ssl.SSLWantReadError:
+            pass
+        except ssl.SSLWantWriteError:
+            pass
+        except socket.error as excpt:
+            self.server.drive(SSL_ACCEPT_ERR, ssock)
+        else:
+            self.server.drive(SSL_ACCEPT, ssock)
+            raise Erase
 
 class ServerSSL:
     def __init__(self, ssock):
@@ -35,18 +56,8 @@ class ServerSSL:
             try:
                 sock, addr = ssock.accept()
             except socket.error as excpt:
-                if not excpt.args[0] in ACCEPT_ERR_CODE: 
-                    ssock.drive(CLOSE, excpt)
-                else:
-                    break
-            except ssl.SSLWantReadError:
-                pass
-            except ssl.SSLWantWriteError:
-                pass
-            except ssl.SSLError as excpt:
-                ssock.drive(CLOSE, excpt)
-            else:
-                ssock.drive(SSL_ACCEPT, SuperSocketSSL(sock))
+                break
+            ServerHandshake(ssock, SuperSocketSSL(sock))
 
 def create_server(addr, port, backlog):
     """
@@ -59,7 +70,7 @@ def create_server(addr, port, backlog):
     server.add_map(ACCEPT, lambda server, ssock: install_basic_handles(ssock))
     return server
 
-def create_server_ssl(addr, port, backlog, certchain):
+def create_server_ssl(addr, port, backlog):
     """
     """
 
@@ -67,8 +78,8 @@ def create_server_ssl(addr, port, backlog, certchain):
     server.bind((addr, port))
     server.listen(backlog)
 
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(*certchain)
+    context = ssl.SSLContext()
+    context.load_default_certs()
     
     wrap = context.wrap_socket(server, 
     do_handshake_on_connect=False, server_side=True)

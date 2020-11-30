@@ -320,14 +320,13 @@ class TestSched(unittest.TestCase):
 
 class TestClientSSL(unittest.TestCase):
     def setUp(self):
-        self.server = create_server_ssl('0.0.0.0', 1237, 
-        5, ('/etc/pki/tls/cert.pem', '/etc/pki/tls/cert.pem'))
+        self.server = create_server_ssl('0.0.0.0', 1237, 5)
 
         sock    = socket(AF_INET, SOCK_STREAM)
         context = ssl.create_default_context()
 
         wrap    = context.wrap_socket(sock, 
-        do_handshake_on_connect=False, server_hostname='0.0.0.0')
+        do_handshake_on_connect=False, server_hostname='localhost')
 
         self.client = SuperSocketSSL(wrap)
         ClientSSL(self.client)

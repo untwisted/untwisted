@@ -76,3 +76,6 @@ class SSL_CONNECT(Event):
 
 class SSL_ACCEPT(Event):         
     pass
+
+class SSL_ACCEPT_ERR(Event):
+    pass
