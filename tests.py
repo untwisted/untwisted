@@ -1,5 +1,6 @@
-from untwisted.event import ACCEPT, ACCEPT_ERR, CLOSE, CONNECT, CONNECT_ERR, READ, LOAD, DUMPED, DONE
-from untwisted.network import SuperSocket
+from untwisted.event import ACCEPT, ACCEPT_ERR, CLOSE, CONNECT, \
+CONNECT_ERR, READ, LOAD, DUMPED, DONE, SSL_ACCEPT, SSL_CONNECT, SSL_CONNECT_ERR
+from untwisted.network import SuperSocket, SuperSocketSSL
 from untwisted.timer import Timer
 from threading import Thread
 from untwisted.job import Job
@@ -7,13 +8,15 @@ from untwisted.waker import waker
 from untwisted.splits import Terminator, AccUntil
 from untwisted.sock_writer import SockWriter
 from untwisted.sock_reader import SockReader
-from untwisted.client import Client, create_client, lose
+from untwisted.client import Client, create_client, lose, ClientSSL
 from untwisted.dispatcher import Dispatcher, Stop, Erase
-from untwisted.server import create_server
+from untwisted.server import create_server, create_server_ssl
 from untwisted.core import die
 from untwisted import core
 import unittest
 import time
+from socket import socket, AF_INET, SOCK_STREAM
+import ssl
 
 class TestExpect(unittest.TestCase):
     def setUp(self):
@@ -317,7 +320,36 @@ class TestSched(unittest.TestCase):
 
 class TestClientSSL(unittest.TestCase):
     def setUp(self):
-        pass
+        self.server = create_server_ssl('0.0.0.0', 1237, 
+        5, ('/etc/pki/tls/cert.pem', '/etc/pki/tls/cert.pem'))
+
+        sock    = socket(AF_INET, SOCK_STREAM)
+        context = ssl.create_default_context()
+
+        wrap    = context.wrap_socket(sock, 
+        do_handshake_on_connect=False, server_hostname='0.0.0.0')
+
+        self.client = SuperSocketSSL(wrap)
+        ClientSSL(self.client)
+
+        self.client.connect_ex(('0.0.0.0', 1237))
+        self.client.add_map(SSL_CONNECT, self.handle_connect)
+        self.client.add_map(SSL_CONNECT_ERR, self.handle_connect_err)
+
+    def handle_connect(self, client):
+        print('SSL Connected!', client)
+        lose(client)
+        lose(self.server)
+        die()
+
+    def handle_connect_err(self, client, err):
+        print('SSL Connected err!', client, err)
+        lose(client)
+        lose(self.server)
+        die()
+
+    def test_accept(self):
+        core.gear.mainloop()
 
 class TestSockWriterSSL(unittest.TestCase):
     def setUp(self):

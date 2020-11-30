@@ -26,21 +26,13 @@ class SockReader:
     def process_data(self, ssock):
         data = ssock.recv(self.SIZE)
 
-        # It has to raise the error here
-        # otherwise it CLOSE gets spawned
-        # twice from SSLStdout.
-
         if not data: 
             raise socket.error('')
         ssock.drive(LOAD, data)
 
     def process_error(self, ssock, excpt):
-        if excpt.args[0] in RECV_ERR_CODE:
-            ssock.drive(RECV_ERR, excpt)
-        elif excpt.args[0] in CLOSE_ERR_CODE: 
+        if not excpt.args[0] in RECV_ERR_CODE:
             ssock.drive(CLOSE, excpt)
-        else:
-            raise excpt
 
 class SockReaderSSL(SockReader):
     """    
@@ -52,7 +44,7 @@ class SockReaderSSL(SockReader):
         try:
             self.process_data(ssock)
         except ssl.SSLWantReadError as excpt:
-            ssock.drive(SSL_RECV_ERR, ssock, excpt)
+            pass
         except ssl.SSLWantWriteError as excpt:
             ssock.drive(SSL_RECV_ERR, ssock, excpt)
         except ssl.SSLError as excpt:

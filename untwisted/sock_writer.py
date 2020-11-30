@@ -7,13 +7,9 @@ import socket
 
 class Dump:
     def process_error(self, ssock, excpt):
-        if excpt.args[0] in SEND_ERR_CODE:
-            ssock.drive(SEND_ERR, excpt)
-        elif excpt.args[0] in CLOSE_ERR_CODE: 
+        if not excpt.args[0] in SEND_ERR_CODE:
             if not ssock.dead:
                 ssock.drive(CLOSE, excpt)
-        else:
-            raise excpt
 
 class DumpStr(Dump):
     __slots__ = 'data'
@@ -62,9 +58,9 @@ class DumpStrSSL(DumpStr):
         try:
             size = ssock.send(self.data)  
         except ssl.SSLWantReadError as excpt:
-            ssock.drive(SSL_SEND_ERR, ssock, excpt)
+            pass
         except ssl.SSLWantWriteError as excpt:
-            ssock.drive(SSL_SEND_ERR, ssock, excpt)
+            pass
         except ssl.SSLEOFError as excpt:
             pass
         except ssl.SSLError as excpt:
@@ -79,8 +75,7 @@ class DumpFileSSL(DumpStrSSL, DumpFile):
 
 class SockWriter:
     """ 
-    Stdin is a handle used to send data through SuperSocket connections.
-
+    Used to write data through a socket asynchronously.
     """
 
     def __init__(self, ssock):

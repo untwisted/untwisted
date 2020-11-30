@@ -47,7 +47,6 @@ class Handshake:
         except ssl.SSLWantWriteError:
             pass
         except socket.error as excpt:
-            # When it happens then it should spawn SSL_CONNECT_ERR.
             ssock.drive(SSL_CONNECT_ERR, excpt)
         except ssl.SSLError as excpt:
             ssock.drive(SSL_CONNECT_ERR, excpt)
@@ -126,7 +125,8 @@ def create_client_ssl(addr, port):
     """
     Shorthand function to set up a SSL connection. It installs all necessary
     extensions to send and receive data over a secured connection.
-    
+
+    This helper function creates a ssl socket with a default context.    
     It also deals with CLOSE event properly.
     """
 
