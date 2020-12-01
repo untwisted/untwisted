@@ -16,6 +16,7 @@ demo/is_up.py
 demo/msg_client.py
 demo/msg_server.py
 demo/port_scan.py
+demo/server_ssl.py
 demo/spawn_process.py
 demo/sum.py
 demo/telnet_process.py

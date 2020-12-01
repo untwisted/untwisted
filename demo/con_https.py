@@ -1,5 +1,4 @@
-from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, \
-SSL_CERTIFICATE_ERR, put, lose
+from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, put, lose
 from untwisted.sock_writer import SockWriterSSL
 from untwisted.sock_reader import SockReaderSSL, LOAD, CLOSE
 from socket import socket, AF_INET, SOCK_STREAM
@@ -24,10 +23,6 @@ def handle_connect_err(ssock, err):
     print('Connect err.', err)
     die()
 
-def handle_certificate_err(ssock, err):
-    print('Certificate err.', err)
-    die()
-
 def main(addr, port, host):
     sock    = socket(AF_INET, SOCK_STREAM)
     context = ssl.create_default_context()
@@ -41,7 +36,6 @@ def main(addr, port, host):
     ClientSSL(con)
     con.add_map(SSL_CONNECT, on_connect, host)
     con.add_map(SSL_CONNECT_ERR, handle_connect_err)
-    con.add_map(SSL_CERTIFICATE_ERR, handle_certificate_err)
 
 if __name__ == '__main__':
     from optparse import OptionParser
