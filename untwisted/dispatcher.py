@@ -118,9 +118,9 @@ class Dispatcher:
         Execute a handle just once.
         """
     
-        def handle_wrapper(dispatcher, *args):
+        def handle_wrapper(dispatcher, *params):
             self.del_map(event, handle_wrapper, *args)
-            handle(dispatcher, *args)
+            handle(dispatcher, *params)
         self.add_map(event, handle_wrapper, *args)
         return handle_wrapper
 
