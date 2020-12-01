@@ -42,7 +42,7 @@ class ServerHandshake:
         except ssl.SSLWantWriteError:
             pass
         except socket.error as excpt:
-            self.server.drive(SSL_ACCEPT_ERR, ssock)
+            self.server.drive(SSL_ACCEPT_ERR, ssock, excpt)
         else:
             self.server.drive(SSL_ACCEPT, ssock)
             raise Erase
@@ -77,10 +77,9 @@ def create_server_ssl(addr, port, backlog):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((addr, port))
     server.listen(backlog)
-
-    context = ssl.SSLContext()
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_default_certs()
-    
+
     wrap = context.wrap_socket(server, 
     do_handshake_on_connect=False, server_side=True)
 

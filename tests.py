@@ -1,5 +1,5 @@
 from untwisted.event import ACCEPT, ACCEPT_ERR, CLOSE, CONNECT, \
-CONNECT_ERR, READ, LOAD, DUMPED, DONE, SSL_ACCEPT, SSL_CONNECT, SSL_CONNECT_ERR
+CONNECT_ERR, READ, LOAD, DUMPED, DONE, SSL_ACCEPT, SSL_CONNECT, SSL_CONNECT_ERR, SSL_ACCEPT_ERR
 from untwisted.network import SuperSocket, SuperSocketSSL
 from untwisted.timer import Timer
 from threading import Thread
@@ -318,37 +318,50 @@ class TestSched(unittest.TestCase):
     def setUp(self):
         pass
 
-class TestClientSSL(unittest.TestCase):
-    def setUp(self):
-        self.server = create_server_ssl('0.0.0.0', 1237, 5)
-
-        sock    = socket(AF_INET, SOCK_STREAM)
-        context = ssl.create_default_context()
-
-        wrap    = context.wrap_socket(sock, 
-        do_handshake_on_connect=False, server_hostname='localhost')
-
-        self.client = SuperSocketSSL(wrap)
-        ClientSSL(self.client)
-
-        self.client.connect_ex(('0.0.0.0', 1237))
-        self.client.add_map(SSL_CONNECT, self.handle_connect)
-        self.client.add_map(SSL_CONNECT_ERR, self.handle_connect_err)
-
-    def handle_connect(self, client):
-        print('SSL Connected!', client)
-        lose(client)
-        lose(self.server)
-        die()
-
-    def handle_connect_err(self, client, err):
-        print('SSL Connected err!', client, err)
-        lose(client)
-        lose(self.server)
-        die()
-
-    def test_accept(self):
-        core.gear.mainloop()
+# class TestClientSSL(unittest.TestCase):
+    # def setUp(self):
+        # self.server = create_server_ssl('localhost', 1237, 5)
+# 
+        # sock    = socket(AF_INET, SOCK_STREAM)
+        # context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        # context.load_default_certs()
+# 
+        # wrap    = context.wrap_socket(sock, 
+        # do_handshake_on_connect=False, server_hostname='localhost')
+# 
+        # self.client = SuperSocketSSL(wrap)
+        # ClientSSL(self.client)
+# 
+        # self.client.connect_ex(('localhost', 1237))
+        # self.client.add_map(SSL_CONNECT, self.handle_connect)
+        # self.client.add_map(SSL_CONNECT_ERR, self.handle_connect_err)
+        # self.server.add_map(SSL_ACCEPT_ERR, self.handle_accept_err)
+        # self.server.add_map(SSL_ACCEPT, self.handle_accept)
+# 
+    # def handle_connect(self, client):
+        # print('SSL Connected!', client)
+        # lose(client)
+        # lose(self.server)
+        # die()
+# 
+    # def handle_connect_err(self, client, err):
+        # print('SSL Connected err!', client, err)
+        # lose(client)
+        # lose(self.server)
+        # die()
+# 
+    # def handle_accept(self, client, ssock):
+        # print('SSL accept!', client, ssock)
+        # lose(self.server)
+        # die()
+# 
+    # def handle_accept_err(self, client, ssock):
+        # print('SSL accept err!', client, ssock)
+        # lose(self.server)
+        # die()
+# 
+    # def test_accept(self):
+        # core.gear.mainloop()
 
 class TestSockWriterSSL(unittest.TestCase):
     def setUp(self):
