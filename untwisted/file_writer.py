@@ -1,4 +1,5 @@
 from untwisted.sock_writer import SockWriter
+from untwisted.event import DUMPED
 from untwisted import sock_writer
 import os
 
