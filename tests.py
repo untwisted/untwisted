@@ -355,7 +355,7 @@ class TestSched(unittest.TestCase):
         # lose(self.server)
         # die()
 # 
-    # def handle_accept_err(self, client, ssock):
+    # def handle_accept_err(self, client, ssock, err):
         # print('SSL accept err!', client, ssock)
         # lose(self.server)
         # die()
