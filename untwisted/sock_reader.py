@@ -1,11 +1,11 @@
-from untwisted.event import CLOSE, RECV_ERR, READ, LOAD, SSL_RECV_ERR
-from untwisted.errors import CLOSE_ERR_CODE, RECV_ERR_CODE
+from untwisted.event import CLOSE, READ, LOAD
+from untwisted.errors import RECV_ERR_CODE
 import socket
 import ssl
 
 class SockReader:
     """
-    Used to read data through a SuperSocket instance. It spawns LOAD, RECV_ERR or 
+    Used to read data through a SuperSocket instance. It spawns LOAD or
     CLOSE.
     """
     
@@ -36,8 +36,7 @@ class SockReader:
 
 class SockReaderSSL(SockReader):
     """    
-    Used to read data from a SSL connection. It spawns LOAD, SSL_RECV_ERR
-    or CLOSE.
+    Used to read data from a SSL connection. It spawns LOAD or CLOSE.
     """
 
     def update(self, ssock):
@@ -46,7 +45,7 @@ class SockReaderSSL(SockReader):
         except ssl.SSLWantReadError as excpt:
             pass
         except ssl.SSLWantWriteError as excpt:
-            ssock.drive(SSL_RECV_ERR, ssock, excpt)
+            pass
         except ssl.SSLError as excpt:
             ssock.drive(CLOSE, ssock, excpt)
         except socket.error as excpt:

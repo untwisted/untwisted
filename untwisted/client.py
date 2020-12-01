@@ -1,11 +1,10 @@
-from untwisted.event import CONNECT, CONNECT_ERR, WRITE, CLOSE, CLOSE_ERR, \
-SSL_CERTIFICATE_ERR, SSL_CONNECT_ERR, SSL_CONNECT
-
 from untwisted.dispatcher import Erase
 from untwisted.sock_writer import SockWriter, SockWriterSSL
 from untwisted.sock_reader import SockReader, SockReaderSSL
 from untwisted.network import SuperSocket
 from untwisted.network import SuperSocketSSL
+from untwisted.event import CONNECT, CONNECT_ERR,\
+ WRITE, CLOSE, SSL_CONNECT_ERR, SSL_CONNECT
 
 import socket
 import ssl
@@ -86,13 +85,17 @@ def put(ssock, data):
 
     print(data)
 
+def handle_conerr(ssock, err):
+    ssock.destroy()
+    ssock.close()
+
 def install_basic_handles(ssock):
     """
     """
 
     SockWriter(ssock)
     SockReader(ssock)
-    ssock.add_map(CLOSE, lambda ssock, err: lose(ssock))
+    ssock.add_map(CLOSE, handle_conerr)
 
 def create_client(addr, port):
     """
@@ -111,13 +114,13 @@ def create_client(addr, port):
     ssock = SuperSocket(sock)
     Client(ssock)
     ssock.add_map(CONNECT, install_basic_handles)
-    ssock.add_map(CONNECT_ERR, lambda con, err: lose(con))
+    ssock.add_map(CONNECT_ERR, handle_conerr)
     return ssock
 
 def install_ssl_handles(con):
     SockWriterSSL(con)
     SockReaderSSL(con)
-    con.add_map(CLOSE, lambda con, err: lose(con))
+    con.add_map(CLOSE, handle_conerr)
 
 def create_client_ssl(addr, port):
     """
@@ -140,7 +143,6 @@ def create_client_ssl(addr, port):
 
     ClientSSL(con)
     con.add_map(SSL_CONNECT, install_ssl_handles)
-    con.add_map(SSL_CONNECT_ERR, lambda con, err: lose(con))
-    con.add_map(CONNECT_ERR, lambda con, err: lose(con))
-    con.add_map(SSL_CERTIFICATE_ERR, lambda con, err: lose(con))
+    con.add_map(SSL_CONNECT_ERR, handle_conerr)
+    con.add_map(CONNECT_ERR, handle_conerr)
     return con

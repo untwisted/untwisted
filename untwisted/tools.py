@@ -1,4 +1,3 @@
-from untwisted.dispatcher import Dispatcher
 from builtins import next
 
 class Hold:

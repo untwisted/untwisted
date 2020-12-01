@@ -1,7 +1,7 @@
 from collections import deque
 from untwisted.event import DUMPED, WRITE
-from untwisted.errors import CLOSE_ERR_CODE, SEND_ERR_CODE
-from untwisted.event import CLOSE, SEND_ERR, READ_ERR, SSL_SEND_ERR
+from untwisted.errors import SEND_ERR_CODE
+from untwisted.event import CLOSE, READ_ERR
 import ssl
 import socket
 

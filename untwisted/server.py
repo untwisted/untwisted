@@ -1,4 +1,5 @@
-from untwisted.event import ACCEPT, ACCEPT_ERR, READ, CLOSE, SSL_ACCEPT, WRITE, SSL_ACCEPT_ERR, SSL_CERTIFICATE_ERR
+from untwisted.event import ACCEPT, READ, CLOSE, SSL_ACCEPT, WRITE, SSL_ACCEPT_ERR
+from untwisted.dispatcher import Erase
 from untwisted.errors import ACCEPT_ERR_CODE
 from untwisted.client import install_basic_handles
 from untwisted.network import SuperSocket, SuperSocketSSL
@@ -20,8 +21,11 @@ class Server:
             try:
                 sock, addr = ssock.accept()
             except socket.error as excpt:
+                if not excpt.args[0] in ACCEPT_ERR_CODE:
+                    ssock.drive(CLOSE, excpt)
                 break
-            ssock.drive(ACCEPT, SuperSocket(sock))
+            else:
+                ssock.drive(ACCEPT, SuperSocket(sock))
 
 class ServerHandshake:
     """ 
@@ -56,9 +60,12 @@ class ServerSSL:
             try:
                 sock, addr = ssock.accept()
             except socket.error as excpt:
+                if not excpt.args[0] in ACCEPT_ERR_CODE:
+                    ssock.drive(CLOSE, excpt)
                 break
             ServerHandshake(ssock, SuperSocketSSL(sock))
 
+handles_wrapper = lambda server, ssock: install_basic_handles(ssock)
 def create_server(addr, port, backlog):
     """
     """
@@ -67,7 +74,7 @@ def create_server(addr, port, backlog):
     server.bind((addr, port))
     server.listen(backlog)
     Server(server)
-    server.add_map(ACCEPT, lambda server, ssock: install_basic_handles(ssock))
+    server.add_map(ACCEPT, handles_wrapper)
     return server
 
 def create_server_ssl(addr, port, backlog):
@@ -86,6 +93,6 @@ def create_server_ssl(addr, port, backlog):
     sserver = SuperSocketSSL(wrap)
     ServerSSL(sserver)
 
-    sserver.add_map(SSL_ACCEPT, lambda server, ssock: install_basic_handles(ssock))
+    sserver.add_map(SSL_ACCEPT, handles_wrapper)
     return sserver
 

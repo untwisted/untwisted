@@ -35,37 +35,16 @@ class LOAD(Event):
 class DUMPED(Event):
     pass
 
-class RECV_ERR(Event):
-    pass
-
-class SEND_ERR(Event):
-    pass
-
-class ACCEPT_ERR(Event):
-    pass
-
 class READ_ERR(Event):
     pass
 
 class DUMPED_FILE(Event):
     pass
 
-class CLOSE_ERR(Event):
-    pass
-
 class DONE(Event):
     pass
 
 class TIMEOUT(Event):
-    pass
-
-class SSL_SEND_ERR(Event):
-    pass
-
-class SSL_RECV_ERR(Event):        
-    pass
-
-class SSL_CERTIFICATE_ERR(Event): 
     pass
 
 class SSL_CONNECT_ERR(Event):     

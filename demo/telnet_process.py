@@ -1,5 +1,4 @@
 from untwisted.expect import Expect
-from subprocess import Popen, PIPE
 from untwisted.event import LOAD, CLOSE
 from untwisted.core import die
 from untwisted import core

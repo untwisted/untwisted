@@ -1,4 +1,4 @@
-from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, put, lose
+from untwisted.client import ClientSSL, SSL_CONNECT, SSL_CONNECT_ERR, put
 from untwisted.sock_writer import SockWriterSSL
 from untwisted.sock_reader import SockReaderSSL, LOAD, CLOSE
 from socket import socket, AF_INET, SOCK_STREAM

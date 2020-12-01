@@ -1,6 +1,6 @@
 from subprocess import Popen, PIPE, STDOUT
 from threading import Thread
-from queue import Queue, Empty
+from queue import Queue
 from untwisted.dispatcher import Dispatcher
 from untwisted import core
 from untwisted.event import LOAD, CLOSE

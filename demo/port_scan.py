@@ -1,6 +1,5 @@
 from untwisted.network import SuperSocket
 from untwisted.client import Client, CONNECT, CONNECT_ERR
-from socket import socket, AF_INET, SOCK_STREAM
 from untwisted.task import Task, DONE
 from untwisted.core import die
 from untwisted import core
