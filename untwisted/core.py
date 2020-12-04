@@ -8,13 +8,15 @@ class Root(Exception):
 class Kill(Exception):
     pass
 
+gear = None
 def die(msg=''):
     """
     It is used to stop the reactor.
     """
 
     print(msg)
-    raise Kill
+    # raise Kill
+    gear.stopped = True
 
 class Gear:
     """ 
@@ -26,13 +28,14 @@ class Gear:
     MAX_SIZE = 6028
     def __init__(self):
         self.pool = []
+        self.stopped = True
 
     def mainloop(self):
         """ 
         This is the reactor mainloop.
         """
-            
-        while True:
+        self.stopped = False
+        while not self.stopped:
             try:
                 self.update()
             except Kill:
@@ -84,8 +87,8 @@ class Select(Gear):
         """ 
         """
 
-        self.process_pool()
         self.process_reactor()
+        self.process_pool()
 
     def process_reactor(self):
         """
@@ -163,8 +166,8 @@ class Epoll(Gear):
         """
         """
 
-        self.process_pool()
         self.process_reactor()
+        self.process_pool()
 
     def process_reactor(self):
         """
