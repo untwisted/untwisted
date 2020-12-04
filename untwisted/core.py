@@ -16,7 +16,7 @@ def die(msg=''):
 
     print(msg)
     # raise Kill
-    gear.stopped = True
+    gear.dead = True
 
 class Gear:
     """ 
@@ -28,14 +28,14 @@ class Gear:
     MAX_SIZE = 6028
     def __init__(self):
         self.pool = []
-        self.stopped = True
+        self.dead = True
 
     def mainloop(self):
         """ 
         This is the reactor mainloop.
         """
-        self.stopped = False
-        while not self.stopped:
+        self.dead = False
+        while not self.dead:
             try:
                 self.update()
             except Kill:
