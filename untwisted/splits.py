@@ -57,10 +57,12 @@ class Terminator:
             self.raise_events(chunks)
 
     def raise_events(self, chunks):
-        self.arr.extend(chunks.pop(-1))
+        tmp = chunks.pop(-1)
         for ind in chunks:
             self.ssock.drive(Terminator.FOUND, bytes(ind))
         self.arr.clear()
+
+        self.arr.extend(tmp)
             
 class Accumulator:
     """
